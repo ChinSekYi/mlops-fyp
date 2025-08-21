@@ -1,0 +1,66 @@
+schema: '2.0'
+stages:
+  ingest:
+    cmd: python -m src.components.data_ingestion
+    deps:
+    - path: data/raw/creditcard.csv
+      hash: md5
+      md5: e90efcb83d69faf99fcab8b0255024de
+      size: 150828752
+    - path: src/components/data_ingestion.py
+      hash: md5
+      md5: 2feda33a623ac7ed78593f4deb6cb0db
+      size: 1910
+    outs:
+    - path: data/processed/test.csv
+      hash: md5
+      md5: 39f9771344cc134df39e5e55983e786c
+      size: 103261
+    - path: data/processed/train.csv
+      hash: md5
+      md5: 90971aceb7284770999e3f0756ff6942
+      size: 412383
+  process:
+    cmd: python -m src.components.data_transformation
+    deps:
+    - path: data/processed/test.csv
+      hash: md5
+      md5: 39f9771344cc134df39e5e55983e786c
+      size: 103261
+    - path: data/processed/train.csv
+      hash: md5
+      md5: 90971aceb7284770999e3f0756ff6942
+      size: 412383
+    - path: src/components/data_transformation.py
+      hash: md5
+      md5: 7c709ff3f1a1bd4f8f2f5cb8b082caf0
+      size: 2024
+    outs:
+    - path: data/processed/test_transformed.npy
+      hash: md5
+      md5: d2d697e1596fd2ada3c1d2bd50a8d612
+      size: 48984
+    - path: data/processed/train_transformed.npy
+      hash: md5
+      md5: 455c7c4fbc6dfbfa79d3118f1e3cfeea
+      size: 195304
+  train:
+    cmd: python -m src.components.model_trainer
+    deps:
+    - path: data/processed/test_transformed.npy
+      hash: md5
+      md5: d2d697e1596fd2ada3c1d2bd50a8d612
+      size: 48984
+    - path: data/processed/train_transformed.npy
+      hash: md5
+      md5: 455c7c4fbc6dfbfa79d3118f1e3cfeea
+      size: 195304
+    - path: src/components/model_trainer.py
+      hash: md5
+      md5: 32a2db574d77785b715b536c6309e6f1
+      size: 2080
+    outs:
+    - path: models/model.pkl
+      hash: md5
+      md5: a17f253556fc2db7953ae4805404bdda
+      size: 922

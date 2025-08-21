@@ -1,5 +1,6 @@
 import os
 import sys
+import numpy as np
 from sklearn.linear_model import LogisticRegression
 from src.exception import CustomException
 from src.logger import logging
@@ -13,8 +14,11 @@ class ModelTrainer:
     def __init__(self):
         self.model_trainer_config = ModelTrainerConfig()
 
-    def initiate_model_trainer(self, train_array, test_array):
+    def initiate_model_trainer(self, train_arr_path, test_arr_path):
         try:
+            train_array = np.load(train_arr_path)
+            test_array = np.load(test_arr_path)
+
             logging.info("Splitting training and test input data")
             x_train, y_train, x_test, y_test = (
                 train_array[:, :-1],
@@ -38,3 +42,11 @@ class ModelTrainer:
             return (training_data_accuracy, testing_data_accuracy)
         except Exception as e:
             raise CustomException(e, sys) from e
+
+if __name__ == "__main__":
+    modeltrainer = ModelTrainer()
+    train_arr_path, test_arr_path = "data/processed/train_transformed.npy", "data/processed/test_transformed.npy",
+    training_data_accuracy, testing_data_accuracy = modeltrainer.initiate_model_trainer(train_arr_path, test_arr_path)
+
+    print(f"training_data results: {training_data_accuracy}")
+    print(f"testing_data results: {testing_data_accuracy}")
