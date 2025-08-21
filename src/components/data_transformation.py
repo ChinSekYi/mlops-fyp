@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 import numpy as np
+from src.logger import logging
 from sklearn.preprocessing import StandardScaler
 from src.utils import save_object
 
@@ -28,6 +29,7 @@ class DataTransformation:
                 file_path=self.data_transformation_config.preprocessor_ob_file_path,
                 obj=scaler,
             )
+            logging.info("saved preprocessor")
             return (
                 train_arr,
                 test_arr,

@@ -3,4 +3,5 @@ pandas
 scikit-learn
 isort
 black
+dvc
 #-e .

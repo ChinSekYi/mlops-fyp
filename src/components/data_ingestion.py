@@ -7,8 +7,8 @@ from src.exception import CustomException
 from src.logger import logging
 
 class DataIngestionConfig:
-    train_data_path = os.path.join("artifacts", "train.csv")
-    test_data_path = os.path.join("artifacts", "test.csv")
+    train_data_path = os.path.join("data","processed", "train.csv")
+    test_data_path = os.path.join("data", "processed", "test.csv")
 
 class DataIngestion:
     def __init__(self):
@@ -16,11 +16,14 @@ class DataIngestion:
 
     def initiate_data_ingestion(self):
         try:
-            df = pd.read_csv("data/creditcard.csv")
+            data_path = os.path.join("data", "raw", "creditcard.csv")
+            df = pd.read_csv(data_path)
             legit = df[df.Class == 0]
             fraud = df[df.Class == 1]
-            legit_sample = legit.sample(n=492, random_state=2)
+            
+            legit_sample = legit.sample(n=492, random_state=2) # undersampling
             new_dataset = pd.concat([legit_sample, fraud], axis=0)
+            
             X = new_dataset.drop(columns="Class", axis=1)
             Y = new_dataset["Class"]
             X_train, X_test, Y_train, Y_test = train_test_split(
@@ -28,6 +31,7 @@ class DataIngestion:
             )
             train = pd.concat([X_train, Y_train], axis=1)
             test = pd.concat([X_test, Y_test], axis=1)
+            
             os.makedirs(os.path.dirname(self.ingestion_config.train_data_path), exist_ok=True)
             train.to_csv(self.ingestion_config.train_data_path, index=False)
             test.to_csv(self.ingestion_config.test_data_path, index=False)
@@ -50,6 +54,5 @@ if __name__ == "__main__":
     modeltrainer = ModelTrainer()
     training_data_accuracy, testing_data_accuracy = modeltrainer.initiate_model_trainer(train_arr, test_arr)
 
-    print(f"Training data size: {len(training_data_accuracy)}")
     print(f"training_data results: {training_data_accuracy}")
     print(f"testing_data results: {testing_data_accuracy}")

@@ -7,7 +7,7 @@ from sklearn.metrics import precision_score, recall_score, f1_score
 from src.utils import save_object, evaluate_model
 
 class ModelTrainerConfig:
-    trained_model_file_path = os.path.join("artifacts", "model.pkl")
+    trained_model_file_path = os.path.join("models", "model.pkl")
 
 class ModelTrainer:
     def __init__(self):
