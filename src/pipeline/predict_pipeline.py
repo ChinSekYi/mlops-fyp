@@ -116,3 +116,8 @@ if __name__ == "__main__":
     pred_result = predict_pipeline.predict(pred_df)
     print("Prediction result:", pred_result)
 
+    output_dir = os.path.join("src", "prediction_output")
+    os.makedirs(output_dir, exist_ok=True)
+    with open(os.path.join(output_dir, "prediction.txt"), "w") as f:
+        f.write(str(pred_result))
+

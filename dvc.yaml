@@ -17,7 +17,7 @@ stages:
     outs:
       - data/processed/train_transformed.npy
       - data/processed/test_transformed.npy
-
+      - artifacts/preprocessor.pkl
   train:
     cmd: python -m src.components.model_trainer
     deps:
@@ -26,3 +26,11 @@ stages:
       - data/processed/test_transformed.npy
     outs:
       - models/model.pkl
+
+  predict:
+    cmd: python -m src.pipeline.predict_pipeline
+    deps: 
+      - artifacts/preprocessor.pkl
+      - models/model.pkl
+    outs:
+      - src/prediction_output/prediction.txt
