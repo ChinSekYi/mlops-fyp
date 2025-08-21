@@ -28,6 +28,7 @@ class ModelTrainer:
             )
             model = LogisticRegression(max_iter=1000)
             model.fit(x_train, y_train)
+            
             save_object(
                 file_path=self.model_trainer_config.trained_model_file_path,
                 obj=model,

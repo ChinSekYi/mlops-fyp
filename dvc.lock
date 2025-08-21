@@ -36,6 +36,10 @@ stages:
       md5: 7c709ff3f1a1bd4f8f2f5cb8b082caf0
       size: 2024
     outs:
+    - path: artifacts/preprocessor.pkl
+      hash: md5
+      md5: b2e854889614459e1825f24bd304b315
+      size: 1432
     - path: data/processed/test_transformed.npy
       hash: md5
       md5: d2d697e1596fd2ada3c1d2bd50a8d612
@@ -57,10 +61,26 @@ stages:
       size: 195304
     - path: src/components/model_trainer.py
       hash: md5
-      md5: 32a2db574d77785b715b536c6309e6f1
-      size: 2080
+      md5: d4aadef9aefa3e5006b2c8ec71cc0a51
+      size: 2093
     outs:
     - path: models/model.pkl
       hash: md5
       md5: a17f253556fc2db7953ae4805404bdda
       size: 922
+  predict:
+    cmd: python -m src.pipeline.predict_pipeline
+    deps:
+    - path: artifacts/preprocessor.pkl
+      hash: md5
+      md5: b2e854889614459e1825f24bd304b315
+      size: 1432
+    - path: models/model.pkl
+      hash: md5
+      md5: a17f253556fc2db7953ae4805404bdda
+      size: 922
+    outs:
+    - path: src/prediction_output/prediction.txt
+      hash: md5
+      md5: ba309bf3b8e3e5bbbf01f45d77646fb3
+      size: 4
