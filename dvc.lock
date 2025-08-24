@@ -61,9 +61,13 @@ stages:
       size: 195304
     - path: src/components/model_trainer.py
       hash: md5
-      md5: d4aadef9aefa3e5006b2c8ec71cc0a51
-      size: 2093
+      md5: 752d6691e6daf8fd0f910d4852c7454d
+      size: 2566
     outs:
+    - path: metrics/metrics.json
+      hash: md5
+      md5: 5f7d64139036987178955ebec385ce07
+      size: 294
     - path: models/model.pkl
       hash: md5
       md5: a17f253556fc2db7953ae4805404bdda
