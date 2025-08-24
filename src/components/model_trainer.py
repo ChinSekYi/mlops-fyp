@@ -1,5 +1,6 @@
 import os
 import sys
+import json
 import numpy as np
 from sklearn.linear_model import LogisticRegression
 from src.exception import CustomException
@@ -40,6 +41,17 @@ class ModelTrainer:
             testing_data_accuracy = evaluate_model(y_test, X_test_prediction)
             logging.info(f'test_data_accuracy: {testing_data_accuracy}')
 
+            metrics_dir = "metrics"
+            os.makedirs(metrics_dir, exist_ok=True)
+            metrics_path = os.path.join(metrics_dir, "metrics.json")
+            with open(metrics_path, "w") as f:
+                json.dump(
+                    {
+                        "training_data_accuracy": training_data_accuracy,
+                        "testing_data_accuracy": testing_data_accuracy
+                    },
+                    f
+                )
             return (training_data_accuracy, testing_data_accuracy)
         except Exception as e:
             raise CustomException(e, sys) from e
