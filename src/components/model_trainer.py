@@ -2,14 +2,18 @@ import os
 import sys
 import json
 import numpy as np
+import pandas as pd
 from sklearn.linear_model import LogisticRegression
 from src.exception import CustomException
 from src.logger import logging
-from sklearn.metrics import precision_score, recall_score, f1_score
 from src.utils import save_object, evaluate_model
+import mlflow
+import mlflow.sklearn
+
 
 class ModelTrainerConfig:
     trained_model_file_path = os.path.join("models", "model.pkl")
+    metrics_file_path = os.path.join("metrics", "metrics.json")
 
 class ModelTrainer:
     def __init__(self):
@@ -21,45 +25,70 @@ class ModelTrainer:
             test_array = np.load(test_arr_path)
 
             logging.info("Splitting training and test input data")
-            x_train, y_train, x_test, y_test = (
-                train_array[:, :-1],
-                train_array[:, -1],
-                test_array[:, :-1],
-                test_array[:, -1],
-            )
-            model = LogisticRegression(max_iter=1000)
-            model.fit(x_train, y_train)
-            
-            save_object(
-                file_path=self.model_trainer_config.trained_model_file_path,
-                obj=model,
-            )
-            X_train_prediction = model.predict(x_train)
-            X_test_prediction = model.predict(x_test)
+            x_train, y_train = train_array[:, :-1], train_array[:, -1]
+            x_test, y_test = test_array[:, :-1], test_array[:, -1]
 
-            training_data_accuracy = evaluate_model(y_train, X_train_prediction)
-            testing_data_accuracy = evaluate_model(y_test, X_test_prediction)
-            logging.info(f'test_data_accuracy: {testing_data_accuracy}')
+            # Start MLflow run
+            mlflow.set_tracking_uri("http://127.0.0.1:8080")
+            mlflow.set_experiment("CreditCard_Models")
+            with mlflow.start_run(run_name="logistic_regression_baseline"):
+                # Log parameters
+                mlflow.log_param("model_type", "LogisticRegression")
+                mlflow.log_param("max_iter", 1000)
 
-            metrics_dir = "metrics"
-            os.makedirs(metrics_dir, exist_ok=True)
-            metrics_path = os.path.join(metrics_dir, "metrics.json")
-            with open(metrics_path, "w") as f:
-                json.dump(
-                    {
-                        "training_data_accuracy": training_data_accuracy,
-                        "testing_data_accuracy": testing_data_accuracy
-                    },
-                    f
+                # Train model
+                model = LogisticRegression(max_iter=1000)
+                model.fit(x_train, y_train)
+                
+                # Save model locally and log to MLflow
+                save_object(
+                    file_path=self.model_trainer_config.trained_model_file_path,
+                    obj=model,
                 )
-            return (training_data_accuracy, testing_data_accuracy)
+
+                # Create an example input from training features
+                input_example = pd.DataFrame(x_train[:5], columns=[f"feature_{i}" for i in range(x_train.shape[1])])
+
+                mlflow.sklearn.log_model(
+                    model,
+                    name="model",           
+                    input_example=input_example
+                )
+
+                # Make predictions
+                y_train_pred = model.predict(x_train)
+                y_test_pred = model.predict(x_test)
+
+                # Evaluate
+                training_metrics = evaluate_model(y_train, y_train_pred)
+                testing_metrics = evaluate_model(y_test, y_test_pred)
+                logging.info(f"testing_metrics: {testing_metrics}")
+
+                # Log metrics to MLflow
+                for key, value in training_metrics.items():
+                    mlflow.log_metric(f"train_{key}", value)
+                for key, value in testing_metrics.items():
+                    mlflow.log_metric(f"test_{key}", value)
+
+                # Save metrics.json for DVC tracking
+                os.makedirs("metrics", exist_ok=True)
+                metrics_data = {
+                    "training_data_metrics": training_metrics,
+                    "testing_data_metrics": testing_metrics
+                }
+                with open(self.model_trainer_config.metrics_file_path, "w") as f:
+                    json.dump(metrics_data, f)
+            
+            return training_metrics, testing_metrics
+        
         except Exception as e:
             raise CustomException(e, sys) from e
 
 if __name__ == "__main__":
     modeltrainer = ModelTrainer()
-    train_arr_path, test_arr_path = "data/processed/train_transformed.npy", "data/processed/test_transformed.npy",
-    training_data_accuracy, testing_data_accuracy = modeltrainer.initiate_model_trainer(train_arr_path, test_arr_path)
+    train_arr_path = "data/processed/train_transformed.npy"
+    test_arr_path = "data/processed/test_transformed.npy"
+    training_metrics, testing_metrics = modeltrainer.initiate_model_trainer(train_arr_path, test_arr_path)
 
-    print(f"training_data results: {training_data_accuracy}")
-    print(f"testing_data results: {testing_data_accuracy}")
+    print(f"training_data results: {training_metrics}")
+    print(f"testing_data results: {testing_metrics}")
