@@ -1,0 +1,9 @@
+services:
+    mlflow:
+      build: .
+      container_name: mlflow-server
+      ports:
+        - "5050:5050"   # Expose MLflow UI
+      env_file:
+        - .env          # Optional: use .env file
+      restart: unless-stopped
