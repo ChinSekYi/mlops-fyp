@@ -14,10 +14,23 @@ import mlflow.sklearn
 class ModelTrainerConfig:
     trained_model_file_path = os.path.join("models", "model.pkl")
     metrics_file_path = os.path.join("metrics", "metrics.json")
+    mlflow_data_path = "mlflow_data"  # root folder for all MLflow data
+    mlruns_path = os.path.join(mlflow_data_path, "mlruns")
+    mlartifacts_path = os.path.join(mlflow_data_path, "mlartifacts")
+    mlflow_db_path = os.path.join(mlflow_data_path, "mlflow.db")
 
 class ModelTrainer:
     def __init__(self):
         self.model_trainer_config = ModelTrainerConfig()
+
+        os.makedirs(self.model_trainer_config.mlruns_path, exist_ok=True)
+        os.makedirs(self.model_trainer_config.mlartifacts_path, exist_ok=True)
+        os.makedirs(os.path.dirname(self.model_trainer_config.trained_model_file_path), exist_ok=True)
+        os.makedirs(os.path.dirname(self.model_trainer_config.metrics_file_path), exist_ok=True)
+
+        # Set MLflow tracking URI to local MLflow server
+        mlflow.set_tracking_uri("http://127.0.0.1:8080")
+        mlflow.set_experiment("CreditCard_Models")
 
     def initiate_model_trainer(self, train_arr_path, test_arr_path):
         try:
@@ -29,9 +42,8 @@ class ModelTrainer:
             x_test, y_test = test_array[:, :-1], test_array[:, -1]
 
             # Start MLflow run
-            mlflow.set_tracking_uri("http://127.0.0.1:8080")
-            mlflow.set_experiment("CreditCard_Models")
             with mlflow.start_run(run_name="logistic_regression_baseline"):
+                
                 # Log parameters
                 mlflow.log_param("model_type", "LogisticRegression")
                 mlflow.log_param("max_iter", 1000)
@@ -50,8 +62,8 @@ class ModelTrainer:
                 input_example = pd.DataFrame(x_train[:5], columns=[f"feature_{i}" for i in range(x_train.shape[1])])
 
                 mlflow.sklearn.log_model(
-                    model,
-                    name="model",           
+                    sk_model=model,
+                    name="model", 
                     input_example=input_example
                 )
 
