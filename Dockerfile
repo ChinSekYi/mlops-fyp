@@ -6,7 +6,6 @@ WORKDIR /app
 COPY requirements.txt .
 COPY src /src
 
-
 # Install dependencies
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
