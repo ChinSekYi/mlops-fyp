@@ -29,8 +29,8 @@ class ModelTrainer:
         os.makedirs(os.path.dirname(self.model_trainer_config.metrics_file_path), exist_ok=True)
 
         # Set MLflow tracking URI to local MLflow server
-        mlflow.set_tracking_uri("http://127.0.0.1:8080")
-        mlflow.set_experiment("CreditCard_Models")
+        mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI"))
+        mlflow.set_experiment(os.getenv("MLFLOW_EXPERIMENT"))
 
     def initiate_model_trainer(self, train_arr_path, test_arr_path):
         try:
