@@ -18,6 +18,6 @@ RUN pip install -r requirements.txt
 EXPOSE 5050
 
 # Run MLflow using environment variables
-CMD ["dvc", "repro"]
+CMD ["sh", "-c", "dvc repro"]
 
 # docker build -t mlops-train -f Dockerfile.train .
