@@ -1,9 +1,23 @@
 services:
+    
     mlflow:
-      build: .
+      build: 
+        context: .
+        dockerfile: Dockerfile.mlflow
       container_name: mlflow-server
       ports:
-        - "5050:5050"   # Expose MLflow UI
+        - "5050:5050"   
       env_file:
-        - .env          # Optional: use .env file
-      restart: unless-stopped
+        - .env        
+
+    train:
+      build: 
+        context: .
+        dockerfile: Dockerfile.mlflow
+      container_name: mlops-train
+      depends_on:
+        - mlflow
+      volumes:
+        - .:/app 
+      working_dir: /app
+      command: dvc repro
