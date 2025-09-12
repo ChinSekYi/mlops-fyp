@@ -2,6 +2,8 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
+RUN apt-get update && apt-get install -y git gcc
+
 # Copy requirements
 COPY requirements.txt .
 COPY src src
@@ -12,7 +14,8 @@ COPY dvc.yaml .
 
 # Install dependencies
 RUN pip install --upgrade pip
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir "dvc[s3]"
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Expose MLflow port
 EXPOSE 5050
