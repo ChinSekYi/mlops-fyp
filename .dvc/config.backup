@@ -1,7 +1,7 @@
 [core]
     remote = storage
-['remote "myremote"']
+[remote "myremote"]
     url = /tmp/dvcstore
-['remote "storage"']
+[remote "storage"]
     url = s3://mlops-bucket
     endpointurl = https://mlops-bucket.store.nus.cloud
