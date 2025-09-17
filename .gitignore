@@ -10,6 +10,7 @@
 # Ignore everything in data/ except .dvc files
 data/processed/
 data/raw/creditcard.csv
+creditcard.csv
 
 # Python cache
 __pycache__/
