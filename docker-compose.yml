@@ -6,7 +6,7 @@ services:
         dockerfile: Dockerfile.mlflow
       container_name: mlflow-server
       ports:
-        - "5000:5050"   
+        - "5050:5050"   
       env_file:
         - .env
 
