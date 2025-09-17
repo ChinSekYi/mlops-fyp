@@ -3,6 +3,7 @@ import sys
 import json
 import numpy as np
 import pandas as pd
+from dotenv import load_dotenv
 from sklearn.linear_model import LogisticRegression
 from src.exception import CustomException
 from src.logger import logging
@@ -10,6 +11,7 @@ from src.utils import save_object, evaluate_model
 import mlflow
 import mlflow.sklearn
 
+load_dotenv()
 
 class ModelTrainerConfig:
     trained_model_file_path = os.path.join("models", "model.pkl")

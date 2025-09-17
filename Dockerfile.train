@@ -21,6 +21,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 EXPOSE 5050
 
 # Run MLflow using environment variables
-CMD ["sh", "-c", "dvc repro && dvc push"]
+CMD ["sh", "-c", "dvc pull && dvc repro && dvc push"]
 # CMD ["sh", "-c", "dvc repro && dvc push"] # ensures remote always has latest outputs.
 # docker build -t mlops-train -f Dockerfile.train .
