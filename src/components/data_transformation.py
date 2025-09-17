@@ -4,6 +4,7 @@ import numpy as np
 from src.logger import logging
 from sklearn.preprocessing import StandardScaler
 from src.utils import save_object
+import mlflow
 
 class DataTransformationConfig:
     preprocessor_ob_file_path = os.path.join("artifacts", "preprocessor.pkl")
@@ -11,6 +12,9 @@ class DataTransformationConfig:
 class DataTransformation:
     def __init__(self):
         self.data_transformation_config = DataTransformationConfig()
+
+        mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI"))
+        mlflow.set_experiment(os.getenv("MLFLOW_EXPERIMENT"))
 
     def initiate_data_transformation(self, train_path, test_path):
         try:
@@ -36,6 +40,7 @@ class DataTransformation:
                 obj=scaler,
             )
 
+            mlflow.log_artifact("artifacts/preprocessor.pkl")
             logging.info("saved preprocessor")
 
             return (
@@ -50,6 +55,6 @@ class DataTransformation:
 if __name__ == "__main__":
     train_data_path, test_data_path = "data/processed/train.csv", "data/processed/test.csv",
     data_transformation = DataTransformation()
-    train_arr, test_arr, _ = data_transformation.initiate_data_transformation(
+    train_arr_path, test_arr_path, _ = data_transformation.initiate_data_transformation(
         train_data_path, test_data_path
     )
