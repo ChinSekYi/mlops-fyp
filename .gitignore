@@ -3,9 +3,18 @@
 /artifacts
 
 # Data
-/data/*
-!/data/raw/
-!/data/raw/creditcard.csv.dvc
+#/data/*
+#!/data/raw/
+#!/data/raw/creditcard.csv.dvc
+
+# Ignore everything in data/ except .dvc files
+data/**
+
+# But do not ignore DVC metafiles
+!data/**/*.dvc
+
+# Ignore DVC cache folder
+.dvc/cache/
 
 # Python cache
 __pycache__/
