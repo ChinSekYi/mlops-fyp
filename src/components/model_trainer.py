@@ -34,7 +34,7 @@ class ModelTrainer:
         mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI"))
         mlflow.set_experiment(os.getenv("MLFLOW_EXPERIMENT"))
 
-    def initiate_model_trainer(self, train_arr_path, test_arr_path):
+    def initiate_model_trainer(self, train_arr_path, test_arr_path, artifact_path):
         try:
             train_array = np.load(train_arr_path)
             test_array = np.load(test_arr_path)
@@ -43,55 +43,56 @@ class ModelTrainer:
             x_train, y_train = train_array[:, :-1], train_array[:, -1]
             x_test, y_test = test_array[:, :-1], test_array[:, -1]
 
-            # Start MLflow run
-            with mlflow.start_run(run_name="logistic_regression_baseline"):
                 
-                # Log parameters
-                mlflow.log_param("model_type", "LogisticRegression")
-                mlflow.log_param("max_iter", 1000)
+            # Log parameters
+            mlflow.log_param("model_type", "LogisticRegression")
+            mlflow.log_param("max_iter", 1000)
 
-                # Train model
-                model = LogisticRegression(max_iter=1000)
-                model.fit(x_train, y_train)
-                
-                # Save model locally and log to MLflow
-                save_object(
-                    file_path=self.model_trainer_config.trained_model_file_path,
-                    obj=model,
-                )
+            # Train model
+            model = LogisticRegression(max_iter=1000)
+            model.fit(x_train, y_train)
+            
+            # Save model locally and log to MLflow
+            save_object(
+                file_path=self.model_trainer_config.trained_model_file_path,
+                obj=model,
+            )
 
-                # Create an example input from training features
-                input_example = pd.DataFrame(x_train[:5], columns=[f"feature_{i}" for i in range(x_train.shape[1])])
+            # Create an example input from training features
+            input_example = pd.DataFrame(x_train[:5], columns=[f"feature_{i}" for i in range(x_train.shape[1])])
 
-                mlflow.sklearn.log_model(
-                    sk_model=model,
-                    name="model", 
-                    input_example=input_example
-                )
+            model_info = mlflow.sklearn.log_model(
+                sk_model=model,
+                input_example=input_example,
+                name=artifact_path
+            )
+            mlflow.log_artifact("models/model.pkl")
 
-                # Make predictions
-                y_train_pred = model.predict(x_train)
-                y_test_pred = model.predict(x_test)
+            # Make predictions
+            y_train_pred = model.predict(x_train)
+            y_test_pred = model.predict(x_test)
 
-                # Evaluate
-                training_metrics = evaluate_model(y_train, y_train_pred)
-                testing_metrics = evaluate_model(y_test, y_test_pred)
-                logging.info(f"testing_metrics: {testing_metrics}")
+            # Evaluate
+            training_metrics = evaluate_model(y_train, y_train_pred)
+            testing_metrics = evaluate_model(y_test, y_test_pred)
+            logging.info(f"testing_metrics: {testing_metrics}")
 
-                # Log metrics to MLflow
-                for key, value in training_metrics.items():
-                    mlflow.log_metric(f"train_{key}", value)
-                for key, value in testing_metrics.items():
-                    mlflow.log_metric(f"test_{key}", value)
+            # Log metrics to MLflow
+            for key, value in training_metrics.items():
+                mlflow.log_metric(f"train_{key}", value, model_id=model_info.model_id)
+            for key, value in testing_metrics.items():
+                mlflow.log_metric(f"test_{key}", value, model_id=model_info.model_id)
+            
+            #mlflow.log_metric(model_id=model_info.model_id)
 
-                # Save metrics.json for DVC tracking
-                os.makedirs("metrics", exist_ok=True)
-                metrics_data = {
-                    "training_data_metrics": training_metrics,
-                    "testing_data_metrics": testing_metrics
-                }
-                with open(self.model_trainer_config.metrics_file_path, "w") as f:
-                    json.dump(metrics_data, f)
+            # Save metrics.json for DVC tracking
+            os.makedirs("metrics", exist_ok=True)
+            metrics_data = {
+                "training_data_metrics": training_metrics,
+                "testing_data_metrics": testing_metrics
+            }
+            with open(self.model_trainer_config.metrics_file_path, "w") as f:
+                json.dump(metrics_data, f)
             
             return training_metrics, testing_metrics
         
@@ -102,7 +103,7 @@ if __name__ == "__main__":
     modeltrainer = ModelTrainer()
     train_arr_path = "data/processed/train_transformed.npy"
     test_arr_path = "data/processed/test_transformed.npy"
-    training_metrics, testing_metrics = modeltrainer.initiate_model_trainer(train_arr_path, test_arr_path)
+    training_metrics, testing_metrics = modeltrainer.initiate_model_trainer(train_arr_path, test_arr_path, artifact_path= "LogisticRegressionModelv1")
 
     print(f"training_data results: {training_metrics}")
     print(f"testing_data results: {testing_metrics}")
