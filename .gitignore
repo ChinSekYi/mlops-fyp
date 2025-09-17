@@ -8,13 +8,8 @@
 #!/data/raw/creditcard.csv.dvc
 
 # Ignore everything in data/ except .dvc files
-data/**
-
-# But do not ignore DVC metafiles
-!data/**/*.dvc
-
-# Ignore DVC cache folder
-.dvc/cache/
+data/processed/
+data/raw/creditcard.csv
 
 # Python cache
 __pycache__/
