@@ -32,6 +32,7 @@ mlflow_data/mlartifacts/.gitignore
 mlflow_data/mlflow.db
 /mlruns
 /mlartifacts
+CreditCard_Models/
 
 # Specific component cache (if still needed)
 /src/components/__pycache__/
