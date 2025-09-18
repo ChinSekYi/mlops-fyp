@@ -21,7 +21,6 @@ class CustomData:
     responsible for taking the inputs that we are giving in the HTML to the backend
     """
 
-
     def __init__(
         self,
         Time: float,

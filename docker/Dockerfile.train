@@ -4,23 +4,17 @@ WORKDIR /app
 
 RUN apt-get update && apt-get install -y git gcc
 
-# Copy requirements
 COPY requirements.txt .
 COPY src src
 COPY data data
 COPY .dvc .dvc
-COPY dvc.lock .
-COPY dvc.yaml .
 
-# Install dependencies
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir "dvc[s3]"
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Expose MLflow port
 EXPOSE 5050
 
 # Run MLflow using environment variables
-CMD ["sh", "-c", "dvc pull && dvc repro && dvc push"]
-# CMD ["sh", "-c", "dvc repro && dvc push"] # ensures remote always has latest outputs.
-# docker build -t mlops-train -f Dockerfile.train .
+CMD ["sh", "-c", "dvc pull", "python -m src.pipeline.run_pipeline"]
+# docker build -t mlops-train -f docker/Dockerfile.train .

@@ -9,11 +9,11 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Set MLflow tracking URI to local MLflow server
-RUN_NAME = "xgboost_v8"
+RUN_NAME = "logreg_v2"
 DATASET_NAME = "creditcard.csv"
-ARTIFACT_PATH = "xgboost_model"
-ALGORITHM_TYPE = "xgboost"
-REGISTERED_MODEL_NAME = "fraud-detection-model"
+ARTIFACT_PATH = "logreg_model"
+ALGORITHM_TYPE = "logistic-regression"
+REGISTERED_MODEL_NAME = os.getenv("REGISTERED_MODEL_NAME")
 
 # set MLFLOW_EXPERIMENT and MLFLOW_EXPERIMENT in .env
 mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI"))
