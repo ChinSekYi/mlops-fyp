@@ -5,7 +5,6 @@ WORKDIR /app
 RUN pip install --upgrade pip && \
     pip install mlflow psycopg2-binary boto3
 
-# Expose MLflow port
 EXPOSE 5050
 
 # Run MLflow using environment variables
@@ -15,5 +14,5 @@ CMD ["sh", "-c", "mlflow server \
   --backend-store-uri postgresql://$DB_USER:$DB_PASSWORD@$REAL_DB_ENDPOINT:$DB_PORT/$DB_NAME \
   --default-artifact-root s3://$MLFLOW_S3_BUCKET"]
 
-# docker build -t mlflow-server -f Dockerfile.mlflow .
+# docker build -t mlflow-server -f docker/Dockerfile.mlflow .
 # Outside docker acces mlflow at http://<EC2_PUBLIC_IP>:5050
