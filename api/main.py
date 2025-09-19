@@ -1,14 +1,16 @@
 import os
 import mlflow
-import mlflow.pyfunc
 from fastapi import FastAPI
 from pydantic import BaseModel
 import pandas as pd
-from src.pipeline.predict_pipeline import CustomData
+from dotenv import load_dotenv
+load_dotenv()
 
 # Config
-MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI")
-MODEL_NAME = os.getenv("REGISTERED_MODEL_NAME")  
+#MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI")
+#MODEL_NAME = os.getenv("REGISTERED_MODEL_NAME")  
+MLFLOW_TRACKING_URI='http://192.168.1.15:5051'
+MODEL_NAME='fraud-detection-model'
 MODEL_ALIAS = "champion"      # e.g. "champion", "staging"
 
 # FastAPI App
@@ -19,7 +21,7 @@ mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
 def load_model():
     model_uri = f"models:/{MODEL_NAME}@{MODEL_ALIAS}"
     print(f"Loading model from {model_uri}")
-    return mlflow.pyfunc.load_model(model_uri)
+    return mlflow.sklearn.load_model(model_uri)
 
 model = load_model()
 
@@ -37,5 +39,7 @@ def predict(transaction: Transaction):
     # Convert features into DataFrame
     df = pd.DataFrame([transaction.features])
     preds = model.predict(df)
-    preds = model.predict(df)
     return {"prediction": int(preds[0])}   # binary classification: 0 or 1
+
+if __name__ == "__main__":
+    print(MODEL_NAME)
