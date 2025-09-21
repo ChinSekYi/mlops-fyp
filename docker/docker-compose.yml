@@ -9,12 +9,7 @@ services:
         - "5000:5050"   
       env_file:
         - ../.env
-      networks:
-        - mlops-network
 
-networks:
-  mlops-network:
-    driver: bridge
 
 # docker compose -f docker/docker-compose.yml up
 
