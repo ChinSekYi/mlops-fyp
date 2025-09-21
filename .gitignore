@@ -23,6 +23,7 @@ __pycache__/
 
 # Documentation
 /docs
+/archive
 
 # MLflow tracking and artifacts
 mlflow_data/mlruns/*
