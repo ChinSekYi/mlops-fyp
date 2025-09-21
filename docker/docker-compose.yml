@@ -6,14 +6,14 @@ services:
         dockerfile: Dockerfile.mlflow
       container_name: mlflow-server
       ports:
-        - "5050:5050"   
+        - "5000:5050"   
       env_file:
         - ../.env
 
     train:
       build: 
         context: .
-        dockerfile: Dockerfile.mlflow
+        dockerfile: Dockerfile.train
       container_name: mlops-train
       depends_on:
         - mlflow
@@ -23,4 +23,5 @@ services:
       env_file:
         - ../.env
 
-# docker-compose -f docker/docker-compose.yml up
+# docker compose -f docker/docker-compose.yml up
+

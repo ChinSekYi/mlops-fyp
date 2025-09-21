@@ -8,5 +8,7 @@ dvc-s3==3.2.2
 mlflow==3.3.1
 boto3==1.39.11
 psycopg2-binary==2.9.10
+pydantic==2.11.9
+dotenv
 
 #-e .
