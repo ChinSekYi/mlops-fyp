@@ -7,7 +7,6 @@ RUN apt-get update && apt-get install -y git gcc
 COPY requirements.txt .
 COPY src src
 COPY data data
-COPY .dvc .dvc
 
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir "dvc[s3]"
@@ -16,6 +15,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 EXPOSE 5050
 
 # Run MLflow using environment variables
-CMD ["sh", "-c", "dvc pull && python -m src.pipeline.run_pipeline"]
+CMD ["sh", "-c", "python -m src.pipeline.run_pipeline"]
 # docker build -t mlops-train -f docker/Dockerfile.train .
 # docker run --rm -it mlops-train
