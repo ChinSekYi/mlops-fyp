@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Set MLflow tracking URI to local MLflow server
-RUN_NAME = "logreg_v2"
+RUN_NAME = "logreg_v3"
 DATASET_NAME = "creditcard.csv"
 ARTIFACT_PATH = "logreg_model"
 ALGORITHM_TYPE = "logistic-regression"
@@ -45,6 +45,7 @@ with mlflow.start_run(run_name=RUN_NAME):
     # set model registry tags
     # comment if this run is not saved in registry
 
+""" 
 client = MlflowClient()
 client.set_model_version_tag(
     REGISTERED_MODEL_NAME,
@@ -52,3 +53,4 @@ client.set_model_version_tag(
     "algorithm",
     ALGORITHM_TYPE
 )
+"""
