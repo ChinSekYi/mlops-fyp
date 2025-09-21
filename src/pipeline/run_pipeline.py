@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Set MLflow tracking URI to local MLflow server
-RUN_NAME = "logreg_v3"
+RUN_NAME = "logreg_v1"
 DATASET_NAME = "creditcard.csv"
 ARTIFACT_PATH = "logreg_model"
 ALGORITHM_TYPE = "logistic-regression"

@@ -9,6 +9,8 @@ services:
         - "5000:5050"   
       env_file:
         - ../.env
+      networks:
+        - mlops-network
 
     train:
       build: 
@@ -17,11 +19,17 @@ services:
       container_name: mlops-train
       depends_on:
         - mlflow
-      #volumes:
-      #  - .:/app 
       working_dir: /app
       env_file:
         - ../.env
+      networks:
+        - mlops-network
+      environment:
+        MLFLOW_TRACKING_URI: http://mlflow-server:5050 
 
+networks:
+  mlops-network:
+    driver: bridge
+    
 # docker compose -f docker/docker-compose.yml up
 
