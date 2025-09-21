@@ -24,16 +24,19 @@ with mlflow.start_run(run_name=RUN_NAME):
     mlflow.set_tag("algorithm", ALGORITHM_TYPE)
     
     # ingestion
+    print(f'Running DataIngestion')
     obj = DataIngestion()
     train_data_path, test_data_path = obj.initiate_data_ingestion(DATASET_NAME)
 
     # transformation
+    print(f'Running DataTransformation')
     data_transformation = DataTransformation()
     train_arr_path, test_arr_path, _  = data_transformation.initiate_data_transformation(
         train_data_path, test_data_path
     )
 
     # training
+    print(f'Running ModelTrainer')
     modeltrainer = ModelTrainer()
 
     # enter registered_model_name in model_trainer, if required
