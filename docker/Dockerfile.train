@@ -15,5 +15,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 EXPOSE 5050
 
 CMD ["sh", "-c", "python -m src.pipeline.run_pipeline"]
-# docker build -t mlops-train -f docker/Dockerfile.train .
-# docker run --rm -it --env-file .env mlops-train
+# run MLflow container first, then:
+# docker build -t mlops-train-image -f docker/Dockerfile.train .
+# docker run --rm -it --network mlops-network \-e MLFLOW_TRACKING_URI=http://mlflow-server:5050 --env-file .env mlops-train
