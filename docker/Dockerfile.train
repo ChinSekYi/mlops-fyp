@@ -9,7 +9,6 @@ COPY src src
 COPY data data
 
 RUN pip install --upgrade pip
-RUN pip install --no-cache-dir "dvc[s3]"
 RUN pip install --no-cache-dir -r requirements.txt
 
 EXPOSE 5050
