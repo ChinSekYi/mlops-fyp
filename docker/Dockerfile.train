@@ -16,5 +16,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 EXPOSE 5050
 
 # Run MLflow using environment variables
-CMD ["sh", "-c", "dvc pull", "python -m src.pipeline.run_pipeline"]
+CMD ["sh", "-c", "dvc pull && python -m src.pipeline.run_pipeline"]
 # docker build -t mlops-train -f docker/Dockerfile.train .
+# docker run --rm -it mlops-train
