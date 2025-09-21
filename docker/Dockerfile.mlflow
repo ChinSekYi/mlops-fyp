@@ -7,12 +7,14 @@ RUN pip install --upgrade pip && \
 
 EXPOSE 5050
 
-# Run MLflow using environment variables
 CMD ["sh", "-c", "mlflow server \
   -h 0.0.0.0 \
   -p 5050 \
   --backend-store-uri postgresql://$DB_USER:$DB_PASSWORD@$REAL_DB_ENDPOINT:$DB_PORT/$DB_NAME \
   --default-artifact-root s3://$MLFLOW_S3_BUCKET"]
 
+# from root folder, 
 # docker build -t mlflow-server -f docker/Dockerfile.mlflow .
+# docker run --rm -it --env-file .env -p 5050:5050 mlflow-server
 # Outside docker acces mlflow at http://<EC2_PUBLIC_IP>:5050
+
