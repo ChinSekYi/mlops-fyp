@@ -7,7 +7,7 @@ RUN apt-get update && apt-get install -y git gcc
 COPY requirements.txt .
 COPY src src
 COPY data data
-COPY ../.dvc .dvc
+COPY .dvc .dvc
 
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir "dvc[s3]"
