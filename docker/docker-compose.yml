@@ -2,8 +2,8 @@ services:
     
     mlflow:
       build: 
-        context: .
-        dockerfile: Dockerfile.mlflow
+        context: ..
+        dockerfile: docker/Dockerfile.mlflow
       container_name: mlflow-server
       ports:
         - "5000:5050"   
@@ -12,8 +12,8 @@ services:
 
     train:
       build: 
-        context: .
-        dockerfile: Dockerfile.train
+        context: ..
+        dockerfile: docker/Dockerfile.train
       container_name: mlops-train
       depends_on:
         - mlflow
