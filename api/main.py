@@ -9,11 +9,11 @@ from typing import Dict
 load_dotenv()
 
 # Config
-MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI")
-#MODEL_NAME = os.getenv("REGISTERED_MODEL_NAME")  
-MLFLOW_TRACKING_URI = 'http://mlflow-server:5050'
-MODEL_NAME='fraud-detection-model'
-MODEL_ALIAS = "champion"      # e.g. "champion", "staging"
+MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI") #overrided by ENV in docker-compose.yml
+MODEL_NAME = os.getenv("REGISTERED_MODEL_NAME")  
+MODEL_ALIAS = os.getenv("MODEL_ALIAS")
+#MODEL_NAME='fraud-detection-model'
+#MODEL_ALIAS = "champion"      # e.g. "champion", "staging"
 
 # FastAPI App
 app = FastAPI(title="Fraud Detection API", version="1.0")
