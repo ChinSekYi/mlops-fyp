@@ -47,7 +47,8 @@ def predict(transaction: Transaction):
         raise transaction(status_code=400, detail=f"Features must be {EXPECTED_FEATURES}")
     
     # Convert features into DataFrame
-    df = pd.DataFrame([transaction.features])
+    ordered_values = [transaction.features[feat] for feat in EXPECTED_FEATURES]
+    df = pd.DataFrame([ordered_values], columns=EXPECTED_FEATURES)
     preds = model.predict(df)
     return {"prediction": int(preds[0])}   # binary classification: 0 or 1
 
