@@ -12,5 +12,8 @@ pydantic==2.11.9
 dotenv
 mlflow
 streamlit
+pytest
+pytest-asyncio 
+httpx
 
 #-e .
