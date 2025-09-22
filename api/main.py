@@ -9,6 +9,7 @@ load_dotenv()
 # Config
 MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI")
 #MODEL_NAME = os.getenv("REGISTERED_MODEL_NAME")  
+MLFLOW_TRACKING_URI = 'http://mlflow-server:5050'
 MODEL_NAME='fraud-detection-model'
 MODEL_ALIAS = "champion"      # e.g. "champion", "staging"
 
@@ -24,7 +25,7 @@ def load_model():
 
 model = load_model()
 
-# Input Schema
+# Input Schema - ensures validation
 class Transaction(BaseModel):
     features: list[float]   # e.g., 30 numerical features for credit card fraud
 
@@ -42,3 +43,4 @@ def predict(transaction: Transaction):
 
 if __name__ == "__main__":
     print(MODEL_NAME)
+    print(model)

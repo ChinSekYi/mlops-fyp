@@ -1,5 +1,4 @@
 services:
-    
     mlflow:
       build: 
         context: ..
@@ -9,7 +8,27 @@ services:
         - "5050:5050"   
       env_file:
         - ../.env
+      networks:
+        - mlops-network
 
+    api:
+      build: 
+        context: ..
+        dockerfile: docker/Dockerfile.api
+      container_name: api-con
+      ports:
+        - "5060:5050"
+      environment:
+        MLFLOW_TRACKING_URI: http://mlflow-server:5050
+      env_file:
+        - ../.env
+      networks:
+        - mlops-network
+      depends_on:
+        - mlflow
 
+networks:
+  mlops-network:
+    driver: bridge
 # docker compose -f docker/docker-compose.yml up
 
