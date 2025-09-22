@@ -7,9 +7,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Config
-#MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI")
+MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI")
 #MODEL_NAME = os.getenv("REGISTERED_MODEL_NAME")  
-MLFLOW_TRACKING_URI='http://192.168.1.15:5051'
 MODEL_NAME='fraud-detection-model'
 MODEL_ALIAS = "champion"      # e.g. "champion", "staging"
 
