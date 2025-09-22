@@ -1,3 +1,5 @@
+from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
+
 def save_object(file_path, obj):
 
     """
@@ -9,9 +11,6 @@ def save_object(file_path, obj):
     with open(file_path, "wb") as file_obj:
         pickle.dump(obj, file_obj)
 
-
-from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
-
 def evaluate_model(x, y):
     
     report= {
@@ -21,8 +20,6 @@ def evaluate_model(x, y):
             'f1': f1_score(x, y)
         }
     return report
-
-
 
 def load_object(file_path):
     """

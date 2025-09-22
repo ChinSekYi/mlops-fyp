@@ -2,10 +2,6 @@
 /logs
 /artifacts
 
-# Data
-#/data/*
-#!/data/raw/
-#!/data/raw/creditcard.csv.dvc
 
 # Ignore everything in data/ except .dvc files
 data/processed/
@@ -13,6 +9,7 @@ data/raw/creditcard.csv
 creditcard.csv
 
 # Python cache
+/src/components/__pycache__/
 __pycache__/
 **/__pycache__/
 *.pyc
@@ -21,19 +18,10 @@ __pycache__/
 .DS_Store
 .env
 
-# Documentation
+# Folders
 /docs
 /archive
 
 # MLflow tracking and artifacts
-mlflow_data/mlruns/*
-mlflow_data/mlruns/.gitignore
-mlflow_data/mlartifacts/*
-mlflow_data/mlartifacts/.gitignore
-mlflow_data/mlflow.db
 /mlruns
 /mlartifacts
-CreditCard_Models/
-
-# Specific component cache (if still needed)
-/src/components/__pycache__/
