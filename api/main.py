@@ -26,6 +26,11 @@ def load_model():
 
 model = load_model()
 
+EXPECTED_FEATURES = [
+    "Time", "V1","V2","V3","V4","V5","V6","V7","V8","V9","V10",
+    "V11","V12","V13","V14","V15","V16","V17","V18","V19",
+    "V20","V21","V22","V23","V24","V25","V26","V27","V28","Amount"
+]
 # Input Schema - ensures validation
 class Transaction(BaseModel):
     features: list[float]   # e.g., 30 numerical features for credit card fraud
@@ -37,6 +42,10 @@ def health_check():
 
 @app.post("/predict")
 def predict(transaction: Transaction):
+    # Validate keys
+    if set(transaction.features.keys()) != set(EXPECTED_FEATURES):
+        raise transaction(status_code=400, detail=f"Features must be {EXPECTED_FEATURES}")
+    
     # Convert features into DataFrame
     df = pd.DataFrame([transaction.features])
     preds = model.predict(df)
@@ -45,6 +54,7 @@ def predict(transaction: Transaction):
 class BatchTransaction(BaseModel):
     features_list: list[list[float]]   # list of multiple feature vectors
 
+# not shown in streamlit
 @app.post("/batch-predict")
 def batch_predict(batch: BatchTransaction):
     df = pd.DataFrame(batch.features_list)
