@@ -34,6 +34,11 @@ class Transaction(BaseModel):
 def health_check():
     return {"status": "ok", "model": MODEL_NAME, "alias": MODEL_ALIAS}
 
+@app.get("/home")
+def health_check():
+    return "hi"
+
+
 @app.post("/predict")
 def predict(transaction: Transaction):
     # Convert features into DataFrame

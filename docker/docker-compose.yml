@@ -17,7 +17,7 @@ services:
         dockerfile: docker/Dockerfile.api
       container_name: api-con
       ports:
-        - "5060:5050"
+        - "8080:5050"
       environment:
         MLFLOW_TRACKING_URI: http://mlflow-server:5050
       env_file:
