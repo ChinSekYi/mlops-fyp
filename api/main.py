@@ -5,6 +5,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 import pandas as pd
 from dotenv import load_dotenv
+from typing import Dict
 load_dotenv()
 
 # Config
@@ -33,7 +34,7 @@ EXPECTED_FEATURES = [
 ]
 # Input Schema - ensures validation
 class Transaction(BaseModel):
-    features: list[float]   # e.g., 30 numerical features for credit card fraud
+    features: Dict[str, float]
 
 # Routes
 @app.get("/")
@@ -51,16 +52,6 @@ def predict(transaction: Transaction):
     df = pd.DataFrame([ordered_values], columns=EXPECTED_FEATURES)
     preds = model.predict(df)
     return {"prediction": int(preds[0])}   # binary classification: 0 or 1
-
-class BatchTransaction(BaseModel):
-    features_list: list[list[float]]   # list of multiple feature vectors
-
-# not shown in streamlit
-@app.post("/batch-predict")
-def batch_predict(batch: BatchTransaction):
-    df = pd.DataFrame(batch.features_list)
-    preds = model.predict(df)
-    return {"predictions": preds.tolist()}
 
 @app.get("/model-info")
 def get_model_info():
