@@ -1,21 +1,17 @@
 services:
     
-    mlflow:
-      build: 
-        context: .
-        dockerfile: Dockerfile.mlflow
-      container_name: mlflow-server
-      ports:
-        - "5050:5050"   
-      env_file:
-        - .env
-
     api:
-      build: .
-      environment:
-        - MLFLOW_TRACKING_URI=http://mlflow:5051
-        - REGISTERED_MODEL_NAME=fraud-detection-model
+      build: 
+        context: ..
+        dockerfile: docker/Dockerfile.api
+      container_name: api-con
       ports:
-        - "5050:5050"
-      depends_on:
-        - mlflow
+        - "5060:5050"
+      environment:
+        - MLFLOW_TRACKING_URI: http://mlflow-server:5050 
+        - REGISTERED_MODEL_NAME: fraud-detection-model
+      env_file:
+        - ../.env
+
+
+  # docker compose -f docker/docker-compose-api.yml up
