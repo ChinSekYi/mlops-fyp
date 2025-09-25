@@ -13,12 +13,9 @@ import mlflow
 
 import pytest
 from dotenv import load_dotenv
-from src.utils import load_config
 from api.main import load_model
 
 load_dotenv()
-config = load_config()
-api_config = config.get("api", {})
 MODEL_SERVER_IP = os.getenv("MODEL_SERVER_IP")
 MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI")
 mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
