@@ -13,7 +13,6 @@ import mlflow
 
 import pytest
 from dotenv import load_dotenv
-from api.main import load_model
 
 load_dotenv()
 MODEL_NAME=os.getenv("MODEL_NAME")
