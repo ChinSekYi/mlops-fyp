@@ -19,8 +19,8 @@ trained_model_file_path = trainer_config["trained_model_file_path"]
 metrics_file_path = trainer_config["metrics_file_path"]
 processed_train_data_path = trainer_config["processed_train_data_path"]
 processed_test_data_path = trainer_config["processed_test_data_path"]
-artifact_path = trainer_config.get("artifact_path", "LogisticRegressionModelv1")
-registered_model_name = trainer_config.get("registered_model_name", None)
+registered_model_name = os.getenv("REGISTERED_MODEL_NAME")
+artifact_path= os.getenv("ARTIFACT_PATH")
 
 class ModelTrainer:
     def __init__(self):
