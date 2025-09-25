@@ -15,7 +15,7 @@ import pytest
 from dotenv import load_dotenv
 
 load_dotenv()
-MODEL_NAME=os.getenv("MODEL_NAME")
+MODEL_NAME=os.getenv("REGISTERED_MODEL_NAME")
 MODEL_ALIAS=os.getenv("MODEL_ALIAS")
 MODEL_SERVER_IP = os.getenv("MODEL_SERVER_IP")
 MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI")
