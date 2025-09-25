@@ -1,47 +1,38 @@
-import os
-import mlflow
-import yaml
-from mlflow import MlflowClient
-from fastapi import FastAPI
-from pydantic import BaseModel
-import pandas as pd
-from dotenv import load_dotenv
-from typing import Dict
-load_dotenv()
 
 import os
 import yaml
 import mlflow
-from mlflow import MlflowClient
-from fastapi import FastAPI
-from pydantic import BaseModel
 import pandas as pd
+from fastapi import FastAPI
+from mlflow import MlflowClient
+from pydantic import BaseModel
 from dotenv import load_dotenv
 from typing import Dict
+from src.utils import load_config
+
 load_dotenv()
 
-# Load config.yaml
-with open("config.yaml", "r") as f:
+config = load_config()
+config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config.yaml")
+with open(config_path, "r") as f:
     config = yaml.safe_load(f)
+
 api_config = config.get("api", {})
-
-# Always get tracking URI from environment
-MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI")
-
-# Model name and alias: only from config
 MODEL_NAME = api_config.get("registered_model_name")
 MODEL_ALIAS = api_config.get("model_alias")
 
+# Always get tracking URI from environment
+MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI")
+mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
+
 app = FastAPI(title="Fraud Detection API", version="1.0")
 
-mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
 
 def load_model():
     model_uri = f"models:/{MODEL_NAME}@{MODEL_ALIAS}"
     print(f"Loading model from {model_uri}")
     return mlflow.sklearn.load_model(model_uri)
 
-model = load_model()
 model = load_model()
 
 EXPECTED_FEATURES = [

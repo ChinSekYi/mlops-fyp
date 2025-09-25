@@ -24,13 +24,14 @@ predict_pipeline:
   preprocessor_path: artifacts/preprocessor.pkl
 
 run_pipeline:
-  run_name: logreg_v11
+  run_name: logreg_v9
   dataset_name: creditcard.csv
   artifact_path: logreg_model
   algorithm_type: logistic-regression
-  registered_model_name: fraud-detection-model
+  registered_model_name: fraud_detection_prod
   mlflow_experiment: experiment-name
 
 api:
   registered_model_name: fraud-detection-model
+  mlflow_experiment: fraud_detection_prod
   model_alias: champion
