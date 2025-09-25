@@ -1,10 +1,12 @@
-import mlflow
+
 import os
-from src.components.model_trainer import ModelTrainer
-from src.components.data_transformation import DataTransformation
-from src.components.data_ingestion import DataIngestion
-from src.utils import load_config
+import mlflow
 from dotenv import load_dotenv
+from src.components.data_ingestion import DataIngestion
+from src.components.data_transformation import DataTransformation
+from src.components.model_trainer import ModelTrainer
+from src.utils import load_config
+
 load_dotenv()
 
 config = load_config()
