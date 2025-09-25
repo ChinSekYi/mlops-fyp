@@ -16,6 +16,7 @@ train_data_path = ingestion_config["train_data_path"]
 test_data_path = ingestion_config["test_data_path"]
 test_size = ingestion_config["test_size"]
 random_state = ingestion_config["random_state"]
+dataset_name = ingestion_config["dataset_name"]
 
 class DataIngestion:
     def __init__(self):

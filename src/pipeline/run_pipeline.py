@@ -16,7 +16,7 @@ ARTIFACT_PATH = pipeline_config["artifact_path"]
 ALGORITHM_TYPE = pipeline_config["algorithm_type"]
 REGISTERED_MODEL_NAME = pipeline_config["registered_model_name"]
 
-# set MLFLOW_EXPERIMENT and MLFLOW_EXPERIMENT in .env
+# set MLFLOW_EXPERIMENT in config.yaml
 mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI"))
 mlflow.set_experiment(pipeline_config["mlflow_experiment"])
 
@@ -27,7 +27,7 @@ with mlflow.start_run(run_name=RUN_NAME):
     # ingestion
     print(f'Running DataIngestion')
     obj = DataIngestion()
-    train_data_path, test_data_path = obj.initiate_data_ingestion(DATASET_NAME)
+    train_data_path, test_data_path = obj.initiate_data_ingestion()
 
     # transformation
     print(f'Running DataTransformation')
