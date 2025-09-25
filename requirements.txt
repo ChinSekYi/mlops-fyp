@@ -15,5 +15,5 @@ streamlit
 pytest
 pytest-asyncio 
 httpx
-
+pyyaml
 #-e .

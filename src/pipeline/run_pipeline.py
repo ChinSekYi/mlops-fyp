@@ -1,6 +1,6 @@
 import mlflow
 from mlflow import MlflowClient
-
+import yaml
 import os
 from src.components.model_trainer import ModelTrainer
 from src.components.data_transformation import DataTransformation
@@ -8,16 +8,19 @@ from src.components.data_ingestion import DataIngestion
 from dotenv import load_dotenv
 load_dotenv()
 
-# Set MLflow tracking URI to local MLflow server
-RUN_NAME = "logreg_v1"
-DATASET_NAME = "creditcard.csv"
-ARTIFACT_PATH = "logreg_model"
-ALGORITHM_TYPE = "logistic-regression"
-REGISTERED_MODEL_NAME = os.getenv("REGISTERED_MODEL_NAME")
+with open("config.yaml", "r") as f:
+    config = yaml.safe_load(f)
+pipeline_config = config["run_pipeline"]
+
+RUN_NAME = pipeline_config["run_name"]
+DATASET_NAME = pipeline_config["dataset_name"]
+ARTIFACT_PATH = pipeline_config["artifact_path"]
+ALGORITHM_TYPE = pipeline_config["algorithm_type"]
+REGISTERED_MODEL_NAME = pipeline_config["registered_model_name"]
 
 # set MLFLOW_EXPERIMENT and MLFLOW_EXPERIMENT in .env
 mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI"))
-mlflow.set_experiment(os.getenv("MLFLOW_EXPERIMENT"))
+mlflow.set_experiment(pipeline_config["mlflow_experiment"])
 
 # Start MLflow run
 with mlflow.start_run(run_name=RUN_NAME):

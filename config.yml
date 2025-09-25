@@ -1,0 +1,35 @@
+data_ingestion:
+  raw_data_path: data/credit_card_transactions-ibm_v2.csv
+  train_data_path: data/train.csv
+  test_data_path: data/test.csv
+  test_size: 0.2
+  random_state: 42
+
+data_transformation:
+  processed_train_data_path: data/processed/processed_train.csv
+  processed_test_data_path: data/processed/processed_test.csv
+  preprocessor_ob_file_path: artifacts/preprocessor.pkl
+
+model_trainer:
+  trained_model_file_path: models/model.pkl
+  metrics_file_path: metrics/metrics.json
+  processed_train_data_path: data/processed/processed_train.csv
+  processed_test_data_path: data/processed/processed_test.csv
+  artifact_path: LogisticRegressionModelv1
+  registered_model_name: fraud-detection-model
+
+predict_pipeline:
+  model_path: models/model.pkl
+  preprocessor_path: artifacts/preprocessor.pkl
+
+run_pipeline:
+  run_name: logreg_v1
+  dataset_name: creditcard.csv
+  artifact_path: logreg_model
+  algorithm_type: logistic-regression
+  registered_model_name: fraud-detection-model
+  mlflow_experiment: experiment-name
+
+api:
+  registered_model_name: fraud-detection-model
+  model_alias: champion
