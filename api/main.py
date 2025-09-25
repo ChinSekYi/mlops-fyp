@@ -12,7 +12,7 @@ from typing import Dict
 load_dotenv()
 
 MODEL_NAME = os.getenv("REGISTERED_MODEL_NAME")
-MODEL_ALIAS = os.getenv["MODEL_ALIAS"]
+MODEL_ALIAS = os.getenv("MODEL_ALIAS")
 MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI")
 mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
 
