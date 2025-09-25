@@ -1,15 +1,12 @@
 import os
-import yaml
 import pandas as pd
 import numpy as np
 from src.logger import logging
 from sklearn.preprocessing import StandardScaler
-from src.utils import save_object
+from src.utils import save_object, load_config
 import mlflow
 
-# Load config.yaml
-with open("config.yaml", "r") as f:
-    config = yaml.safe_load(f)
+config = load_config()
 
 transformation_config = config["data_transformation"]
 processed_train_data_path = transformation_config["processed_train_data_path"]

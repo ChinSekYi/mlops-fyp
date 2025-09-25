@@ -1,22 +1,18 @@
 import os
 import sys
 import json
-import yaml
-import numpy as np
 import pandas as pd
 from dotenv import load_dotenv
 from sklearn.linear_model import LogisticRegression
 from src.exception import CustomException
 from src.logger import logging
-from src.utils import save_object, evaluate_model
+from src.utils import save_object, evaluate_model, load_config
 import mlflow
 import mlflow.sklearn
 
 load_dotenv()
 
-# Load config.yaml
-with open("config.yaml", "r") as f:
-    config = yaml.safe_load(f)
+config = load_config()
 
 trainer_config = config["model_trainer"]
 trained_model_file_path = trainer_config["trained_model_file_path"]

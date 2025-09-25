@@ -1,14 +1,14 @@
 import os
-import yaml
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from src.exception import CustomException
 from src.logger import logging
+from src.utils import load_config
+
 import mlflow
 from mlflow.data.sources import LocalArtifactDatasetSource
 
-with open("config.yaml", "r") as f:
-    config = yaml.safe_load(f)
+config = load_config()
 
 ingestion_config = config["data_ingestion"]
 raw_data_path = ingestion_config["raw_data_path"]
