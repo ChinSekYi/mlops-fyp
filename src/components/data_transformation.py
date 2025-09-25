@@ -63,10 +63,7 @@ class DataTransformation:
             raise CustomException(e, None)
 
 if __name__ == "__main__":
-    # These can also be loaded from config if you want
-    train_data_path, test_data_path = "data/processed/train.csv", "data/processed/test.csv"
-
     data_transformation = DataTransformation()
     processed_train_data_path, processed_test_data_path, _ = data_transformation.initiate_data_transformation(
-        train_data_path, test_data_path
+        processed_train_data_path, processed_test_data_path
     )

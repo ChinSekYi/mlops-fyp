@@ -1,13 +1,13 @@
 import os
 import pandas as pd
+from dotenv import load_dotenv
 from sklearn.model_selection import train_test_split
 from src.exception import CustomException
 from src.logger import logging
 from src.utils import load_config
-
 import mlflow
 from mlflow.data.sources import LocalArtifactDatasetSource
-
+load_dotenv()
 config = load_config()
 
 ingestion_config = config["data_ingestion"]
@@ -16,7 +16,7 @@ train_data_path = ingestion_config["train_data_path"]
 test_data_path = ingestion_config["test_data_path"]
 test_size = ingestion_config["test_size"]
 random_state = ingestion_config["random_state"]
-dataset_name = ingestion_config["dataset_name"]
+dataset_name = os.getenv("DATASET_NAME")
 
 class DataIngestion:
     def __init__(self):
@@ -60,4 +60,4 @@ class DataIngestion:
 
 if __name__ == "__main__":
     obj = DataIngestion()
-    train_data_path, test_data_path = obj.initiate_data_ingestion("creditcard.csv")
+    train_data_path, test_data_path = obj.initiate_data_ingestion(dataset_name)

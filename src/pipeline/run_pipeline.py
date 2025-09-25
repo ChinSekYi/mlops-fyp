@@ -5,22 +5,16 @@ from dotenv import load_dotenv
 from src.components.data_ingestion import DataIngestion
 from src.components.data_transformation import DataTransformation
 from src.components.model_trainer import ModelTrainer
-from src.utils import load_config
-
 load_dotenv()
 
-config = load_config()
-pipeline_config = config["run_pipeline"]
+RUN_NAME = os.getenv("RUN_NAME") 
+DATASET_NAME = os.getenv("DATASET_NAME") 
+ARTIFACT_PATH = os.getenv("ARTIFACT_PATH") 
+ALGORITHM_TYPE = os.getenv("ALGO_TYPE") 
+REGISTERED_MODEL_NAME = os.getenv("REGISTERED_MODEL_NAME") 
 
-RUN_NAME = pipeline_config["run_name"]
-DATASET_NAME = pipeline_config["dataset_name"]
-ARTIFACT_PATH = pipeline_config["artifact_path"]
-ALGORITHM_TYPE = pipeline_config["algorithm_type"]
-REGISTERED_MODEL_NAME = pipeline_config["registered_model_name"]
-
-# set MLFLOW_EXPERIMENT in config.yaml
 mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI"))
-mlflow.set_experiment(pipeline_config["mlflow_experiment"])
+mlflow.set_experiment(os.getenv("EXPERIMENT_NAME"))
 
 # Start MLflow run
 with mlflow.start_run(run_name=RUN_NAME):
@@ -45,10 +39,10 @@ with mlflow.start_run(run_name=RUN_NAME):
     # enter registered_model_name in model_trainer, if required
     training_metrics, testing_metrics = modeltrainer.initiate_model_trainer(train_arr_path, test_arr_path, ARTIFACT_PATH, REGISTERED_MODEL_NAME)
 
-    # set model registry tags
-    # comment if this run is not saved in registry
 
 """ 
+# set tags and alias in MLFlow UI manually, OR
+
 client = MlflowClient()
 client.set_model_version_tag(
     REGISTERED_MODEL_NAME,
