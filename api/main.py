@@ -1,5 +1,6 @@
 import os
 import mlflow
+import yaml
 from mlflow import MlflowClient
 from fastapi import FastAPI
 from pydantic import BaseModel
@@ -8,14 +9,29 @@ from dotenv import load_dotenv
 from typing import Dict
 load_dotenv()
 
-# Config
-MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI") #overrided by ENV in docker-compose.yml
-MODEL_NAME = os.getenv("REGISTERED_MODEL_NAME")  
-MODEL_ALIAS = os.getenv("MODEL_ALIAS")
-#MODEL_NAME='fraud-detection-model'
-#MODEL_ALIAS = "champion"      # e.g. "champion", "staging"
+import os
+import yaml
+import mlflow
+from mlflow import MlflowClient
+from fastapi import FastAPI
+from pydantic import BaseModel
+import pandas as pd
+from dotenv import load_dotenv
+from typing import Dict
+load_dotenv()
 
-# FastAPI App
+# Load config.yaml
+with open("config.yaml", "r") as f:
+    config = yaml.safe_load(f)
+api_config = config.get("api", {})
+
+# Always get tracking URI from environment
+MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI")
+
+# Model name and alias: only from config
+MODEL_NAME = api_config.get("registered_model_name")
+MODEL_ALIAS = api_config.get("model_alias")
+
 app = FastAPI(title="Fraud Detection API", version="1.0")
 
 mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
@@ -25,6 +41,7 @@ def load_model():
     print(f"Loading model from {model_uri}")
     return mlflow.sklearn.load_model(model_uri)
 
+model = load_model()
 model = load_model()
 
 EXPECTED_FEATURES = [

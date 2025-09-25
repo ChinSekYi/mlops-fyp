@@ -1,4 +1,5 @@
 import os
+import yaml
 import pandas as pd
 import numpy as np
 from src.logger import logging
@@ -6,14 +7,20 @@ from sklearn.preprocessing import StandardScaler
 from src.utils import save_object
 import mlflow
 
-class DataTransformationConfig:
-    preprocessor_ob_file_path = os.path.join("artifacts", "preprocessor.pkl")
+# Load config.yaml
+with open("config.yaml", "r") as f:
+    config = yaml.safe_load(f)
+
+transformation_config = config["data_transformation"]
+processed_train_data_path = transformation_config["processed_train_data_path"]
+processed_test_data_path = transformation_config["processed_test_data_path"]
+preprocessor_ob_file_path = transformation_config["preprocessor_ob_file_path"]
 
 class DataTransformation:
     def __init__(self):
-        self.data_transformation_config = DataTransformationConfig()
-        self.processed_train_data_path = os.path.join("data","processed", "processed_train.csv")
-        self.processed_test_data_path = os.path.join("data", "processed", "processed_test.csv")
+        self.processed_train_data_path = processed_train_data_path
+        self.processed_test_data_path = processed_test_data_path
+        self.preprocessor_ob_file_path = preprocessor_ob_file_path
 
         mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI"))
 
@@ -28,7 +35,7 @@ class DataTransformation:
             X_test = test_df.drop(columns=["Class"])
             y_test = test_df["Class"]
 
-            feature_columns = X_train.columns.tolist()  # or use the list directly if you know the order
+            feature_columns = X_train.columns.tolist()
             all_columns = feature_columns + ["Class"]
 
             X_train_scaled = scaler.fit_transform(X_train)
@@ -43,22 +50,23 @@ class DataTransformation:
             processed_test_df.to_csv(self.processed_test_data_path, index=False)
 
             save_object(
-                file_path=self.data_transformation_config.preprocessor_ob_file_path,
+                file_path=self.preprocessor_ob_file_path,
                 obj=scaler,
-            ) # TODO: might not be necessary because it is saved to mlflow server. but predict pipeline might need it. 
+            )
             
-            mlflow.log_artifact("artifacts/preprocessor.pkl")
+            mlflow.log_artifact(self.preprocessor_ob_file_path)
             logging.info("saved preprocessor and processed datasets")
             return (
                 self.processed_train_data_path, 
                 self.processed_test_data_path, 
-                self.data_transformation_config.preprocessor_ob_file_path,
+                self.preprocessor_ob_file_path,
             )
         except Exception as e:
             from src.exception import CustomException
             raise CustomException(e, None)
 
 if __name__ == "__main__":
+    # These can also be loaded from config if you want
     train_data_path, test_data_path = "data/processed/train.csv", "data/processed/test.csv"
 
     data_transformation = DataTransformation()

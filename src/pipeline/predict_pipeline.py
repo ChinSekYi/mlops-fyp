@@ -1,13 +1,20 @@
 import os
+import yaml
 import pandas as pd
 from src.exception import CustomException
 from src.utils import load_object
 
+# Load config.yaml
+with open("config.yaml", "r") as f:
+    config = yaml.safe_load(f)
+
+predict_config = config["predict_pipeline"]
+model_path = predict_config["model_path"]
+preprocessor_path = predict_config["preprocessor_path"]
+
 class PredictPipeline:
     def predict(self, features):
         try:
-            model_path = os.path.join("models", "model.pkl")
-            preprocessor_path = os.path.join("artifacts", "preprocessor.pkl")
             model = load_object(file_path=model_path)
             preprocessor = load_object(file_path=preprocessor_path)
             data_scaled = preprocessor.transform(features)
@@ -15,6 +22,7 @@ class PredictPipeline:
             return pred_result
         except Exception as e:
             raise CustomException(e, None)
+
 
 class CustomData:
     """

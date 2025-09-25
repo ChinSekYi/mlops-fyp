@@ -1,6 +1,7 @@
 import os
 import sys
 import json
+import yaml
 import numpy as np
 import pandas as pd
 from dotenv import load_dotenv
@@ -13,21 +14,28 @@ import mlflow.sklearn
 
 load_dotenv()
 
-class ModelTrainerConfig:
-    trained_model_file_path = os.path.join("models", "model.pkl")
-    metrics_file_path = os.path.join("metrics", "metrics.json")
+# Load config.yaml
+with open("config.yaml", "r") as f:
+    config = yaml.safe_load(f)
+
+trainer_config = config["model_trainer"]
+trained_model_file_path = trainer_config["trained_model_file_path"]
+metrics_file_path = trainer_config["metrics_file_path"]
+processed_train_data_path = trainer_config["processed_train_data_path"]
+processed_test_data_path = trainer_config["processed_test_data_path"]
+artifact_path = trainer_config.get("artifact_path", "LogisticRegressionModelv1")
+registered_model_name = trainer_config.get("registered_model_name", None)
 
 class ModelTrainer:
     def __init__(self):
-        self.model_trainer_config = ModelTrainerConfig()
+        self.trained_model_file_path = trained_model_file_path
+        self.metrics_file_path = metrics_file_path
 
-        os.makedirs(os.path.dirname(self.model_trainer_config.trained_model_file_path), exist_ok=True)
-        os.makedirs(os.path.dirname(self.model_trainer_config.metrics_file_path), exist_ok=True)
+        os.makedirs(os.path.dirname(self.trained_model_file_path), exist_ok=True)
+        os.makedirs(os.path.dirname(self.metrics_file_path), exist_ok=True)
 
     def initiate_model_trainer(self, processed_train_data_path, processed_test_data_path, artifact_path, registered_model_name):
         try:
-            #train_array = np.load(train_arr_path)
-            #test_array = np.load(test_arr_path)
             train_df = pd.read_csv(processed_train_data_path)
             test_df = pd.read_csv(processed_test_data_path)
 
@@ -47,17 +55,17 @@ class ModelTrainer:
             
             # Save model locally and log to MLflow
             save_object(
-                file_path=self.model_trainer_config.trained_model_file_path,
+                file_path=self.trained_model_file_path,
                 obj=model,
-            ) #TODO: can remove bc model is logged to mlflow
+            )
 
             model_info = mlflow.sklearn.log_model(
                 sk_model=model,
                 input_example=X_train.iloc[[0]],
                 name=artifact_path,
-                registered_model_name=registered_model_name  # Optional. Uncomment if you want to register this model
+                registered_model_name=registered_model_name
             )
-            mlflow.log_artifact("models/model.pkl")
+            mlflow.log_artifact(self.trained_model_file_path)
 
             # Make predictions
             y_train_pred = model.predict(X_train)
@@ -75,12 +83,12 @@ class ModelTrainer:
                 mlflow.log_metric(f"test_{key}", value, model_id=model_info.model_id)
             
             # Save metrics.json for DVC tracking
-            os.makedirs("metrics", exist_ok=True)  #TODO: can remove bc model is logged to mlflow
+            os.makedirs(os.path.dirname(self.metrics_file_path), exist_ok=True)
             metrics_data = {
                 "training_data_metrics": training_metrics,
                 "testing_data_metrics": testing_metrics
             }
-            with open(self.model_trainer_config.metrics_file_path, "w") as f:
+            with open(self.metrics_file_path, "w") as f:
                 json.dump(metrics_data, f)
             
             return training_metrics, testing_metrics
@@ -90,10 +98,9 @@ class ModelTrainer:
 
 if __name__ == "__main__":
     modeltrainer = ModelTrainer()
-    processed_train_data_path = os.path.join("data","processed", "processed_train.csv")
-    processed_test_data_path = os.path.join("data", "processed", "processed_test.csv")
-    
-    training_metrics, testing_metrics = modeltrainer.initiate_model_trainer(processed_train_data_path, processed_test_data_path, artifact_path= "LogisticRegressionModelv1")
+    training_metrics, testing_metrics = modeltrainer.initiate_model_trainer(
+        processed_train_data_path, processed_test_data_path, artifact_path, registered_model_name
+    )
 
     print(f"training_data results: {training_metrics}")
     print(f"testing_data results: {testing_metrics}")
