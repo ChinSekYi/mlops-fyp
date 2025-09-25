@@ -34,6 +34,9 @@ jobs:
 
       # Step 5: Run Unit Tests
       - name: Test with Pytest
+        env:
+          MODEL_ALIAS: champion
+          REGISTERED_MODEL_NAME: fraud-detection-model
         run: |
           pytest tests/
           
