@@ -1,5 +1,12 @@
 from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
+import os
+import yaml 
 
+def load_config():
+    config_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "config.yaml")
+    with open(config_path, "r") as f:
+        return yaml.safe_load(f)
+    
 def save_object(file_path, obj):
 
     """

@@ -1,12 +1,9 @@
 import os
-import yaml
 import pandas as pd
 from src.exception import CustomException
-from src.utils import load_object
+from src.utils import load_object, load_config
 
-# Load config.yaml
-with open("config.yaml", "r") as f:
-    config = yaml.safe_load(f)
+config = load_config()
 
 predict_config = config["predict_pipeline"]
 model_path = predict_config["model_path"]

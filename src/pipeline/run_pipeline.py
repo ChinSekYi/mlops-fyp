@@ -1,15 +1,13 @@
 import mlflow
-from mlflow import MlflowClient
-import yaml
 import os
 from src.components.model_trainer import ModelTrainer
 from src.components.data_transformation import DataTransformation
 from src.components.data_ingestion import DataIngestion
+from src.utils import load_config
 from dotenv import load_dotenv
 load_dotenv()
 
-with open("config.yaml", "r") as f:
-    config = yaml.safe_load(f)
+config = load_config()
 pipeline_config = config["run_pipeline"]
 
 RUN_NAME = pipeline_config["run_name"]
