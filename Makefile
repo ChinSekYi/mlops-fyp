@@ -18,7 +18,7 @@ app:
 
 # Linting/Testing/Quality
 lint:
-	# pylint --disable=R,C hello.py
+	pylint src/ api/ tests/
 
 test:
 	pytest -v tests/
@@ -31,4 +31,4 @@ format:
 mlflow-server: 
 	docker compose -f docker/docker-compose.yml up
 
-all: install format lint
+all: install format test lint download-data mlflow-server run-pipeline app
