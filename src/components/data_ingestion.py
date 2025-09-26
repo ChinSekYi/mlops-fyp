@@ -32,10 +32,10 @@ class DataIngestion:
 
             legit = df[df.Class == 0]
             fraud = df[df.Class == 1]
-            
+
             legit_sample = legit.sample(n=492, random_state=self.random_state) # undersampling
             new_dataset = pd.concat([legit_sample, fraud], axis=0)
-            
+
             X = new_dataset.drop(columns="Class", axis=1)
             Y = new_dataset["Class"]
             X_train, X_test, Y_train, Y_test = train_test_split(
@@ -46,8 +46,8 @@ class DataIngestion:
 
             # mlflow dataset logging
             train_dataset = mlflow.data.from_pandas(df=train, source=LocalArtifactDatasetSource(self.raw_data_path), name="train")
-            mlflow.log_input(train_dataset, context="training") 
-            
+            mlflow.log_input(train_dataset, context="training")
+
             os.makedirs(os.path.dirname(self.train_data_path), exist_ok=True)
             train.to_csv(self.train_data_path, index=False)
             test.to_csv(self.test_data_path, index=False)
