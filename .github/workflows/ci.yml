@@ -32,10 +32,10 @@ jobs:
           echo "REGISTERED_MODEL_NAME=fraud-detection-model" >> .env
 
       - name: Start services
-        run: docker compose -f docker/docker-compose.yml up -d mlflow
+        run: docker compose -f docker/docker-compose.yml up
 
       - name: Show mlflow logs
-        run: docker compose -f docker/docker-compose.yml logs mlflow
+        run: docker compose -f docker/docker-compose.yml logs
   
       - name: Wait for services
         run: sleep 10
@@ -51,15 +51,10 @@ jobs:
 
       - name: Test with Pytest
         #env:
-        #  MODEL_SERVER_IP: ${{ secrets.MODEL_SERVER_IP }}
-        #  MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }}
+        #  MODEL_SERVER_IP:
+        #  MLFLOW_TRACKING_URI: 
          # MODEL_ALIAS: champion
           #REGISTERED_MODEL_NAME: fraud-detection-model
         run: |
           pytest tests/
           
-      - name: Build and push API image
-        run: |
-          docker build -t sychin0606/fraud-api:latest -f docker/Dockerfile.api .
-          docker push sychin0606/fraud-api:latest
-
