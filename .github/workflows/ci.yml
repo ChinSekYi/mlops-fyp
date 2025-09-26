@@ -23,6 +23,10 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+          
+      - name: Check API and MLflow server container
+        run: |
+          docker ps 
 
       - name: Install dependencies
         run: |
