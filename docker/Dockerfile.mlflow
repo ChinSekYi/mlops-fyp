@@ -18,3 +18,7 @@ CMD ["sh", "-c", "mlflow server \
 # docker run --rm -d --name mlflow-server --network mlops-network -p 5050:5050 --env-file .env mlflow-server-image
 # Outside docker acces mlflow at http://localhost:5050
 
+# docker build -t sychin0606/mlflow-server:latest -f docker/Dockerfile.mlflow .
+# docker tag sychin0606/mlflow-server:latest sychin0606/mlflow-server:dev
+# docker push sychin0606/mlflow-server:latest
+# docker push sychin0606/mlflow-server:dev
