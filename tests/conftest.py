@@ -13,12 +13,8 @@ import mlflow
 
 import pytest
 from dotenv import load_dotenv
-from src.utils import load_config
-from api.main import load_model
 
 load_dotenv()
-config = load_config()
-api_config = config.get("api", {})
 MODEL_SERVER_IP = os.getenv("MODEL_SERVER_IP")
 MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI")
 mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
@@ -26,7 +22,10 @@ mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
 @pytest.fixture(scope="module")
 def model():
     """Load the ML model once for all tests."""
-    mdl = load_model()
+    MODEL_NAME=os.getenv("REGISTERED_MODEL_NAME")
+    MODEL_ALIAS=os.getenv("MODEL_ALIAS")
+    model_uri = f"models:/{MODEL_NAME}@{MODEL_ALIAS}"
+    mdl =  mlflow.sklearn.load_model(model_uri)
     assert mdl is not None
     return mdl
 
