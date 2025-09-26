@@ -23,12 +23,13 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+      
       - name: Create .env file
         run: |
           echo "MLFLOW_TRACKING_URI=${{ secrets.MLFLOW_TRACKING_URI }}" >> .env
-          
+
       - name: Start services
-        run: docker compose -f docker/docker-compose.yml up -d
+        run: docker compose -f docker/docker-compose.yml up -d mlflow
 
       - name: Wait for services
         run: sleep 10
