@@ -27,10 +27,16 @@ jobs:
       - name: Create .env file
         run: |
           echo "MLFLOW_TRACKING_URI=${{ secrets.MLFLOW_TRACKING_URI }}" >> .env
+          echo "MODEL_SERVER_IP=${{ secrets.MODEL_SERVER_IP }}" >> .env
+          echo "MODEL_ALIAS=champion" >> .env
+          echo "REGISTERED_MODEL_NAME=fraud-detection-model" >> .env
 
       - name: Start services
         run: docker compose -f docker/docker-compose.yml up -d mlflow
 
+      - name: Show mlflow logs
+        run: docker compose -f docker/docker-compose.yml logs mlflow
+  
       - name: Wait for services
         run: sleep 10
         
@@ -44,11 +50,11 @@ jobs:
           pip install -r requirements.txt
 
       - name: Test with Pytest
-        env:
-          MODEL_SERVER_IP: ${{ secrets.MODEL_SERVER_IP }}
-          MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }}
-          MODEL_ALIAS: champion
-          REGISTERED_MODEL_NAME: fraud-detection-model
+        #env:
+        #  MODEL_SERVER_IP: ${{ secrets.MODEL_SERVER_IP }}
+        #  MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }}
+         # MODEL_ALIAS: champion
+          #REGISTERED_MODEL_NAME: fraud-detection-model
         run: |
           pytest tests/
           
