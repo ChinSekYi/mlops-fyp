@@ -1,6 +1,5 @@
 
 import os
-import yaml
 import mlflow
 import pandas as pd
 from fastapi import FastAPI
@@ -8,20 +7,11 @@ from mlflow import MlflowClient
 from pydantic import BaseModel
 from dotenv import load_dotenv
 from typing import Dict
-from src.utils import load_config
 
 load_dotenv()
 
-config = load_config()
-config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config.yaml")
-with open(config_path, "r") as f:
-    config = yaml.safe_load(f)
-
-api_config = config.get("api", {})
-MODEL_NAME = api_config.get("registered_model_name")
-MODEL_ALIAS = api_config.get("model_alias")
-
-# Always get tracking URI from environment
+MODEL_NAME = os.getenv("REGISTERED_MODEL_NAME")
+MODEL_ALIAS = os.getenv("MODEL_ALIAS")
 MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI")
 mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
 
