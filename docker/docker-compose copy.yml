@@ -1,5 +1,8 @@
 services:
     mlflow:
+      build: 
+        context: ..
+        dockerfile: docker/Dockerfile.mlflow
       image: sychin0606/mlflow-server:latest
       container_name: mlflow-server
       ports:
@@ -10,6 +13,9 @@ services:
         - mlops-network
 
     api:
+      build: 
+        context: ..
+        dockerfile: docker/Dockerfile.api
       image: sychin0606/fraud-api:latest
       container_name: api-con
       ports:
