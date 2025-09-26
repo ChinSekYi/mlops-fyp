@@ -1,6 +1,5 @@
 
 import os
-import yaml
 import mlflow
 import pandas as pd
 from fastapi import FastAPI
