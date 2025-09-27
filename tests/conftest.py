@@ -43,3 +43,6 @@ def sample_input():
 def model_server_ip():
     """Return the model server URL."""
     return MODEL_SERVER_IP
+
+if __name__ == "__main__":
+    model()
