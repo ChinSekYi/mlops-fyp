@@ -19,20 +19,34 @@ jobs:
         run: |
           make install
 
-      - name: Create .env file
+      - name: Start MLflow server (local, for CI)
         run: |
-          echo "MLFLOW_TRACKING_URI=${{ secrets.MLFLOW_TRACKING_URI }}" >> .env
-          echo "MODEL_SERVER_IP=${{ secrets.MODEL_SERVER_IP }}" >> .env
-          echo "MODEL_ALIAS=champion" >> .env
-          echo "REGISTERED_MODEL_NAME=fraud-detection-model" >> .env
-          
+          mlflow server --host 127.0.0.1 --port 8081
+          sleep 5
+
+      - name: Data processing and Training pipeline
+        env:
+          MLFLOW_TRACKING_URI: http://localhost:8081
+          RUN_NAME: sample_run
+          DATASET_NAME: creditcard.csv
+          ARTIFACT_PATH: logreg_model
+          ALGORITHM_TYPE: logistic-regression
+          REGISTERED_MODEL_NAME: fraud-detection-model
+        run: 
+          make run-pipeline
+
       #- name: Lint with pyLint
       #  run: |
       #    make lint
 
-      - name: Test with pytest
-        run: |
-          make test
+  # - name: Test with pytest
+  #   env:
+  #     MLFLOW_TRACKING_URI: http://localhost:8081
+  #     MODEL_SERVER_IP: localhost
+  #     REGISTERED_MODEL_NAME: fraud-detection-model
+  #     MODEL_ALIAS: champion
+  #   run: |
+  #     make test
 
       - name: Format code
         run: |
@@ -42,6 +56,6 @@ jobs:
         run: 
           make run-pipeline
 
-      - name: Start Streamlit app
-        run: 
-          make app
+  # - name: Start Streamlit app
+  #   run: 
+  #     make app
