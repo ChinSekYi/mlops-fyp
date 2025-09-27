@@ -19,6 +19,13 @@ jobs:
         run: |
           make install
 
+      - name: Create .env file
+        run: |
+          echo "MLFLOW_TRACKING_URI=${{ secrets.MLFLOW_TRACKING_URI }}" >> .env
+          echo "MODEL_SERVER_IP=${{ secrets.MODEL_SERVER_IP }}" >> .env
+          echo "MODEL_ALIAS=champion" >> .env
+          echo "REGISTERED_MODEL_NAME=fraud-detection-model" >> .env
+          
       #- name: Lint with pyLint
       #  run: |
       #    make lint
