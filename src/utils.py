@@ -4,8 +4,9 @@ Utility functions for configuration loading, model evaluation, and object serial
 
 import os
 import pickle
-from dotenv import load_dotenv
+
 import yaml
+from dotenv import load_dotenv
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 
 
@@ -23,6 +24,7 @@ def load_environment(env_file: str = None):
     # Optional: ensure ENV is set
     os.environ.setdefault("ENV", "dev")
 
+
 def load_config():
     """Load configuration from the config.yaml file at the project root."""
     config_path = os.path.join(
@@ -30,6 +32,7 @@ def load_config():
     )
     with open(config_path, "r", encoding="utf-8") as f:
         return yaml.safe_load(f)
+
 
 def save_object(file_path, obj):
     """

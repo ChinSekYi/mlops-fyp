@@ -1,5 +1,5 @@
 
-name: CI - dev
+name: CI - pipeline
 
 on:
   push:

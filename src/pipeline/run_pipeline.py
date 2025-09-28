@@ -3,9 +3,11 @@ Pipeline runner for the credit card fraud detection project.
 Runs data ingestion, transformation, and model training with MLflow tracking.
 """
 
+# flake8: noqa
 import os
 
 import mlflow
+
 from src.utils import load_environment
 
 # Use ENV_FILE if set, otherwise default to .env.dev
@@ -15,8 +17,6 @@ load_environment(env_file)
 from src.components.data_ingestion import DataIngestion
 from src.components.data_transformation import DataTransformation
 from src.components.model_trainer import ModelTrainer
-from src.utils import load_environment
-
 
 RUN_NAME = os.getenv("RUN_NAME")
 DATASET_NAME = os.getenv("DATASET_NAME")
