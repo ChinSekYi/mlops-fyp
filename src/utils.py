@@ -1,38 +1,58 @@
-from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
+"""
+Utility functions for configuration loading, model evaluation, and object serialization.
+"""
+
 import os
-import yaml 
+import pickle
+
+import yaml
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
+
 
 def load_config():
-    config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config.yaml")
-    with open(config_path, "r") as f:
+    """Load configuration from the config.yaml file at the project root."""
+    config_path = os.path.join(
+        os.path.dirname(os.path.dirname(__file__)), "config.yaml"
+    )
+    with open(config_path, "r", encoding="utf-8") as f:
         return yaml.safe_load(f)
-    
-def save_object(file_path, obj):
 
+def save_object(file_path, obj):
     """
     Save an object to a file using pickle.
+    Args:
+        file_path (str): Path to save the object.
+        obj: Python object to serialize.
     """
-    import os, pickle
     dir_path = os.path.dirname(file_path)
     os.makedirs(dir_path, exist_ok=True)
     with open(file_path, "wb") as file_obj:
         pickle.dump(obj, file_obj)
 
 def evaluate_model(x, y):
-    
-    report= {
-            'accuracy': accuracy_score(x, y),
-            'precision': precision_score(x, y),
-            'recall': recall_score(x, y),
-            'f1': f1_score(x, y)
-        }
+    """
+    Evaluate a model's predictions using common classification metrics.
+    Args:
+        x: Predicted labels.
+        y: True labels.
+    Returns:
+        dict: Dictionary with accuracy, precision, recall, and f1 scores.
+    """
+    report = {
+        "accuracy": accuracy_score(x, y),
+        "precision": precision_score(x, y),
+        "recall": recall_score(x, y),
+        "f1": f1_score(x, y),
+    }
     return report
 
 def load_object(file_path):
     """
     Load an object from a file using pickle.
+    Args:
+        file_path (str): Path to the pickle file.
+    Returns:
+        The loaded Python object.
     """
-    import pickle
     with open(file_path, "rb") as file_obj:
         return pickle.load(file_obj)
-

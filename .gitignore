@@ -5,6 +5,7 @@
 
 # Ignore everything in data/ except .dvc files
 data/processed/
+data/raw/
 data/raw/creditcard.csv
 creditcard.csv
 

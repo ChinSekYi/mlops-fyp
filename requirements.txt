@@ -3,6 +3,7 @@ pandas==2.2.2
 scikit-learn==1.7.1
 isort==5.13.2
 black==24.8.0
+flake8
 dvc==3.62.0
 dvc-s3==3.2.2
 mlflow==3.3.1
