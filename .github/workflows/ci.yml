@@ -10,6 +10,18 @@ jobs:
   ci:
     runs-on: ubuntu-latest
 
+    # --- Define MLflow service ---
+    services:
+      mlflow:
+        image: sychin0606/ci:latest
+        ports:
+          - 5051:5051
+        options: >-
+          --health-cmd "curl --fail http://localhost:5051 || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
@@ -20,31 +32,24 @@ jobs:
           python-version: "3.11"
 
       - name: Install packages
-        run: make install
+        run: pip install -r requirements/dev.txt
 
       # --- Step 1: Run linting/formatting/flake all in one ---
       - name: Run quality checks
         run: make check
 
-      # --- Step 2: Start lightweight services ---
-      - name: Start lightweight MLflow service
-        run: |
-          docker compose -f docker/docker-compose.ci.yml up -d
-          sleep 15  # wait for MLflow to be ready
-      
-      - name: Check container
-        run:  docker ps
-      
-      # --- Step 3: Run training pipeline ---
-      - name: Run data processing & training pipeline
-        run: |
-          set -a
-          source .env.dev 
-          set +a
+      # --- Step 2: Run data processing & training pipeline ---
+      - name: Run pipeline
+        run:
+          set -o allexport
+          source .env.dev
+          set +o allexport
           make run-pipeline
 
       # --- Step 4: Run tests ---
       - name: Run pytest
-        env:
-          path: .env.dev
-        run: make format #make test
+        run: 
+          set -o allexport
+          source .env.dev
+          set +o allexport
+          #make test
