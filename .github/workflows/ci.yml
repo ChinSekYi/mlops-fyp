@@ -19,6 +19,9 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Install packages
+        run: make install
+
       # --- Step 1: Run linting/formatting/flake all in one ---
       - name: Run quality checks
         run: make check
