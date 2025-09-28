@@ -1,4 +1,5 @@
-#not in use
+# pylint: skip-file
+
 import os
 import pandas as pd
 from src.exception import CustomException

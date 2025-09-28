@@ -1,4 +1,4 @@
-.PHONY: install download-data run-pipeline app lint test format mlflow-server all
+.PHONY: install download-data run-pipeline app lint test format flake check mlflow-server all
 
 install:
 	pip install --upgrade pip &&\
@@ -18,14 +18,19 @@ app:
 
 # Linting/Testing/Quality
 lint:
-	pylint src/ api/ tests/
+	pylint src api tests --fail-under=7
+
+format:
+	isort .
+	black .
+
+flake:
+	flake8 src api tests
+
+check: format lint flake
 
 test:
 	pytest -v tests/
-
-format:
-	isort *.py
-	black *.py
 
 # Docker
 mlflow-server: 

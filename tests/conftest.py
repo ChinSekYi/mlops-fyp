@@ -8,9 +8,10 @@ Shared pytest fixtures for FYP tests:
 
 Ensure MLflow and model server are running when using model or model_server_ip.
 """
-import os
-import mlflow
 
+import os
+
+import mlflow
 import pytest
 from dotenv import load_dotenv
 
@@ -19,30 +20,61 @@ MODEL_SERVER_IP = os.getenv("MODEL_SERVER_IP")
 MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI")
 mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
 
+
 @pytest.fixture(scope="module")
 def model():
     """Load the ML model once for all tests."""
-    MODEL_NAME=os.getenv("REGISTERED_MODEL_NAME")
-    MODEL_ALIAS=os.getenv("MODEL_ALIAS")
+    MODEL_NAME = os.getenv("REGISTERED_MODEL_NAME")
+    MODEL_ALIAS = os.getenv("MODEL_ALIAS")
     model_uri = f"models:/{MODEL_NAME}@{MODEL_ALIAS}"
-    mdl =  mlflow.sklearn.load_model(model_uri)
+    mdl = mlflow.sklearn.load_model(model_uri)
     assert mdl is not None
     return mdl
+
 
 @pytest.fixture
 def sample_input():
     """Return a default sample input dictionary for API requests."""
     feature_names = [
-        "Time", "V1", "V2", "V3", "V4", "V5", "V6", "V7", "V8", "V9", "V10",
-        "V11", "V12", "V13", "V14", "V15", "V16", "V17", "V18", "V19",
-        "V20", "V21", "V22", "V23", "V24", "V25", "V26", "V27", "V28", "Amount"
+        "Time",
+        "V1",
+        "V2",
+        "V3",
+        "V4",
+        "V5",
+        "V6",
+        "V7",
+        "V8",
+        "V9",
+        "V10",
+        "V11",
+        "V12",
+        "V13",
+        "V14",
+        "V15",
+        "V16",
+        "V17",
+        "V18",
+        "V19",
+        "V20",
+        "V21",
+        "V22",
+        "V23",
+        "V24",
+        "V25",
+        "V26",
+        "V27",
+        "V28",
+        "Amount",
     ]
     return {"features": {name: 0.0 for name in feature_names}}
+
 
 @pytest.fixture
 def model_server_ip():
     """Return the model server URL."""
     return MODEL_SERVER_IP
+
 
 if __name__ == "__main__":
     model()
