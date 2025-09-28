@@ -21,8 +21,6 @@ CMD ["sh", "-c", "mlflow server \
   --backend-store-uri sqlite:///mlflow.db \
   --default-artifact-root /tmp/mlartifacts"]
 
-# docker build -t sychin0606/ci:latest -f docker/Dockerfile.ci .
-# docker push sychin0606/ci:latest
 
 # Create and use buildx builder (only needed once)
 # docker buildx create --use --name multiarch-builder
@@ -35,3 +33,5 @@ CMD ["sh", "-c", "mlflow server \
 #  --push .
 
 # docker run -it --rm -p 5051:5051 sychin0606/ci:latest
+
+# both latest and dev version works
