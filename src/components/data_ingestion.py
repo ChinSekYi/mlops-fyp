@@ -78,7 +78,7 @@ class DataIngestion:
                 # Log test dataset
                 test_dataset = mlflow.data.from_pandas(test, name="test")
                 mlflow.log_input(test_dataset, context="test")
-                
+
             os.makedirs(os.path.dirname(self.train_data_path), exist_ok=True)
             train.to_csv(self.train_data_path, index=False)
             test.to_csv(self.test_data_path, index=False)

@@ -1,0 +1,72 @@
+name: CI - API
+
+on:
+  push:
+    paths:
+      - "api/**"
+      - "src/**"
+      - "docker/Dockerfile.api.ci"
+      - ".env.ci"
+  pull_request:
+    paths:
+      - "api/**"
+      - "src/**"
+      - "docker/Dockerfile.api.ci"
+      - ".env.ci"
+
+jobs:
+  api-ci:
+    runs-on: ubuntu-latest
+    env:
+      ENV_FILE: .env.ci
+
+    services:
+      mlflow:
+        image: sychin0606/ci:latest
+        ports:
+          - 5051:5051
+        options: >-
+          --platform linux/amd64
+          --health-cmd "curl --fail http://localhost:5051/ || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Load environment variables
+        run: |
+          cat .env.ci >> $GITHUB_ENV
+          echo "ENV_FILE=.env.ci" >> $GITHUB_ENV
+          echo "USE_DUMMY_MODEL=true" >> $GITHUB_ENV 
+
+      - name: Pull API Docker image
+        run: docker pull sychin0606/fraud-api:ci
+
+      - name: Run API container
+        run: docker run -d --name fraud-api-ci -p 5052:5050 sychin0606/fraud-api:ci
+
+      - name: Wait for API to be ready
+        run: |
+          for i in {1..15}; do
+            curl -s http://localhost:5052/ && break
+            echo "Waiting for API..."
+            sleep 2
+          done
+
+      - name: Test API health endpoint
+        run: |
+          curl -f http://localhost:5052/ 
+
+      - name: Test prediction endpoint
+        run: |
+          curl -X POST http://localhost:5052/predict \
+            -H "Content-Type: application/json" \
+            -d '{"features": {"Time":0,"V1":0,"V2":0,"V3":0,"V4":0,"V5":0,"V6":0,"V7":0,"V8":0,"V9":0,"V10":0,"V11":0,"V12":0,"V13":0,"V14":0,"V15":0,"V16":0,"V17":0,"V18":0,"V19":0,"V20":0,"V21":0,"V22":0,"V23":0,"V24":0,"V25":0,"V26":0,"V27":0,"V28":0,"Amount":0}}'
