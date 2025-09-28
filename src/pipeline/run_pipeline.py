@@ -6,13 +6,17 @@ Runs data ingestion, transformation, and model training with MLflow tracking.
 import os
 
 import mlflow
-from dotenv import load_dotenv
+from src.utils import load_environment
+
+# Use ENV_FILE if set, otherwise default to .env.dev
+env_file = os.getenv("ENV_FILE", ".env.dev")
+load_environment(env_file)
 
 from src.components.data_ingestion import DataIngestion
 from src.components.data_transformation import DataTransformation
 from src.components.model_trainer import ModelTrainer
+from src.utils import load_environment
 
-load_dotenv()
 
 RUN_NAME = os.getenv("RUN_NAME")
 DATASET_NAME = os.getenv("DATASET_NAME")
