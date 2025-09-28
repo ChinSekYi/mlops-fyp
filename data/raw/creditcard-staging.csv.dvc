@@ -1,0 +1,5 @@
+outs:
+- md5: 13d650832bf788fb0d664dc05296c0ce
+  size: 10676760
+  hash: md5
+  path: creditcard-staging.csv

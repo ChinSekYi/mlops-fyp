@@ -1,0 +1,32 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY api/requirements.txt .
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+ && rm -rf /var/lib/apt/lists/*
+RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir  mlflow
+
+COPY api/ ./api/
+COPY src/ ./src/ 
+COPY config.yaml /app/config.yaml
+COPY .env.ci .
+
+EXPOSE 5050
+
+CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "5050"]
+
+# docker build -t api-image -f docker/Dockerfile.api-ci .
+# docker run --rm -d --name api-con --network mlops-network -p 5060:5050 --env-file .env api-image
+# docker exec -it <con_id> /bin/bash
+# uvicorn api.main:app --host 0.0.0.0 --port 5060
+
+# docker build --platform linux/amd64 -t sychin0606/fraud-api:latest -f docker/Dockerfile.api .
+# docker tag sychin0606/fraud-api:latest sychin0606/fraud-api:dev
+# docker push sychin0606/fraud-api:latest
+# docker push sychin0606/fraud-api:dev
+
+# docker build -t sychin0606/fraud-api:ci -f docker/Dockerfile.api.ci .
+# docker push sychin0606/fraud-api:ci

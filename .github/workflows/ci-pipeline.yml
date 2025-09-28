@@ -1,5 +1,5 @@
 
-name: CI - dev
+name: CI - pipeline
 
 on:
   push:
@@ -11,6 +11,10 @@ jobs:
 
   ci:
     runs-on: ubuntu-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
 
     # --- Define MLflow service ---
     services:
@@ -33,12 +37,18 @@ jobs:
         with:
           python-version: "3.11"
      
+      - name: Install DVC with S3 support and requirements
+        run: |
+          pip install dvc[s3]==3.2.2
+          pip install -r requirements/ci.txt
+
+      - name: Pull dataset from DVC
+        run: dvc pull data/raw/creditcard-dev.csv
+
       - name: Load environment variables
         run: |
-          cat .env.dev >> $GITHUB_ENV
-
-      - name: Install packages
-        run: pip install -r requirements/dev.txt
+          cat .env.ci >> $GITHUB_ENV
+          echo "ENV_FILE=.env.ci" >> $GITHUB_ENV
 
       - name: Run quality checks
         run: make check
