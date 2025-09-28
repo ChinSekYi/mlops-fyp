@@ -4,10 +4,12 @@ Handles reading, sampling, splitting, and logging datasets.
 """
 
 import os
+
 import mlflow
 import pandas as pd
 from dotenv import load_dotenv
 from sklearn.model_selection import train_test_split
+
 from src.exception import CustomException
 from src.logger import logging
 from src.utils import load_config
@@ -24,11 +26,12 @@ RANDOM_STATE = ingestion_config["random_state"]
 DATASET_NAME = os.getenv("DATASET_NAME")
 
 
-
 class DataIngestion:
     """
-    Handles data ingestion: reading, sampling, splitting, and logging datasets for training/testing.
+    Handles data ingestion: reading, sampling, splitting,
+    and logging datasets for training/testing.
     """
+
     def __init__(self):
         self.raw_data_path = RAW_DATA_PATH
         self.train_data_path = TRAIN_DATA_PATH
@@ -38,8 +41,8 @@ class DataIngestion:
 
     def initiate_data_ingestion(self):
         """
-        Reads the raw data, performs undersampling, splits into train/test, logs with MLflow, 
-        and saves files.
+        Reads the raw data, performs undersampling, splits into train/test,
+        logs with MLflow, and saves files.
         Returns:
             tuple: Paths to train and test data CSV files.
         """

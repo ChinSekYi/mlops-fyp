@@ -1,7 +1,7 @@
-
 """
 Fraud Detection API using FastAPI, MLflow, and a registered ML model.
-Provides endpoints for health check, prediction, model info, metrics, and feature info.
+Provides endpoints for health check, prediction, model info, metrics,
+and feature info.
 """
 
 import os
@@ -69,7 +69,9 @@ EXPECTED_FEATURES = [
 
 # Input Schema - ensures validation
 class Transaction(BaseModel):
-    """Input schema for a transaction, expects a dictionary of feature names to float values."""
+    """Input schema for a transaction, expects a dictionary of
+    feature names to float values."""
+
     features: Dict[str, float]
 
 
@@ -82,7 +84,8 @@ def health_check():
 
 @app.post("/predict")
 def predict(transaction: Transaction):
-    """Predicts whether a transaction is fraudulent (1) or not (0) using the trained model."""
+    """Predicts whether a transaction is fraudulent (1) or not (0) using the
+    trained model."""
     # Validate keys
     if set(transaction.features.keys()) != set(EXPECTED_FEATURES):
         raise transaction(

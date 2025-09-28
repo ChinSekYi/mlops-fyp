@@ -33,6 +33,7 @@ class ModelTrainer:
     """
     Handles model training, evaluation, and logging for the pipeline.
     """
+
     def __init__(self):
         self.trained_model_file_path = trained_model_file_path
         self.metrics_file_path = metrics_file_path

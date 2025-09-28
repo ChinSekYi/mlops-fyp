@@ -1,17 +1,18 @@
-
 """
 Data transformation module for the credit card fraud detection pipeline.
 Scales features and saves preprocessor and processed datasets.
 """
 
 import os
+
 import mlflow
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
+
+from src.exception import CustomException
 from src.logger import logging
 from src.utils import load_config, save_object
-from src.exception import CustomException
 
 config = load_config()
 
@@ -21,11 +22,11 @@ processed_test_data_path = transformation_config["processed_test_data_path"]
 preprocessor_ob_file_path = transformation_config["preprocessor_ob_file_path"]
 
 
-
 class DataTransformation:
     """
     Handles feature scaling and saving of preprocessor and processed datasets.
     """
+
     def __init__(self):
         self.processed_train_data_path = processed_train_data_path
         self.processed_test_data_path = processed_test_data_path

@@ -1,14 +1,12 @@
-
 """
 Utility functions for configuration loading, model evaluation, and object serialization.
 """
 
 import os
 import pickle
+
 import yaml
-from sklearn.metrics import (
-    accuracy_score, f1_score, precision_score, recall_score
-)
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 
 
 def load_config():
