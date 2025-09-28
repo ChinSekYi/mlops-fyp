@@ -7,11 +7,11 @@ WORKDIR /app
 RUN pip install --upgrade pip && \
     pip install mlflow
 
-EXPOSE 5050
+EXPOSE 5051
 
 CMD ["sh", "-c", "mlflow server \
   -h 0.0.0.0 \
-  -p 5050 \
+  -p 5051 \
   --backend-store-uri sqlite:///mlflow.db \
   --default-artifact-root /tmp/mlartifacts"]
 

@@ -1,9 +1,10 @@
+#not used
 services:
   mlflow:
     image: sychin0606/ci:latest
     container_name: mlflow-ci
     ports:
-      - "5051:5050"
+      - "5051:5051"
     networks:
       - ci-network
 
