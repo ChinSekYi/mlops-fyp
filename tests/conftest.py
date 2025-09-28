@@ -9,6 +9,7 @@ Shared pytest fixtures for FYP tests:
 Ensure MLflow and model server are running when using model or model_server_ip.
 """
 
+
 import os
 
 import mlflow
@@ -36,6 +37,7 @@ def model():
 def sample_input():
     """Return a default sample input dictionary for API requests."""
     feature_names = [
+
         "Time",
         "V1",
         "V2",
@@ -69,11 +71,11 @@ def sample_input():
     ]
     return {"features": {name: 0.0 for name in feature_names}}
 
-
 @pytest.fixture
 def model_server_ip():
     """Return the model server URL."""
     return MODEL_SERVER_IP
+
 
 
 if __name__ == "__main__":

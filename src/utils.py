@@ -17,7 +17,6 @@ def load_config():
     with open(config_path, "r", encoding="utf-8") as f:
         return yaml.safe_load(f)
 
-
 def save_object(file_path, obj):
     """
     Save an object to a file using pickle.
@@ -29,7 +28,6 @@ def save_object(file_path, obj):
     os.makedirs(dir_path, exist_ok=True)
     with open(file_path, "wb") as file_obj:
         pickle.dump(obj, file_obj)
-
 
 def evaluate_model(x, y):
     """
@@ -47,7 +45,6 @@ def evaluate_model(x, y):
         "f1": f1_score(x, y),
     }
     return report
-
 
 def load_object(file_path):
     """

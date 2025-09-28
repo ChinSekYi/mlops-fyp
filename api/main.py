@@ -26,10 +26,10 @@ app = FastAPI(title="Fraud Detection API", version="1.0")
 
 def load_model():
     """Loads the ML model from MLflow using the registered model name and alias."""
+
     model_uri = f"models:/{MODEL_NAME}@{MODEL_ALIAS}"
     print(f"Loading model from {model_uri}")
     return mlflow.sklearn.load_model(model_uri)
-
 
 model = load_model()
 
@@ -92,10 +92,12 @@ def predict(transaction: Transaction):
             status_code=400, detail=f"Features must be {EXPECTED_FEATURES}"
         )
 
+
     # Convert features into DataFrame
     ordered_values = [transaction.features[feat] for feat in EXPECTED_FEATURES]
     df = pd.DataFrame([ordered_values], columns=EXPECTED_FEATURES)
     preds = model.predict(df)
+
     return {"prediction": int(preds[0])}  # binary classification: 0 or 1
 
 
@@ -106,6 +108,7 @@ def get_model_info():
 
     model_version_details = client.get_model_version_by_alias(
         name=MODEL_NAME, alias=MODEL_ALIAS
+
     )
 
     return {
@@ -120,9 +123,11 @@ def get_model_info():
     }
 
 
+
 @app.get("/metrics")
 def get_model_metrics():
     """Returns metrics and parameters for the current model run from MLflow."""
+
     client = MlflowClient()
     model_version_details = client.get_model_version_by_alias(
         name=MODEL_NAME, alias=MODEL_ALIAS
@@ -150,3 +155,4 @@ def feature_info():
 if __name__ == "__main__":
     print(MODEL_NAME)
     print(model)
+

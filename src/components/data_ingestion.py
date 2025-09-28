@@ -13,7 +13,6 @@ from sklearn.model_selection import train_test_split
 from src.exception import CustomException
 from src.logger import logging
 from src.utils import load_config
-
 load_dotenv()
 config = load_config()
 
@@ -24,7 +23,6 @@ TEST_DATA_PATH = ingestion_config["test_data_path"]
 TEST_SIZE = ingestion_config["test_size"]
 RANDOM_STATE = ingestion_config["random_state"]
 DATASET_NAME = os.getenv("DATASET_NAME")
-
 
 class DataIngestion:
     """
@@ -87,3 +85,4 @@ class DataIngestion:
 if __name__ == "__main__":
     obj = DataIngestion()
     train_data_path, test_data_path = obj.initiate_data_ingestion()
+

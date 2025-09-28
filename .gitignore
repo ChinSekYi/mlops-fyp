@@ -1,5 +1,3 @@
-# Ignore all files in /raw
-raw/*
 # Logs and artifacts
 /logs
 /artifacts

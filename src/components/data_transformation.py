@@ -14,7 +14,6 @@ from src.exception import CustomException
 from src.logger import logging
 from src.utils import load_config, save_object
 
-config = load_config()
 
 transformation_config = config["data_transformation"]
 processed_train_data_path = transformation_config["processed_train_data_path"]
@@ -31,7 +30,7 @@ class DataTransformation:
         self.processed_train_data_path = processed_train_data_path
         self.processed_test_data_path = processed_test_data_path
         self.preprocessor_ob_file_path = preprocessor_ob_file_path
-        mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI"))
+
 
     def initiate_data_transformation(self, train_path, test_path):
         """
