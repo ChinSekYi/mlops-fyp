@@ -1,0 +1,26 @@
+services:
+  mlflow:
+    image: sychin0606/ci:latest
+    container_name: mlflow-ci
+    ports:
+      - "5051:5050"
+    networks:
+      - ci-network
+
+  # api:
+  #   image: sychin0606/fraud-api:latest
+  #   container_name: api-ci
+  #   ports:
+  #     - "8080:5050"
+  #   environment:
+  #     MLFLOW_TRACKING_URI: http://mlflow:5050
+  #   depends_on:
+  #     - mlflow
+  #   networks:
+  #     - ci-network
+
+networks:
+  ci-network:
+    driver: bridge
+
+# docker compose -f docker/docker-compose.ci.yml up

@@ -1,12 +1,18 @@
 
+"""
+Fraud Detection API using FastAPI, MLflow, and a registered ML model.
+Provides endpoints for health check, prediction, model info, metrics, and feature info.
+"""
+
 import os
+from typing import Dict
+
 import mlflow
 import pandas as pd
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from mlflow import MlflowClient
 from pydantic import BaseModel
-from dotenv import load_dotenv
-from typing import Dict
 
 load_dotenv()
 
@@ -19,45 +25,84 @@ app = FastAPI(title="Fraud Detection API", version="1.0")
 
 
 def load_model():
+    """Loads the ML model from MLflow using the registered model name and alias."""
     model_uri = f"models:/{MODEL_NAME}@{MODEL_ALIAS}"
     print(f"Loading model from {model_uri}")
     return mlflow.sklearn.load_model(model_uri)
 
+
 model = load_model()
 
 EXPECTED_FEATURES = [
-    "Time", "V1","V2","V3","V4","V5","V6","V7","V8","V9","V10",
-    "V11","V12","V13","V14","V15","V16","V17","V18","V19",
-    "V20","V21","V22","V23","V24","V25","V26","V27","V28","Amount"
+    "Time",
+    "V1",
+    "V2",
+    "V3",
+    "V4",
+    "V5",
+    "V6",
+    "V7",
+    "V8",
+    "V9",
+    "V10",
+    "V11",
+    "V12",
+    "V13",
+    "V14",
+    "V15",
+    "V16",
+    "V17",
+    "V18",
+    "V19",
+    "V20",
+    "V21",
+    "V22",
+    "V23",
+    "V24",
+    "V25",
+    "V26",
+    "V27",
+    "V28",
+    "Amount",
 ]
+
+
 # Input Schema - ensures validation
 class Transaction(BaseModel):
+    """Input schema for a transaction, expects a dictionary of feature names to float values."""
     features: Dict[str, float]
+
 
 # Routes
 @app.get("/")
 def health_check():
+    """Health check endpoint to verify API status and model alias."""
     return {"status": "ok", "model": MODEL_NAME, "alias": MODEL_ALIAS}
+
 
 @app.post("/predict")
 def predict(transaction: Transaction):
+    """Predicts whether a transaction is fraudulent (1) or not (0) using the trained model."""
     # Validate keys
     if set(transaction.features.keys()) != set(EXPECTED_FEATURES):
-        raise transaction(status_code=400, detail=f"Features must be {EXPECTED_FEATURES}")
-    
+        raise transaction(
+            status_code=400, detail=f"Features must be {EXPECTED_FEATURES}"
+        )
+
     # Convert features into DataFrame
     ordered_values = [transaction.features[feat] for feat in EXPECTED_FEATURES]
     df = pd.DataFrame([ordered_values], columns=EXPECTED_FEATURES)
     preds = model.predict(df)
-    return {"prediction": int(preds[0])}   # binary classification: 0 or 1
+    return {"prediction": int(preds[0])}  # binary classification: 0 or 1
+
 
 @app.get("/model-info")
 def get_model_info():
+    """Returns metadata about the currently loaded ML model from MLflow."""
     client = MlflowClient()
 
     model_version_details = client.get_model_version_by_alias(
-        name=MODEL_NAME,
-        alias=MODEL_ALIAS
+        name=MODEL_NAME, alias=MODEL_ALIAS
     )
 
     return {
@@ -71,8 +116,10 @@ def get_model_info():
         "source": model_version_details.source,
     }
 
+
 @app.get("/metrics")
 def get_model_metrics():
+    """Returns metrics and parameters for the current model run from MLflow."""
     client = MlflowClient()
     model_version_details = client.get_model_version_by_alias(
         name=MODEL_NAME, alias=MODEL_ALIAS
@@ -82,17 +129,20 @@ def get_model_metrics():
 
     return {
         "run_id": run_id,
-        "metrics": run.data.metrics,   # accuracy, auc, f1, etc.
-        "params": run.data.params      # hyperparameters
+        "metrics": run.data.metrics,  # accuracy, auc, f1, etc.
+        "params": run.data.params,  # hyperparameters
     }
+
 
 @app.get("/feature-info")
 def feature_info():
+    """Returns information about the model's input features."""
     return {
         "num_features": 30,
         "description": "PCA-transformed credit card transaction features",
-        "source": "Kaggle Credit Card Fraud Dataset"
+        "source": "Kaggle Credit Card Fraud Dataset",
     }
+
 
 if __name__ == "__main__":
     print(MODEL_NAME)

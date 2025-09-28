@@ -1,7 +1,9 @@
 import os
-import requests
+
 import pytest
+import requests
 from dotenv import load_dotenv
+
 load_dotenv()
 MODEL_SERVER_IP = os.getenv("MODEL_SERVER_IP")
 
@@ -17,6 +19,7 @@ def test_api_prediction(sample_input):
     data = res.json()
     assert "prediction" in data
     assert isinstance(data["prediction"], (int, float))
+
 
 def test_api_invalid_input(model_server_ip):
     """API should return 4xx for malformed input."""
