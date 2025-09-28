@@ -31,12 +31,17 @@ jobs:
         run: |
           docker compose -f docker/docker-compose.ci.yml up -d
           sleep 15  # wait for MLflow to be ready
-
+      
+      - name: Check container
+        run:  docker ps
+      
       # --- Step 3: Run training pipeline ---
       - name: Run data processing & training pipeline
-        env:
-          path: .env.dev
-        run: make run-pipeline
+        run: |
+          set -a
+          source .env.dev 
+          set +a
+          make run-pipeline
 
       # --- Step 4: Run tests ---
       - name: Run pytest
