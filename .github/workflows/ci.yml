@@ -38,7 +38,7 @@ jobs:
           python-version: "3.11"
      
       - name: Install DVC with S3 support and requirements
-        run: 
+        run: |
           pip install dvc[s3]==3.2.2
           pip install -r requirements/ci.txt
 
