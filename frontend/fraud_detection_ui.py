@@ -109,6 +109,7 @@ sample_fraud = [
 # Sidebar navigation
 menu = st.sidebar.radio(
     "Choose an action", ["Predict (Single)", "Model Info", "Metrics", "Feature Info"]
+
 )
 if menu == "Predict (Single)":
     st.subheader("Single Transaction Prediction")

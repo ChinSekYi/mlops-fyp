@@ -1,15 +1,16 @@
 import json
 import os
 import sys
-
 import mlflow
 import mlflow.sklearn
+
 import pandas as pd
 from dotenv import load_dotenv
 from sklearn.linear_model import LogisticRegression
 
 from src.exception import CustomException
 from src.logger import logging
+
 from src.utils import evaluate_model, load_config, save_object
 
 load_dotenv()
@@ -37,7 +38,6 @@ class ModelTrainer:
     def __init__(self):
         self.trained_model_file_path = trained_model_file_path
         self.metrics_file_path = metrics_file_path
-
         os.makedirs(os.path.dirname(self.trained_model_file_path), exist_ok=True)
         os.makedirs(os.path.dirname(self.metrics_file_path), exist_ok=True)
 
@@ -131,3 +131,4 @@ if __name__ == "__main__":
 
     print(f"training_data results: {training_metrics}")
     print(f"testing_data results: {testing_metrics}")
+
