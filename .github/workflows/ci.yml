@@ -16,7 +16,8 @@ jobs:
         image: sychin0606/ci:latest
         ports:
           - 5051:5051
-        options: >-
+        options: >
+          --platform linux/amd64
           --health-cmd "curl --fail http://localhost:5051 || exit 1"
           --health-interval 10s
           --health-timeout 5s
@@ -30,6 +31,10 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: "3.11"
+     
+      - name: Load environment variables
+        run: |
+          cat .env.dev >> $GITHUB_ENV
 
       - name: Install packages
         run: pip install -r requirements/dev.txt
@@ -41,15 +46,9 @@ jobs:
       # --- Step 2: Run data processing & training pipeline ---
       - name: Run pipeline
         run:
-          set -o allexport
-          source .env.dev
-          set +o allexport
           make run-pipeline
 
       # --- Step 4: Run tests ---
-      - name: Run pytest
-        run: 
-          set -o allexport
-          source .env.dev
-          set +o allexport
-          #make test
+      #- name: Run pytest
+      #  run: 
+      #    make test
