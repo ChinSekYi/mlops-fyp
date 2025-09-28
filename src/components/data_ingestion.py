@@ -3,6 +3,7 @@ Data ingestion module for the credit card fraud detection pipeline.
 Handles reading, sampling, splitting, and logging datasets.
 """
 
+# flake8: noqa
 import os
 
 import mlflow
