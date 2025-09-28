@@ -1,0 +1,37 @@
+# lightweight MLflow for CI
+
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install curl (for healthcheck) and clean up apt cache
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+ && rm -rf /var/lib/apt/lists/*
+
+# Install mlflow
+RUN pip install --upgrade pip && \
+    pip install mlflow
+
+EXPOSE 5051
+
+CMD ["sh", "-c", "mlflow server \
+  -h 0.0.0.0 \
+  -p 5051 \
+  --backend-store-uri sqlite:///mlflow.db \
+  --default-artifact-root /tmp/mlartifacts"]
+
+# docker build -t sychin0606/ci:latest -f docker/Dockerfile.ci .
+# docker push sychin0606/ci:latest
+
+# Create and use buildx builder (only needed once)
+# docker buildx create --use --name multiarch-builder
+# docker buildx inspect --bootstrap
+
+# Build and push for both amd64 and arm64
+# docker buildx build --platform linux/amd64,linux/arm64 \
+#  -t sychin0606/ci:latest \
+#  -f docker/Dockerfile.ci \
+#  --push .
+
+# docker run -it --rm -p 5051:5051 sychin0606/ci:latest
