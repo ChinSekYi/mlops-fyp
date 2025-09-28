@@ -6,7 +6,23 @@ import os
 import pickle
 
 import yaml
+from dotenv import load_dotenv
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
+
+
+def load_environment(env_file: str = None):
+    """
+    Load environment variables from a file.
+    Default is .env at project root.
+    """
+    if env_file is None:
+        env_file = ".env"
+
+    load_dotenv(env_file)
+    print(f"[ENV] Loaded environment from {env_file}")
+
+    # Optional: ensure ENV is set
+    os.environ.setdefault("ENV", "dev")
 
 
 def load_config():
@@ -16,6 +32,7 @@ def load_config():
     )
     with open(config_path, "r", encoding="utf-8") as f:
         return yaml.safe_load(f)
+
 
 def save_object(file_path, obj):
     """
@@ -28,6 +45,7 @@ def save_object(file_path, obj):
     os.makedirs(dir_path, exist_ok=True)
     with open(file_path, "wb") as file_obj:
         pickle.dump(obj, file_obj)
+
 
 def evaluate_model(x, y):
     """
@@ -45,6 +63,7 @@ def evaluate_model(x, y):
         "f1": f1_score(x, y),
     }
     return report
+
 
 def load_object(file_path):
     """

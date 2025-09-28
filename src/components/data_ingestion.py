@@ -3,26 +3,30 @@ Data ingestion module for the credit card fraud detection pipeline.
 Handles reading, sampling, splitting, and logging datasets.
 """
 
+# flake8: noqa
 import os
 
 import mlflow
 import pandas as pd
-from dotenv import load_dotenv
 from sklearn.model_selection import train_test_split
 
 from src.exception import CustomException
 from src.logger import logging
-from src.utils import load_config
-load_dotenv()
+from src.utils import load_config, load_environment
+
+# If running this script directly, uncomment the next line to ensure environment variables are loaded early
+# load_environment(".env")
 config = load_config()
+DATASET_NAME = os.getenv("DATASET_NAME")
 
 ingestion_config = config["data_ingestion"]
 RAW_DATA_PATH = ingestion_config["raw_data_path"]
+RAW_DATA_PATH = os.path.join(RAW_DATA_PATH, DATASET_NAME)
 TRAIN_DATA_PATH = ingestion_config["train_data_path"]
 TEST_DATA_PATH = ingestion_config["test_data_path"]
 TEST_SIZE = ingestion_config["test_size"]
 RANDOM_STATE = ingestion_config["random_state"]
-DATASET_NAME = os.getenv("DATASET_NAME")
+
 
 class DataIngestion:
     """
@@ -67,10 +71,14 @@ class DataIngestion:
             train = pd.concat([x_train, y_train], axis=1)
             test = pd.concat([x_test, y_test], axis=1)
 
-            # mlflow dataset logging (if available)
             if hasattr(mlflow.data, "from_pandas"):
+                # Log train dataset
                 train_dataset = mlflow.data.from_pandas(train, name="train")
                 mlflow.log_input(train_dataset, context="training")
+
+                # Log test dataset
+                test_dataset = mlflow.data.from_pandas(test, name="test")
+                mlflow.log_input(test_dataset, context="test")
 
             os.makedirs(os.path.dirname(self.train_data_path), exist_ok=True)
             train.to_csv(self.train_data_path, index=False)
@@ -85,4 +93,3 @@ class DataIngestion:
 if __name__ == "__main__":
     obj = DataIngestion()
     train_data_path, test_data_path = obj.initiate_data_ingestion()
-
