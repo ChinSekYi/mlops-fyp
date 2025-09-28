@@ -31,6 +31,7 @@ def load_model():
     print(f"Loading model from {model_uri}")
     return mlflow.sklearn.load_model(model_uri)
 
+
 model = load_model()
 
 EXPECTED_FEATURES = [
@@ -92,7 +93,6 @@ def predict(transaction: Transaction):
             status_code=400, detail=f"Features must be {EXPECTED_FEATURES}"
         )
 
-
     # Convert features into DataFrame
     ordered_values = [transaction.features[feat] for feat in EXPECTED_FEATURES]
     df = pd.DataFrame([ordered_values], columns=EXPECTED_FEATURES)
@@ -108,7 +108,6 @@ def get_model_info():
 
     model_version_details = client.get_model_version_by_alias(
         name=MODEL_NAME, alias=MODEL_ALIAS
-
     )
 
     return {
@@ -121,7 +120,6 @@ def get_model_info():
         "current_stage": model_version_details.current_stage,
         "source": model_version_details.source,
     }
-
 
 
 @app.get("/metrics")
@@ -155,4 +153,3 @@ def feature_info():
 if __name__ == "__main__":
     print(MODEL_NAME)
     print(model)
-
