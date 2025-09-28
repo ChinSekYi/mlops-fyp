@@ -29,7 +29,7 @@ jobs:
       # --- Step 2: Start lightweight services ---
       - name: Start lightweight MLflow service
         run: |
-          docker compose -f docker-compose.ci.yml up -d
+          docker compose -f docker/docker-compose.ci.yml up -d
           sleep 15  # wait for MLflow to be ready
 
       # --- Step 3: Run training pipeline ---
