@@ -1,16 +1,15 @@
 import json
 import os
 import sys
+
 import mlflow
 import mlflow.sklearn
-
 import pandas as pd
 from dotenv import load_dotenv
 from sklearn.linear_model import LogisticRegression
 
 from src.exception import CustomException
 from src.logger import logging
-
 from src.utils import evaluate_model, load_config, save_object
 
 load_dotenv()
@@ -131,4 +130,3 @@ if __name__ == "__main__":
 
     print(f"training_data results: {training_metrics}")
     print(f"testing_data results: {testing_metrics}")
-

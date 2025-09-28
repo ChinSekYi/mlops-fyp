@@ -1,11 +1,11 @@
-
 # pylint: skip-file
 # flake8: noqa
 
 import os
-import pandas as pd
-from src.exception import CustomException
 
+import pandas as pd
+
+from src.exception import CustomException
 from src.utils import load_config, load_object
 
 config = load_config()
@@ -13,6 +13,7 @@ config = load_config()
 predict_config = config["predict_pipeline"]
 model_path = predict_config["model_path"]
 preprocessor_path = predict_config["preprocessor_path"]
+
 
 class PredictPipeline:
     def predict(self, features):

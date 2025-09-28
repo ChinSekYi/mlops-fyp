@@ -36,7 +36,6 @@ with mlflow.start_run(run_name=RUN_NAME):
     print("Running DataTransformation")
     data_transformation = DataTransformation()
     train_arr_path, test_arr_path, _ = data_transformation.initiate_data_transformation(
-
         train_data_path, test_data_path
     )
 
@@ -48,4 +47,3 @@ with mlflow.start_run(run_name=RUN_NAME):
     training_metrics, testing_metrics = modeltrainer.initiate_model_trainer(
         train_arr_path, test_arr_path, ARTIFACT_PATH, REGISTERED_MODEL_NAME
     )
-

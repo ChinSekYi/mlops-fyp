@@ -18,4 +18,3 @@ def test_end_to_end(sample_input):
     prediction = data.get("prediction")
     assert prediction is not None
     assert isinstance(prediction, (int, float))
-
