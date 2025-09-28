@@ -17,7 +17,6 @@ jobs:
         ports:
           - 5051:5051
         options: >-
-          --platform linux/amd64
           --health-cmd "curl --fail http://localhost:5051 || exit 1"
           --health-interval 10s
           --health-timeout 5s
@@ -38,16 +37,12 @@ jobs:
       - name: Install packages
         run: pip install -r requirements/dev.txt
 
-      # --- Step 1: Run linting/formatting/flake all in one ---
       - name: Run quality checks
         run: make check
 
-      # --- Step 2: Run data processing & training pipeline ---
       - name: Run pipeline
-        run:
-          make run-pipeline
+        run: make run-pipeline
 
       # --- Step 4: Run tests ---
       #- name: Run pytest
-      #  run: 
-      #    make test
+      #  run:  make test
