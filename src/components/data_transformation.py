@@ -1,45 +1,64 @@
-import os
-import pandas as pd
-import numpy as np
-from src.logger import logging
-from sklearn.preprocessing import StandardScaler
-from src.utils import save_object, load_config
-import mlflow
+"""
+Data transformation module for the credit card fraud detection pipeline.
+Scales features and saves preprocessor and processed datasets.
+"""
 
-config = load_config()
+import os
+
+import mlflow
+import numpy as np
+import pandas as pd
+from sklearn.preprocessing import StandardScaler
+
+from src.exception import CustomException
+from src.logger import logging
+from src.utils import load_config, save_object
+
 
 transformation_config = config["data_transformation"]
 processed_train_data_path = transformation_config["processed_train_data_path"]
 processed_test_data_path = transformation_config["processed_test_data_path"]
 preprocessor_ob_file_path = transformation_config["preprocessor_ob_file_path"]
 
+
 class DataTransformation:
+    """
+    Handles feature scaling and saving of preprocessor and processed datasets.
+    """
+
     def __init__(self):
         self.processed_train_data_path = processed_train_data_path
         self.processed_test_data_path = processed_test_data_path
         self.preprocessor_ob_file_path = preprocessor_ob_file_path
 
-        mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI"))
 
     def initiate_data_transformation(self, train_path, test_path):
+        """
+        Reads train and test data, scales features, saves processed data and scaler, logs artifact.
+        Args:
+            train_path (str): Path to the training data CSV.
+            test_path (str): Path to the test data CSV.
+        Returns:
+            tuple: Paths to processed train, test data, and preprocessor object file.
+        """
         try:
             train_df = pd.read_csv(train_path)
             test_df = pd.read_csv(test_path)
 
             scaler = StandardScaler()
-            X_train = train_df.drop(columns=["Class"])
+            x_train = train_df.drop(columns=["Class"])
             y_train = train_df["Class"]
-            X_test = test_df.drop(columns=["Class"])
+            x_test = test_df.drop(columns=["Class"])
             y_test = test_df["Class"]
 
-            feature_columns = X_train.columns.tolist()
+            feature_columns = x_train.columns.tolist()
             all_columns = feature_columns + ["Class"]
 
-            X_train_scaled = scaler.fit_transform(X_train)
-            X_test_scaled = scaler.transform(X_test)
-            
-            train_arr = np.c_[X_train_scaled, y_train.values]
-            test_arr = np.c_[X_test_scaled, y_test.values]
+            x_train_scaled = scaler.fit_transform(x_train)
+            x_test_scaled = scaler.transform(x_test)
+
+            train_arr = np.c_[x_train_scaled, y_train.values]
+            test_arr = np.c_[x_test_scaled, y_test.values]
 
             processed_train_df = pd.DataFrame(train_arr, columns=all_columns)
             processed_test_df = pd.DataFrame(test_arr, columns=all_columns)
@@ -50,20 +69,22 @@ class DataTransformation:
                 file_path=self.preprocessor_ob_file_path,
                 obj=scaler,
             )
-            
+
             mlflow.log_artifact(self.preprocessor_ob_file_path)
             logging.info("saved preprocessor and processed datasets")
             return (
-                self.processed_train_data_path, 
-                self.processed_test_data_path, 
+                self.processed_train_data_path,
+                self.processed_test_data_path,
                 self.preprocessor_ob_file_path,
             )
         except Exception as e:
-            from src.exception import CustomException
-            raise CustomException(e, None)
+            raise CustomException(e, None) from e
+
 
 if __name__ == "__main__":
     data_transformation = DataTransformation()
-    processed_train_data_path, processed_test_data_path, _ = data_transformation.initiate_data_transformation(
-        processed_train_data_path, processed_test_data_path
+    processed_train_data_path, processed_test_data_path, _ = (
+        data_transformation.initiate_data_transformation(
+            processed_train_data_path, processed_test_data_path
+        )
     )

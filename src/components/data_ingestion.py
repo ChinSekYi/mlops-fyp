@@ -1,52 +1,76 @@
+"""
+Data ingestion module for the credit card fraud detection pipeline.
+Handles reading, sampling, splitting, and logging datasets.
+"""
+
 import os
+
+import mlflow
 import pandas as pd
 from dotenv import load_dotenv
 from sklearn.model_selection import train_test_split
+
 from src.exception import CustomException
 from src.logger import logging
 from src.utils import load_config
-import mlflow
-from mlflow.data.sources import LocalArtifactDatasetSource
 load_dotenv()
 config = load_config()
 
 ingestion_config = config["data_ingestion"]
-raw_data_path = ingestion_config["raw_data_path"]
-train_data_path = ingestion_config["train_data_path"]
-test_data_path = ingestion_config["test_data_path"]
-test_size = ingestion_config["test_size"]
-random_state = ingestion_config["random_state"]
-dataset_name = os.getenv("DATASET_NAME")
+RAW_DATA_PATH = ingestion_config["raw_data_path"]
+TRAIN_DATA_PATH = ingestion_config["train_data_path"]
+TEST_DATA_PATH = ingestion_config["test_data_path"]
+TEST_SIZE = ingestion_config["test_size"]
+RANDOM_STATE = ingestion_config["random_state"]
+DATASET_NAME = os.getenv("DATASET_NAME")
 
 class DataIngestion:
+    """
+    Handles data ingestion: reading, sampling, splitting,
+    and logging datasets for training/testing.
+    """
+
     def __init__(self):
-        self.raw_data_path = raw_data_path
-        self.train_data_path = train_data_path
-        self.test_data_path = test_data_path
-        self.test_size = test_size
-        self.random_state = random_state
+        self.raw_data_path = RAW_DATA_PATH
+        self.train_data_path = TRAIN_DATA_PATH
+        self.test_data_path = TEST_DATA_PATH
+        self.test_size = TEST_SIZE
+        self.random_state = RANDOM_STATE
 
     def initiate_data_ingestion(self):
+        """
+        Reads the raw data, performs undersampling, splits into train/test,
+        logs with MLflow, and saves files.
+        Returns:
+            tuple: Paths to train and test data CSV files.
+        """
         try:
             df = pd.read_csv(self.raw_data_path)
 
             legit = df[df.Class == 0]
             fraud = df[df.Class == 1]
 
-            legit_sample = legit.sample(n=492, random_state=self.random_state) # undersampling
+            legit_sample = legit.sample(
+                n=492, random_state=self.random_state
+            )  # undersampling
             new_dataset = pd.concat([legit_sample, fraud], axis=0)
 
-            X = new_dataset.drop(columns="Class", axis=1)
-            Y = new_dataset["Class"]
-            X_train, X_test, Y_train, Y_test = train_test_split(
-                X, Y, test_size=self.test_size, stratify=Y, random_state=self.random_state
+            x = new_dataset.drop(columns="Class", axis=1)
+            y = new_dataset["Class"]
+            x_train, x_test, y_train, y_test = train_test_split(
+                x,
+                y,
+                test_size=self.test_size,
+                stratify=y,
+                random_state=self.random_state,
             )
-            train = pd.concat([X_train, Y_train], axis=1)
-            test = pd.concat([X_test, Y_test], axis=1)
+            train = pd.concat([x_train, y_train], axis=1)
+            test = pd.concat([x_test, y_test], axis=1)
 
-            # mlflow dataset logging
-            train_dataset = mlflow.data.from_pandas(df=train, source=LocalArtifactDatasetSource(self.raw_data_path), name="train")
-            mlflow.log_input(train_dataset, context="training")
+            # mlflow dataset logging (if available)
+            if hasattr(mlflow.data, "from_pandas"):
+                train_dataset = mlflow.data.from_pandas(train, name="train")
+                mlflow.log_input(train_dataset, context="training")
 
             os.makedirs(os.path.dirname(self.train_data_path), exist_ok=True)
             train.to_csv(self.train_data_path, index=False)
@@ -55,9 +79,10 @@ class DataIngestion:
 
             return self.train_data_path, self.test_data_path
         except Exception as e:
-            raise CustomException(e, None)
+            raise CustomException(e, None) from e
 
 
 if __name__ == "__main__":
     obj = DataIngestion()
-    train_data_path, test_data_path = obj.initiate_data_ingestion(dataset_name)
+    train_data_path, test_data_path = obj.initiate_data_ingestion()
+
