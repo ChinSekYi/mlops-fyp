@@ -15,7 +15,7 @@ from src.logger import logging
 from src.utils import load_config, load_environment
 
 # If running this script directly, uncomment the next line to ensure environment variables are loaded early
-# load_environment(".env.dev")
+# load_environment(".env")
 config = load_config()
 DATASET_NAME = os.getenv("DATASET_NAME")
 
