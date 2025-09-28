@@ -16,7 +16,7 @@ jobs:
         image: sychin0606/ci:latest
         ports:
           - 5051:5051
-        options: >
+        options: >-
           --platform linux/amd64
           --health-cmd "curl --fail http://localhost:5051 || exit 1"
           --health-interval 10s
