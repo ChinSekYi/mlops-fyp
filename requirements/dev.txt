@@ -1,0 +1,6 @@
+-r base.txt
+black
+isort
+flake8
+pylint
+pytest

@@ -1,10 +1,9 @@
 import numpy as np
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import precision_score, recall_score, f1_score
 
 # load dataset to dataframe
 credit_card_data = pd.read_csv("creditcard.csv")
@@ -60,12 +59,12 @@ model.fit(X_scaled, Y_train)
 # Model evaluation
 X_train_prediction = model.predict(X_scaled)
 training_data_accuracy = accuracy_score(Y_train, X_train_prediction)
-print(f'training_data_accuracy: {training_data_accuracy}')
+print(f"training_data_accuracy: {training_data_accuracy}")
 
 X_test_scaled = scaler.transform(X_test)
 X_test_prediction = model.predict(X_test_scaled)
 
-print(f'test_data_accuracy: {accuracy_score(Y_test, X_test_prediction)}')
+print(f"test_data_accuracy: {accuracy_score(Y_test, X_test_prediction)}")
 print(f"Test precision: {precision_score(Y_test, X_test_prediction):.4f}")
 print(f"Test recall: {recall_score(Y_test, X_test_prediction):.4f}")
 print(f"Test F1 score: {f1_score(Y_test, X_test_prediction):.4f}")
