@@ -1,7 +1,7 @@
 # Logs and artifacts
 /logs
 /artifacts
-
+/outputs
 
 # Ignore everything in data/ except .dvc files
 data/processed/
@@ -26,3 +26,4 @@ __pycache__/
 # MLflow tracking and artifacts
 /mlruns
 /mlartifacts
+outputs/artifacts/preprocessor.pkl
