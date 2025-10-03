@@ -18,4 +18,5 @@ pytest-asyncio
 pylint
 httpx
 pyyaml
+seaborn
 #-e .
