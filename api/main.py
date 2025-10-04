@@ -5,14 +5,13 @@ and feature info.
 """
 
 import os
-from typing import Dict
 
 import mlflow
 import pandas as pd
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from mlflow import MlflowClient
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 load_dotenv()
 
@@ -47,10 +46,6 @@ EXPECTED_FEATURES = [
 ]
 
 
-# Input Schema - ensures validation
-from pydantic import Field
-
-
 class Transaction(BaseModel):
     step: int
     amount: float
@@ -72,28 +67,30 @@ def health_check():
 @app.post("/predict")
 def predict(transaction: Transaction):
     """Predicts whether a transaction is fraudulent (1) or not (0) using the trained model."""
+
     # One-hot encode 'type'
     type_values = ["CASH_IN", "CASH_OUT", "DEBIT", "PAYMENT", "TRANSFER"]
-    input_dict = transaction.dict()
+    input_dict = transaction.model_dump()
     df = pd.DataFrame([input_dict])
+
     for t in type_values:
         df[f"type__{t}"] = (df["type"] == t).astype(int)
     df = df.drop(columns=["type"])
-    # Reorder columns to match model input
+
     ordered_cols = [
         "step",
         "amount",
-        "nameOrig_token",
         "oldbalanceOrg",
         "newbalanceOrig",
         "oldbalanceDest",
         "newbalanceDest",
-        "nameDest_token",
         "type__CASH_IN",
         "type__CASH_OUT",
         "type__DEBIT",
         "type__PAYMENT",
         "type__TRANSFER",
+        "nameOrig_token",
+        "nameDest_token",
     ]
     df = df[ordered_cols]
     preds = model.predict(df)
@@ -163,3 +160,19 @@ def feature_info():
 if __name__ == "__main__":
     print(MODEL_NAME)
     print(model)
+
+    input = Transaction(
+        **{
+            "step": 1,
+            "amount": 1000.0,
+            "oldbalanceOrg": 5000.0,
+            "newbalanceOrig": 4000.0,
+            "oldbalanceDest": 0.0,
+            "newbalanceDest": 1000.0,
+            "type": "CASH_OUT",
+            "nameOrig_token": 123,
+            "nameDest_token": 456,
+        }
+    )
+    output = predict(input)
+    print(output)
