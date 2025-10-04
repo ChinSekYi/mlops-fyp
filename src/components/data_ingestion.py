@@ -12,10 +12,10 @@ from sklearn.model_selection import train_test_split
 
 from src.exception import CustomException
 from src.logger import logging
-from src.utils import load_config, load_environment
+from src.utils import load_config, load_environment, balance_classes, one_hot_encode_and_align, standardize_columns, tokenize_column
 
 # If running this script directly, uncomment the next line to ensure environment variables are loaded early
-# load_environment(".env")
+load_environment(".env")
 config = load_config()
 DATASET_NAME = os.getenv("DATASET_NAME")
 
@@ -50,27 +50,30 @@ class DataIngestion:
         """
         try:
             df = pd.read_csv(self.raw_data_path)
+            x=df.drop('isFraud',axis=1)
+            y=df['isFraud']
+            
+            x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=self.test_size, random_state=self.random_state)
+            x_train, y_train = balance_classes(x_train, y_train)
 
-            legit = df[df.Class == 0]
-            fraud = df[df.Class == 1]
-
-            legit_sample = legit.sample(
-                n=492, random_state=self.random_state
-            )  # undersampling
-            new_dataset = pd.concat([legit_sample, fraud], axis=0)
-
-            x = new_dataset.drop(columns="Class", axis=1)
-            y = new_dataset["Class"]
-            x_train, x_test, y_train, y_test = train_test_split(
-                x,
-                y,
-                test_size=self.test_size,
-                stratify=y,
-                random_state=self.random_state,
-            )
             train = pd.concat([x_train, y_train], axis=1)
             test = pd.concat([x_test, y_test], axis=1)
 
+            """ 
+            x_train, x_test = one_hot_encode_and_align(x_train, x_test, "type")
+
+            col_names = ['amount','oldbalanceOrg','newbalanceOrig','oldbalanceDest','newbalanceDest']
+            x_train, x_test = standardize_columns(x_train, x_test, col_names)
+
+            x_train, x_test = tokenize_column(x_train, x_test, "nameOrig")
+            x_train, x_test = tokenize_column(x_train, x_test, "nameDest")
+
+            x_train=x_train.drop(['nameOrig','nameDest','isFlaggedFraud'],axis=1)
+            x_train = x_train.reset_index(drop=True)
+
+            x_test=x_test.drop(['nameOrig','nameDest','isFlaggedFraud'],axis=1)
+            x_test = x_test.reset_index(drop=True)
+            """
             if hasattr(mlflow.data, "from_pandas"):
                 # Log train dataset
                 train_dataset = mlflow.data.from_pandas(train, name="train")
