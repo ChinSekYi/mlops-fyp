@@ -5,14 +5,13 @@ and feature info.
 """
 
 import os
-from typing import Dict
 
 import mlflow
 import pandas as pd
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from mlflow import MlflowClient
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 load_dotenv()
 
@@ -35,48 +34,30 @@ def load_model():
 model = load_model()
 
 EXPECTED_FEATURES = [
-    "Time",
-    "V1",
-    "V2",
-    "V3",
-    "V4",
-    "V5",
-    "V6",
-    "V7",
-    "V8",
-    "V9",
-    "V10",
-    "V11",
-    "V12",
-    "V13",
-    "V14",
-    "V15",
-    "V16",
-    "V17",
-    "V18",
-    "V19",
-    "V20",
-    "V21",
-    "V22",
-    "V23",
-    "V24",
-    "V25",
-    "V26",
-    "V27",
-    "V28",
-    "Amount",
+    "step",
+    "amount",
+    "oldbalanceOrg",
+    "newbalanceOrig",
+    "oldbalanceDest",
+    "newbalanceDest",
+    "type",
+    "nameOrig_token",
+    "nameDest_token",
 ]
 
 
-# Input Schema - ensures validation
 class Transaction(BaseModel):
-    """Input schema for a transaction, expects a dictionary of
-    feature names to float values."""
+    step: int
+    amount: float
+    oldbalanceOrg: float
+    newbalanceOrig: float
+    oldbalanceDest: float
+    newbalanceDest: float
+    type: str = Field(..., description="Transaction type", example="CASH_OUT")
+    nameOrig_token: int
+    nameDest_token: int
 
-    features: Dict[str, float]
 
-
-# Routes
 @app.get("/")
 def health_check():
     """Health check endpoint to verify API status and model alias."""
@@ -85,20 +66,35 @@ def health_check():
 
 @app.post("/predict")
 def predict(transaction: Transaction):
-    """Predicts whether a transaction is fraudulent (1) or not (0) using the
-    trained model."""
-    # Validate keys
-    if set(transaction.features.keys()) != set(EXPECTED_FEATURES):
-        raise transaction(
-            status_code=400, detail=f"Features must be {EXPECTED_FEATURES}"
-        )
+    """Predicts whether a transaction is fraudulent (1) or not (0) using the trained model."""
 
-    # Convert features into DataFrame
-    ordered_values = [transaction.features[feat] for feat in EXPECTED_FEATURES]
-    df = pd.DataFrame([ordered_values], columns=EXPECTED_FEATURES)
+    # One-hot encode 'type'
+    type_values = ["CASH_IN", "CASH_OUT", "DEBIT", "PAYMENT", "TRANSFER"]
+    input_dict = transaction.model_dump()
+    df = pd.DataFrame([input_dict])
+
+    for t in type_values:
+        df[f"type__{t}"] = (df["type"] == t).astype(int)
+    df = df.drop(columns=["type"])
+
+    ordered_cols = [
+        "step",
+        "amount",
+        "oldbalanceOrg",
+        "newbalanceOrig",
+        "oldbalanceDest",
+        "newbalanceDest",
+        "type__CASH_IN",
+        "type__CASH_OUT",
+        "type__DEBIT",
+        "type__PAYMENT",
+        "type__TRANSFER",
+        "nameOrig_token",
+        "nameDest_token",
+    ]
+    df = df[ordered_cols]
     preds = model.predict(df)
-
-    return {"prediction": int(preds[0])}  # binary classification: 0 or 1
+    return {"prediction": int(preds[0])}
 
 
 @app.get("/model-info")
@@ -142,14 +138,41 @@ def get_model_metrics():
 
 @app.get("/feature-info")
 def feature_info():
-    """Returns information about the model's input features."""
+    """Returns information about the model's input features for PaySim."""
     return {
-        "num_features": 30,
-        "description": "PCA-transformed credit card transaction features",
-        "source": "Kaggle Credit Card Fraud Dataset",
+        "expected_features": EXPECTED_FEATURES,
+        "type_dropdown_values": ["CASH_IN", "CASH_OUT", "DEBIT", "PAYMENT", "TRANSFER"],
+        "description": "PaySim transaction features. 'type' should be selected from the dropdown.",
+        "example": {
+            "step": 1,
+            "amount": 1000.0,
+            "oldbalanceOrg": 5000.0,
+            "newbalanceOrig": 4000.0,
+            "oldbalanceDest": 0.0,
+            "newbalanceDest": 1000.0,
+            "type": "CASH_OUT",
+            "nameOrig_token": 123,
+            "nameDest_token": 456,
+        },
     }
 
 
 if __name__ == "__main__":
     print(MODEL_NAME)
     print(model)
+
+    input = Transaction(
+        **{
+            "step": 1,
+            "amount": 1000.0,
+            "oldbalanceOrg": 5000.0,
+            "newbalanceOrig": 4000.0,
+            "oldbalanceDest": 0.0,
+            "newbalanceDest": 1000.0,
+            "type": "CASH_OUT",
+            "nameOrig_token": 123,
+            "nameDest_token": 456,
+        }
+    )
+    output = predict(input)
+    print(output)

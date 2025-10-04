@@ -12,16 +12,16 @@ from sklearn.model_selection import train_test_split
 
 from src.exception import CustomException
 from src.logger import logging
-from src.utils import load_config, load_environment
+from src.utils import balance_classes, load_config, load_environment
 
 # If running this script directly, uncomment the next line to ensure environment variables are loaded early
-# load_environment(".env")
+load_environment(".env")
 config = load_config()
 DATASET_NAME = os.getenv("DATASET_NAME")
 
 ingestion_config = config["data_ingestion"]
-RAW_DATA_PATH = ingestion_config["raw_data_path"]
-RAW_DATA_PATH = os.path.join(RAW_DATA_PATH, DATASET_NAME)
+RAW_DATA_PATH_ = ingestion_config["raw_data_path"]
+RAW_DATA_PATH = os.path.join(RAW_DATA_PATH_, DATASET_NAME)
 TRAIN_DATA_PATH = ingestion_config["train_data_path"]
 TEST_DATA_PATH = ingestion_config["test_data_path"]
 TEST_SIZE = ingestion_config["test_size"]
@@ -43,31 +43,27 @@ class DataIngestion:
 
     def initiate_data_ingestion(self):
         """
-        Reads the raw data, performs undersampling, splits into train/test,
+        Reads the raw data, handles class imbalance, splits into train/test,
         logs with MLflow, and saves files.
         Returns:
             tuple: Paths to train and test data CSV files.
         """
         try:
             df = pd.read_csv(self.raw_data_path)
+            x = df.drop("isFraud", axis=1)
+            y = df["isFraud"]
 
-            legit = df[df.Class == 0]
-            fraud = df[df.Class == 1]
-
-            legit_sample = legit.sample(
-                n=492, random_state=self.random_state
-            )  # undersampling
-            new_dataset = pd.concat([legit_sample, fraud], axis=0)
-
-            x = new_dataset.drop(columns="Class", axis=1)
-            y = new_dataset["Class"]
             x_train, x_test, y_train, y_test = train_test_split(
                 x,
                 y,
                 test_size=self.test_size,
-                stratify=y,
                 random_state=self.random_state,
+                stratify=y,
             )
+            x_train, y_train = balance_classes(x_train, y_train)
+            print(y_train.value_counts())
+            print(y_test.value_counts())
+
             train = pd.concat([x_train, y_train], axis=1)
             test = pd.concat([x_test, y_test], axis=1)
 

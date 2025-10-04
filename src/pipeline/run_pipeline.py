@@ -48,6 +48,6 @@ with mlflow.start_run(run_name=RUN_NAME):
     modeltrainer = ModelTrainer()
 
     # enter registered_model_name in model_trainer, if required
-    training_metrics, testing_metrics = modeltrainer.initiate_model_trainer(
-        train_arr_path, test_arr_path, ARTIFACT_PATH, REGISTERED_MODEL_NAME
+    all_metrics = modeltrainer.initiate_model_trainer(
+        train_arr_path, test_arr_path, REGISTERED_MODEL_NAME
     )
