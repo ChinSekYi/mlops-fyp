@@ -11,7 +11,7 @@ EXPECTED_FEATURES = [
     "newbalanceDest",
     "type",
     "nameOrig_token",
-    "nameDest_token"
+    "nameDest_token",
 ]
 
 TYPE_DROPDOWN_VALUES = ["CASH_IN", "CASH_OUT", "DEBIT", "PAYMENT", "TRANSFER"]
@@ -30,18 +30,23 @@ for i, feature in enumerate(EXPECTED_FEATURES):
     with col:
         if feature == "type":
             input_data[feature] = st.selectbox(
-                "Transaction type",
-                TYPE_DROPDOWN_VALUES,
-                key=f"type_{i}"
+                "Transaction type", TYPE_DROPDOWN_VALUES, key=f"type_{i}"
             )
         else:
-            label = f"${feature}" if feature in ["amount", "oldbalanceOrg", "newbalanceOrig", "oldbalanceDest", "newbalanceDest"] else feature
+            label = (
+                f"${feature}"
+                if feature
+                in [
+                    "amount",
+                    "oldbalanceOrg",
+                    "newbalanceOrig",
+                    "oldbalanceDest",
+                    "newbalanceDest",
+                ]
+                else feature
+            )
             input_data[feature] = st.number_input(
-                label,
-                min_value=0.0,
-                step=0.01,
-                format="%.2f",
-                key=f"num_{feature}_{i}"
+                label, min_value=0.0, step=0.01, format="%.2f", key=f"num_{feature}_{i}"
             )
 
 if st.button("Predict", key="single"):
