@@ -8,6 +8,8 @@ data/processed/
 creditcard.csv
 data/raw/*
 !data/raw/*.dvc
+data/ieee-fraud-detection
+data/kaggle-creditcard
 
 # Python cache
 /src/components/__pycache__/
@@ -27,3 +29,6 @@ __pycache__/
 /mlruns
 /mlartifacts
 outputs/artifacts/preprocessor.pkl
+notebooks/data/processed/test_paysim.csv
+notebooks/data/processed/train_paysim.csv
+notebooks/data/processed/validation_paysim.csv

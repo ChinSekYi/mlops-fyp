@@ -3,14 +3,16 @@ Data transformation module for the credit card fraud detection pipeline.
 Scales features and saves preprocessor and processed datasets.
 """
 
-import mlflow
-import numpy as np
 import pandas as pd
-from sklearn.preprocessing import StandardScaler
 
 from src.exception import CustomException
 from src.logger import logging
-from src.utils import load_config, save_object
+from src.utils import (
+    load_config,
+    one_hot_encode_and_align,
+    standardize_columns,
+    tokenize_column,
+)
 
 config = load_config()
 transformation_config = config["data_transformation"]
@@ -36,39 +38,45 @@ class DataTransformation:
             train_path (str): Path to the training data CSV.
             test_path (str): Path to the test data CSV.
         Returns:
-            tuple: Paths to processed train, test data, and preprocessor object file.
+            tuple: Paths to processed train, and test data.
         """
         try:
             train_df = pd.read_csv(train_path)
             test_df = pd.read_csv(test_path)
 
-            scaler = StandardScaler()
-            x_train = train_df.drop(columns=["Class"])
-            y_train = train_df["Class"]
-            x_test = test_df.drop(columns=["Class"])
-            y_test = test_df["Class"]
+            x_train = train_df.drop(columns=["isFraud"])
+            y_train = train_df["isFraud"]
+            x_test = test_df.drop(columns=["isFraud"])
+            y_test = test_df["isFraud"]
 
-            feature_columns = x_train.columns.tolist()
-            all_columns = feature_columns + ["Class"]
+            x_train, x_test = one_hot_encode_and_align(x_train, x_test, "type")
 
-            x_train_scaled = scaler.fit_transform(x_train)
-            x_test_scaled = scaler.transform(x_test)
+            col_names = [
+                "amount",
+                "oldbalanceOrg",
+                "newbalanceOrig",
+                "oldbalanceDest",
+                "newbalanceDest",
+            ]
+            x_train, x_test = standardize_columns(x_train, x_test, col_names)
 
-            train_arr = np.c_[x_train_scaled, y_train.values]
-            test_arr = np.c_[x_test_scaled, y_test.values]
+            x_train, x_test = tokenize_column(x_train, x_test, "nameOrig")
+            x_train, x_test = tokenize_column(x_train, x_test, "nameDest")
 
-            processed_train_df = pd.DataFrame(train_arr, columns=all_columns)
-            processed_test_df = pd.DataFrame(test_arr, columns=all_columns)
-            processed_train_df.to_csv(self.processed_train_data_path, index=False)
-            processed_test_df.to_csv(self.processed_test_data_path, index=False)
+            x_train = x_train.drop(["nameOrig", "nameDest", "isFlaggedFraud"], axis=1)
+            x_train = x_train.reset_index(drop=True)
+            x_train = pd.concat([x_train, y_train], axis=1)
 
-            save_object(
-                file_path=self.preprocessor_ob_file_path,
-                obj=scaler,
+            x_test = x_test.drop(["nameOrig", "nameDest", "isFlaggedFraud"], axis=1)
+            x_test = x_test.reset_index(drop=True)
+            x_test = pd.concat([x_test, y_test], axis=1)
+
+            x_train.to_csv(self.processed_train_data_path, index=False)
+            x_test.to_csv(self.processed_test_data_path, index=False)
+
+            logging.info(
+                "data transformation completed.  processed_test.csv and processed_train.csv saved."
             )
-
-            mlflow.log_artifact(self.preprocessor_ob_file_path)
-            logging.info("saved preprocessor and processed datasets")
             return (
                 self.processed_train_data_path,
                 self.processed_test_data_path,
@@ -79,9 +87,16 @@ class DataTransformation:
 
 
 if __name__ == "__main__":
+    # Use the correct input file paths for train and test data
+    config = load_config()
+    ingestion_config = config["data_ingestion"]
+    train_data_path = ingestion_config["train_data_path"]
+    test_data_path = ingestion_config["test_data_path"]
+    print(train_data_path, test_data_path)
+
     data_transformation = DataTransformation()
     processed_train_data_path, processed_test_data_path, _ = (
         data_transformation.initiate_data_transformation(
-            processed_train_data_path, processed_test_data_path
+            train_data_path, test_data_path
         )
     )
