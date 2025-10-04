@@ -11,6 +11,7 @@ services:
 
     api:
       image: sychin0606/fraud-api:latest
+      platform: linux/amd64
       container_name: api-con
       ports:
         - "8080:5050"
