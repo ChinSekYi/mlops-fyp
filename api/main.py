@@ -52,6 +52,8 @@ from pydantic import Field
 
 
 class Transaction(BaseModel):
+    features: Dict[str, float]
+    """
     step: int
     amount: float
     oldbalanceOrg: float
@@ -61,6 +63,7 @@ class Transaction(BaseModel):
     type: str = Field(..., description="Transaction type", example="CASH_OUT")
     nameOrig_token: int
     nameDest_token: int
+    """
 
 
 @app.get("/")
@@ -72,6 +75,8 @@ def health_check():
 @app.post("/predict")
 def predict(transaction: Transaction):
     """Predicts whether a transaction is fraudulent (1) or not (0) using the trained model."""
+
+    """ 
     # One-hot encode 'type'
     type_values = ["CASH_IN", "CASH_OUT", "DEBIT", "PAYMENT", "TRANSFER"]
     input_dict = transaction.dict()
@@ -85,19 +90,29 @@ def predict(transaction: Transaction):
     ordered_cols = [
         "step",
         "amount",
+        "nameOrig_token",
         "oldbalanceOrg",
         "newbalanceOrig",
         "oldbalanceDest",
         "newbalanceDest",
+        "nameDest_token",
         "type__CASH_IN",
         "type__CASH_OUT",
         "type__DEBIT",
         "type__PAYMENT",
         "type__TRANSFER",
-        "nameOrig_token",
-        "nameDest_token",
     ]
     df = df[ordered_cols]
+    """
+    # Validate keys
+    if set(transaction.features.keys()) != set(EXPECTED_FEATURES):
+        raise transaction(
+            status_code=400, detail=f"Features must be {EXPECTED_FEATURES}"
+        )
+
+    # Convert features into DataFrame
+    ordered_values = [transaction.features[feat] for feat in EXPECTED_FEATURES]
+    df = pd.DataFrame([ordered_values], columns=EXPECTED_FEATURES)
     preds = model.predict(df)
     return {"prediction": int(preds[0])}
 
