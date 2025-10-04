@@ -20,8 +20,8 @@ config = load_config()
 DATASET_NAME = os.getenv("DATASET_NAME")
 
 ingestion_config = config["data_ingestion"]
-RAW_DATA_PATH = ingestion_config["raw_data_path"]
-RAW_DATA_PATH = os.path.join(RAW_DATA_PATH, DATASET_NAME)
+RAW_DATA_PATH_ = ingestion_config["raw_data_path"]
+RAW_DATA_PATH = os.path.join(RAW_DATA_PATH_, DATASET_NAME)
 TRAIN_DATA_PATH = ingestion_config["train_data_path"]
 TEST_DATA_PATH = ingestion_config["test_data_path"]
 TEST_SIZE = ingestion_config["test_size"]

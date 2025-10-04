@@ -4,12 +4,13 @@ Utility functions for configuration loading, model evaluation, and object serial
 
 import os
 import pickle
+
 import pandas as pd
 import yaml
 from dotenv import load_dotenv
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
-from sklearn.utils import resample
 from sklearn.preprocessing import StandardScaler
+from sklearn.utils import resample
 
 
 def load_environment(env_file: str = None):
@@ -48,23 +49,26 @@ def save_object(file_path, obj):
     with open(file_path, "wb") as file_obj:
         pickle.dump(obj, file_obj)
 
+
 def balance_classes(x_train, y_train, random_state=123):
     """Upsample the minority class in x_train/y_train to match the majority class size."""
     train_balanced = x_train.copy()
-    train_balanced['isFraud'] = y_train.values
-    majority_class = train_balanced['isFraud'].value_counts().idxmax()
-    minority_class = train_balanced['isFraud'].value_counts().idxmin()
-    df_majority = train_balanced[train_balanced['isFraud'] == majority_class]
-    df_minority = train_balanced[train_balanced['isFraud'] == minority_class]
-    df_minority_upsampled = resample(df_minority, 
-                                 replace=True, 
-                                 n_samples=len(df_majority), 
-                                 random_state=random_state)
+    train_balanced["isFraud"] = y_train.values
+    majority_class = train_balanced["isFraud"].value_counts().idxmax()
+    minority_class = train_balanced["isFraud"].value_counts().idxmin()
+    df_majority = train_balanced[train_balanced["isFraud"] == majority_class]
+    df_minority = train_balanced[train_balanced["isFraud"] == minority_class]
+    df_minority_upsampled = resample(
+        df_minority, replace=True, n_samples=len(df_majority), random_state=random_state
+    )
     train_balanced = pd.concat([df_majority, df_minority_upsampled])
-    train_balanced = train_balanced.sample(frac=1, random_state=random_state).reset_index(drop=True)
-    x_train_bal = train_balanced.drop('isFraud', axis=1)
-    y_train_bal = train_balanced['isFraud']
+    train_balanced = train_balanced.sample(
+        frac=1, random_state=random_state
+    ).reset_index(drop=True)
+    x_train_bal = train_balanced.drop("isFraud", axis=1)
+    y_train_bal = train_balanced["isFraud"]
     return x_train_bal, y_train_bal
+
 
 def one_hot_encode_and_align(x_train, x_test, column):
     # One-hot encode the specified column in both train and test
@@ -74,8 +78,9 @@ def one_hot_encode_and_align(x_train, x_test, column):
             df.drop([column], axis=1, inplace=True)
             df[dummies.columns] = dummies
     # Align columns to ensure both have the same features
-    x_train, x_test = x_train.align(x_test, join='left', axis=1, fill_value=0)
+    x_train, x_test = x_train.align(x_test, join="left", axis=1, fill_value=0)
     return x_train, x_test
+
 
 def standardize_columns(x_train, x_test, col_names):
     scaler = StandardScaler().fit(x_train[col_names].values)
@@ -93,6 +98,8 @@ def tokenize_column(x_train, x_test, column):
     x_test[f"{column}_token"] = x_test[f"{column}_token"].replace(-1, len(uniques))
     return x_train, x_test
 
+
+# not used
 def evaluate_model(x, y):
     """
     Evaluate a model's predictions using common classification metrics.
