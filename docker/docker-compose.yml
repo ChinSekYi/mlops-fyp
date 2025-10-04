@@ -19,8 +19,6 @@ services:
         MLFLOW_TRACKING_URI: http://mlflow-server:5050
       env_file:
         - ../.env
-      volumes:
-        - ./config.yaml:/app/config.yaml
       networks:
         - mlops-network
       depends_on:
