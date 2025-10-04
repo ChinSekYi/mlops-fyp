@@ -1,4 +1,3 @@
-import json
 import os
 import sys
 
@@ -7,12 +6,14 @@ import mlflow.sklearn
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
+from sklearn.model_selection import cross_val_score
 from sklearn.naive_bayes import GaussianNB
 from sklearn.tree import DecisionTreeClassifier
 
 from src.exception import CustomException
 from src.logger import logging
-from src.utils import evaluate_model, load_config, save_object
+from src.utils import load_config
 
 config = load_config()
 
@@ -44,19 +45,8 @@ class ModelTrainer:
         self,
         train_data_path,
         test_data_path,
-        artifact_path_param,
         registered_model_name_param,
     ):
-        """
-        Trains a logistic regression model, evaluates it, logs to MLflow, and saves metrics.
-        Args:
-            train_data_path (str): Path to processed training data.
-            test_data_path (str): Path to processed test data.
-            artifact_path_param (str): MLflow artifact path.
-            registered_model_name_param (str): MLflow registered model name.
-        Returns:
-            tuple: Training and testing metrics dictionaries.
-        """
         try:
             train_df = pd.read_csv(train_data_path)
             test_df = pd.read_csv(test_data_path)
@@ -67,102 +57,61 @@ class ModelTrainer:
             x_test = test_df.drop(columns=["isFraud"])
             y_test = test_df["isFraud"]
 
-            """ 
-            cv_dict = {0: 'Logistic Regression', 1: 'Decision Tree', 2: 'Naive Bayes', 3: 'Random Forest'}
-            cv_models = [
-                LogisticRegression(solver='liblinear', random_state=123, class_weight='balanced'),
-                DecisionTreeClassifier(random_state=123),
-                GaussianNB(),
-                RandomForestClassifier(random_state=123)
-            ]"""
-
-            # Log parameters
-            mlflow.log_param("model_type", "LogisticRegression")
-            mlflow.log_param("solver", "liblinear")
-
-            # Train model
-            # model = LogisticRegression(max_iter=1000)
-            model = LogisticRegression(
-                solver="liblinear", random_state=123, class_weight="balanced"
-            )
-            model.fit(x_train, y_train)
-
-            # Save model locally and log to MLflow
-            save_object(
-                file_path=self.trained_model_file_path,
-                obj=model,
-            )
-
-            model_info = mlflow.sklearn.log_model(
-                sk_model=model,
-                input_example=x_train.iloc[[0]],
-                name=artifact_path_param,
-                registered_model_name=registered_model_name_param,
-            )
-            mlflow.log_artifact(self.trained_model_file_path)
-
-            # Make predictions
-            y_train_pred = model.predict(x_train)
-            y_test_pred = model.predict(x_test)
-
-            # Directly compute metrics using sklearn
-            from sklearn.metrics import (
-                accuracy_score,
-                f1_score,
-                precision_score,
-                recall_score,
-            )
-
-            train_accuracy = accuracy_score(y_train, y_train_pred)
-            train_precision = precision_score(y_train, y_train_pred, zero_division=0)
-            train_recall = recall_score(y_train, y_train_pred, zero_division=0)
-            train_f1 = f1_score(y_train, y_train_pred, zero_division=0)
-
-            test_accuracy = accuracy_score(y_test, y_test_pred)
-            test_precision = precision_score(y_test, y_test_pred, zero_division=0)
-            test_recall = recall_score(y_test, y_test_pred, zero_division=0)
-            test_f1 = f1_score(y_test, y_test_pred, zero_division=0)
-
-            # Log metrics to MLflow
-            mlflow.log_metric(
-                "train_accuracy", train_accuracy, model_id=model_info.model_id
-            )
-            mlflow.log_metric(
-                "train_precision", train_precision, model_id=model_info.model_id
-            )
-            mlflow.log_metric(
-                "train_recall", train_recall, model_id=model_info.model_id
-            )
-            mlflow.log_metric("train_f1", train_f1, model_id=model_info.model_id)
-            mlflow.log_metric(
-                "test_accuracy", test_accuracy, model_id=model_info.model_id
-            )
-            mlflow.log_metric(
-                "test_precision", test_precision, model_id=model_info.model_id
-            )
-            mlflow.log_metric("test_recall", test_recall, model_id=model_info.model_id)
-            mlflow.log_metric("test_f1", test_f1, model_id=model_info.model_id)
-
-            # Save metrics.json for DVC tracking
-            metrics_data = {
-                "training_data_metrics": {
-                    "accuracy": train_accuracy,
-                    "precision": train_precision,
-                    "recall": train_recall,
-                    "f1": train_f1,
-                },
-                "testing_data_metrics": {
-                    "accuracy": test_accuracy,
-                    "precision": test_precision,
-                    "recall": test_recall,
-                    "f1": test_f1,
-                },
+            model_dict = {
+                "LogisticRegression": LogisticRegression(
+                    solver="liblinear", random_state=123, class_weight="balanced"
+                ),
+                "DecisionTree": DecisionTreeClassifier(random_state=123),
+                "NaiveBayes": GaussianNB(),
+                "RandomForest": RandomForestClassifier(random_state=123),
             }
-            print(metrics_data["testing_data_metrics"])
-            return (
-                metrics_data["training_data_metrics"],
-                metrics_data["testing_data_metrics"],
-            )
+
+            all_metrics = {}
+            for model_name, model in model_dict.items():
+                # with mlflow.start_run(run_name=model_name):
+                with mlflow.start_run(
+                    run_name=model_name, nested=mlflow.active_run() is not None
+                ):
+                    mlflow.log_param("model_type", model_name)
+                    mlflow.log_params(model.get_params())
+
+                    # Cross-validation accuracy
+                    cv_acc = cross_val_score(
+                        model, x_train, y_train, cv=10, scoring="accuracy"
+                    ).mean()
+                    mlflow.log_metric("cv_accuracy", cv_acc)
+
+                    # Train and predict
+                    model.fit(x_train, y_train)
+                    y_test_pred = model.predict(x_test)
+                    test_accuracy = accuracy_score(y_test, y_test_pred)
+                    test_precision = precision_score(
+                        y_test, y_test_pred, zero_division=0
+                    )
+                    test_recall = recall_score(y_test, y_test_pred, zero_division=0)
+                    test_f1 = f1_score(y_test, y_test_pred, zero_division=0)
+
+                    mlflow.log_metric("test_accuracy", test_accuracy)
+                    mlflow.log_metric("test_precision", test_precision)
+                    mlflow.log_metric("test_recall", test_recall)
+                    mlflow.log_metric("test_f1", test_f1)
+                    mlflow.sklearn.log_model(
+                        sk_model=model,
+                        input_example=x_train.iloc[[0]],
+                        name=model_name,
+                        registered_model_name=registered_model_name_param,  # uncomment to register model
+                    )
+                    mlflow.log_artifact(self.trained_model_file_path)
+
+                    all_metrics[model_name] = {
+                        "cv_accuracy": cv_acc,
+                        "test_accuracy": test_accuracy,
+                        "test_precision": test_precision,
+                        "test_recall": test_recall,
+                        "test_f1": test_f1,
+                    }
+
+            return all_metrics
 
         except Exception as e:
             raise CustomException(e, sys) from e
@@ -173,7 +122,6 @@ if __name__ == "__main__":
     training_metrics, testing_metrics = modeltrainer.initiate_model_trainer(
         processed_train_data_path,
         processed_test_data_path,
-        artifact_path,
         registered_model_name,
     )
 
