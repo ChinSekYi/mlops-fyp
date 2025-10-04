@@ -23,8 +23,7 @@ st.write("Interact with the fraud detection model served by FastAPI + MLflow.")
 
 # Sidebar navigation for multipage UI
 page = st.sidebar.radio(
-    "Select Page",
-    ["Predict", "Model Info", "Metrics", "Feature Info"]
+    "Select Page", ["Predict", "Model Info", "Metrics", "Feature Info"]
 )
 
 if page == "Predict":
@@ -63,7 +62,10 @@ if page == "Predict":
     elif sample_choice == "Fraud Example":
         default_values = sample_fraud
     else:
-        default_values = {k: 0.0 if k != "type" else TYPE_DROPDOWN_VALUES[0] for k in EXPECTED_FEATURES}
+        default_values = {
+            k: 0.0 if k != "type" else TYPE_DROPDOWN_VALUES[0]
+            for k in EXPECTED_FEATURES
+        }
 
     input_data = {}
     num_cols = 3
@@ -75,13 +77,18 @@ if page == "Predict":
                 input_data[feature] = st.selectbox(
                     "Transaction type",
                     TYPE_DROPDOWN_VALUES,
-                    index=TYPE_DROPDOWN_VALUES.index(default_values[feature]) if default_values[feature] in TYPE_DROPDOWN_VALUES else 0,
-                    key=f"type_{i}"
+                    index=(
+                        TYPE_DROPDOWN_VALUES.index(default_values[feature])
+                        if default_values[feature] in TYPE_DROPDOWN_VALUES
+                        else 0
+                    ),
+                    key=f"type_{i}",
                 )
             else:
                 label = (
                     f"${feature}"
-                    if feature in [
+                    if feature
+                    in [
                         "amount",
                         "oldbalanceOrg",
                         "newbalanceOrig",
@@ -97,7 +104,7 @@ if page == "Predict":
                         step=1,
                         value=int(default_values[feature]),
                         format="%d",
-                        key=f"num_{feature}_{i}"
+                        key=f"num_{feature}_{i}",
                     )
                 else:
                     input_data[feature] = st.number_input(
@@ -106,7 +113,7 @@ if page == "Predict":
                         step=0.01,
                         format="%.2f",
                         value=float(default_values[feature]),
-                        key=f"num_{feature}_{i}"
+                        key=f"num_{feature}_{i}",
                     )
     if st.button("Predict", key="single"):
         payload = input_data
