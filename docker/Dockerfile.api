@@ -9,16 +9,17 @@ RUN pip install --no-cache-dir boto3 mlflow
 # uncomment in prod because we wont be using bind mounts anymore
 COPY api/ ./api/
 COPY src/ ./src/ 
-COPY config.yaml /app/config.yaml
+COPY config.yaml .
 EXPOSE 5050
 
 CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "5050", "--reload"]
 
 # docker build -t api-image -f docker/Dockerfile.api .
-# docker run --rm -d --name api-con --network mlops-network -p 5060:5050 --env-file .env api-image
+# docker run --rm -d --name api-con --network mlops-network -p 5060:5050 --env-file .env sychin0606/fraud-api:latest
 # docker exec -it <con_id> /bin/bash
 # uvicorn api.main:app --host 0.0.0.0 --port 5060
 
 # docker build --platform linux/amd64 -t sychin0606/fraud-api:latest -f docker/Dockerfile.api .
+# docker build --no-cache -t sychin0606/fraud-api:latest -f docker/Dockerfile.api .
 # docker tag sychin0606/fraud-api:latest
 # docker push sychin0606/fraud-api:latest
