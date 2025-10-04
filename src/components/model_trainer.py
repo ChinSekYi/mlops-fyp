@@ -5,7 +5,10 @@ import sys
 import mlflow
 import mlflow.sklearn
 import pandas as pd
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
+from sklearn.naive_bayes import GaussianNB
+from sklearn.tree import DecisionTreeClassifier
 
 from src.exception import CustomException
 from src.logger import logging
@@ -59,17 +62,29 @@ class ModelTrainer:
             test_df = pd.read_csv(test_data_path)
 
             logging.info("Splitting training and test input data")
-            x_train = train_df.drop(columns=["Class"])
-            y_train = train_df["Class"]
-            x_test = test_df.drop(columns=["Class"])
-            y_test = test_df["Class"]
+            x_train = train_df.drop(columns=["isFraud"])
+            y_train = train_df["isFraud"]
+            x_test = test_df.drop(columns=["isFraud"])
+            y_test = test_df["isFraud"]
+
+            """ 
+            cv_dict = {0: 'Logistic Regression', 1: 'Decision Tree', 2: 'Naive Bayes', 3: 'Random Forest'}
+            cv_models = [
+                LogisticRegression(solver='liblinear', random_state=123, class_weight='balanced'),
+                DecisionTreeClassifier(random_state=123),
+                GaussianNB(),
+                RandomForestClassifier(random_state=123)
+            ]"""
 
             # Log parameters
             mlflow.log_param("model_type", "LogisticRegression")
-            mlflow.log_param("max_iter", 1000)
+            mlflow.log_param("solver", "liblinear")
 
             # Train model
-            model = LogisticRegression(max_iter=1000)
+            # model = LogisticRegression(max_iter=1000)
+            model = LogisticRegression(
+                solver="liblinear", random_state=123, class_weight="balanced"
+            )
             model.fit(x_train, y_train)
 
             # Save model locally and log to MLflow
@@ -90,27 +105,64 @@ class ModelTrainer:
             y_train_pred = model.predict(x_train)
             y_test_pred = model.predict(x_test)
 
-            # Evaluate
-            train_metrics = evaluate_model(y_train, y_train_pred)
-            test_metrics = evaluate_model(y_test, y_test_pred)
-            logging.info(f"testing_metrics: {test_metrics}")
+            # Directly compute metrics using sklearn
+            from sklearn.metrics import (
+                accuracy_score,
+                f1_score,
+                precision_score,
+                recall_score,
+            )
+
+            train_accuracy = accuracy_score(y_train, y_train_pred)
+            train_precision = precision_score(y_train, y_train_pred, zero_division=0)
+            train_recall = recall_score(y_train, y_train_pred, zero_division=0)
+            train_f1 = f1_score(y_train, y_train_pred, zero_division=0)
+
+            test_accuracy = accuracy_score(y_test, y_test_pred)
+            test_precision = precision_score(y_test, y_test_pred, zero_division=0)
+            test_recall = recall_score(y_test, y_test_pred, zero_division=0)
+            test_f1 = f1_score(y_test, y_test_pred, zero_division=0)
 
             # Log metrics to MLflow
-            for key, value in train_metrics.items():
-                mlflow.log_metric(f"train_{key}", value, model_id=model_info.model_id)
-            for key, value in test_metrics.items():
-                mlflow.log_metric(f"test_{key}", value, model_id=model_info.model_id)
+            mlflow.log_metric(
+                "train_accuracy", train_accuracy, model_id=model_info.model_id
+            )
+            mlflow.log_metric(
+                "train_precision", train_precision, model_id=model_info.model_id
+            )
+            mlflow.log_metric(
+                "train_recall", train_recall, model_id=model_info.model_id
+            )
+            mlflow.log_metric("train_f1", train_f1, model_id=model_info.model_id)
+            mlflow.log_metric(
+                "test_accuracy", test_accuracy, model_id=model_info.model_id
+            )
+            mlflow.log_metric(
+                "test_precision", test_precision, model_id=model_info.model_id
+            )
+            mlflow.log_metric("test_recall", test_recall, model_id=model_info.model_id)
+            mlflow.log_metric("test_f1", test_f1, model_id=model_info.model_id)
 
             # Save metrics.json for DVC tracking
-            os.makedirs(os.path.dirname(self.metrics_file_path), exist_ok=True)
             metrics_data = {
-                "training_data_metrics": train_metrics,
-                "testing_data_metrics": test_metrics,
+                "training_data_metrics": {
+                    "accuracy": train_accuracy,
+                    "precision": train_precision,
+                    "recall": train_recall,
+                    "f1": train_f1,
+                },
+                "testing_data_metrics": {
+                    "accuracy": test_accuracy,
+                    "precision": test_precision,
+                    "recall": test_recall,
+                    "f1": test_f1,
+                },
             }
-            with open(self.metrics_file_path, "w", encoding="utf-8") as f:
-                json.dump(metrics_data, f)
-
-            return train_metrics, test_metrics
+            print(metrics_data["testing_data_metrics"])
+            return (
+                metrics_data["training_data_metrics"],
+                metrics_data["testing_data_metrics"],
+            )
 
         except Exception as e:
             raise CustomException(e, sys) from e
