@@ -27,10 +27,10 @@ jobs:
           POSTGRES_PASSWORD: mlflow
           POSTGRES_DB: mlflowdb
         options: >-
-          --health-cmd="pg_isready -U mlflow -d mlflowdb"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
+          --health-cmd "pg_isready -U mlflow -d mlflowdb"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
       minio:
         image: minio/minio:latest
@@ -45,8 +45,7 @@ jobs:
           --health-interval 5s
           --health-timeout 5s
           --health-retries 5
-          --entrypoint "" 
-          minio/minio server /data --console-address ":9001"
+          --entrypoint sh -c "minio server /data --console-address ':9001'"
 
       mlflow:
         image: sychin0606/mlflow:latest
@@ -61,14 +60,12 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 10
-          --entrypoint sh
-          sychin0606/mlflow:latest -c "
+          --entrypoint sh -c "until pg_isready -h postgres -U mlflow; do sleep 2; done;
             mlflow server
             --host 0.0.0.0
             --port 5051
-            --backend-store-uri sqlite:///mlflow.db
-            --default-artifact-root s3://mlflow-artifacts
-          "
+            --backend-store-uri postgresql://mlflow:mlflow@postgres:5432/mlflowdb
+            --default-artifact-root s3://mlflow-artifacts"
 
         #options: >-
         #  --platform linux/amd64
