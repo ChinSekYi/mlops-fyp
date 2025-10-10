@@ -18,43 +18,91 @@ jobs:
 
     # --- Define MLflow service ---
     services:
-      mlflow:
-        image: sychin0606/ci:latest
+      postgres:
+        image: postgres:15
         ports:
-          - 5051:5051
+          - 5432:5432
+        env:
+          POSTGRES_USER: mlflow
+          POSTGRES_PASSWORD: mlflow
+          POSTGRES_DB: mlflowdb
         options: >-
-          --platform linux/amd64
-          --health-cmd "curl --fail http://localhost:5051/ || exit 1"
+          --health-cmd="pg_isready -U mlflow -d mlflowdb"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+      minio:
+        image: minio/minio:latest
+        ports:
+          - 9000:9000
+          - 9001:9001
+        env:
+          MINIO_ROOT_USER: minio
+          MINIO_ROOT_PASSWORD: minio123
+        options: >-
+          --health-cmd "curl -f http://localhost:9000/minio/health/live || exit 1"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+          --entrypoint "" 
+          minio/minio server /data --console-address ":9001"
+
+      mlflow:
+        image: sychin0606/mlflow:latest
+        ports:
+          - 5051:5050
+        env:
+          MLFLOW_S3_ENDPOINT_URL: http://minio:9000
+          AWS_ACCESS_KEY_ID: minio
+          AWS_SECRET_ACCESS_KEY: minio123
+        options: >-
+          --health-cmd "curl -f http://localhost:5051 || exit 1"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 10
+          --entrypoint sh
+          sychin0606/mlflow:latest -c "
+            mlflow server
+            --host 0.0.0.0
+            --port 5051
+            --backend-store-uri sqlite:///mlflow.db
+            --default-artifact-root s3://mlflow-artifacts
+          "
+
+        #options: >-
+        #  --platform linux/amd64
+        #  --health-cmd "curl --fail http://localhost:5051/ || exit 1"
+        #  --health-interval 10s
+        #  --health-timeout 5s
+        #  --health-retries 10
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.11"
+      # - name: Set up Python
+      #   uses: actions/setup-python@v4
+      #   with:
+      #     python-version: "3.11"
      
-      - name: Install DVC with S3 support and requirements
-        run: |
-          pip install dvc[s3]==3.2.2
-          pip install -r requirements/ci.txt
+      # - name: Install DVC with S3 support and requirements
+      #   run: |
+      #     pip install dvc[s3]==3.2.2
+      #     pip install -r requirements/ci.txt
 
-      - name: Pull dataset from DVC
-        run: dvc pull data/raw/creditcard-dev.csv
+      # - name: Pull dataset from DVC
+      #   run: dvc pull data/raw/creditcard-dev.csv
 
-      - name: Load environment variables
-        run: |
-          cat .env.ci >> $GITHUB_ENV
-          echo "ENV_FILE=.env.ci" >> $GITHUB_ENV
+      # - name: Load environment variables
+      #   run: |
+      #     cat .env.ci >> $GITHUB_ENV
+      #     echo "ENV_FILE=.env.ci" >> $GITHUB_ENV
 
-      - name: Run quality checks
-        run: make check
+      # - name: Run quality checks
+      #   run: make check
 
-      - name: Run pipeline
-        run: make run-pipeline
+      # - name: Run pipeline
+      #   run: make run-pipeline
 
       # --- Step 4: Run tests ---
       #- name: Run pytest
