@@ -49,7 +49,7 @@ jobs:
       #     --entrypoint sh -c "minio server /data --console-address ':9001'"
 
       mlflow:
-        image: sychin0606/mlflow:latest
+        image: sychin0606/mlflow-server:latest
         ports:
           - 5051:5050
         env:
