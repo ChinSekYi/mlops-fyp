@@ -1,27 +1,39 @@
-#not used
 services:
+  postgres:
+    image: postgres:15
+    container_name: postgres-ci
+    environment:
+      POSTGRES_USER: mlflow
+      POSTGRES_PASSWORD: mlflow
+      POSTGRES_DB: mlflowdb
+    ports:
+      - "5433:5432"  
+    networks:
+      - ci-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mlflow -d mlflowdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   mlflow:
-    image: sychin0606/ci:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.ci
     container_name: mlflow-ci
     ports:
       - "5051:5051"
+    env_file:
+        - ../.env
+    depends_on:
+      postgres:
+        condition: service_healthy
     networks:
       - ci-network
-
-  # api:
-  #   image: sychin0606/fraud-api:latest
-  #   container_name: api-ci
-  #   ports:
-  #     - "8080:5050"
-  #   environment:
-  #     MLFLOW_TRACKING_URI: http://mlflow:5050
-  #   depends_on:
-  #     - mlflow
-  #   networks:
-  #     - ci-network
 
 networks:
   ci-network:
     driver: bridge
+
 
 # docker compose -f docker/docker-compose.ci.yml up
