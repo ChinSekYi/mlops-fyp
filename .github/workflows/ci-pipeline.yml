@@ -51,7 +51,7 @@ jobs:
       mlflow:
         image: sychin0606/mlflow-server:latest
         ports:
-          - 5051:5050
+          - 5051:5051
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -62,7 +62,7 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 10
-          --entrypoint sh -- -c "until pg_isready -h postgres -U mlflow; do sleep 2; done; mlflow server --host 0.0.0.0 --port 5051 --backend-store-uri postgresql://mlflow:mlflow@postgres:5432/mlflowdb --default-artifact-root $ARTIFACT_ROOT"
+          --entrypoint sh -c "until pg_isready -h postgres -U mlflow; do sleep 2; done; mlflow server --host 0.0.0.0 --port 5051 --backend-store-uri postgresql://mlflow:mlflow@postgres:5432/mlflowdb --default-artifact-root \$ARTIFACT_ROOT"
 
 
     steps:
