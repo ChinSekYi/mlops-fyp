@@ -16,7 +16,14 @@ run-pipeline:
 app:
 	streamlit run frontend/fraud_detection_ui.py
 
-# Linting/Testing/Quality
+api-server:
+	uvicorn api.main:app --host 0.0.0.0 --port 5050 --reload
+
+# Docker
+mlflow-server: 
+	docker compose -f docker/docker-compose.yml up
+
+# Linting/Quality
 lint:
 	pylint src api tests --fail-under=7
 
@@ -29,11 +36,22 @@ flake:
 
 check: format lint flake
 
+# Test
 test:
-	pytest -v tests/
+	pytest -v --disable-warnings tests/
 
-# Docker
-mlflow-server: 
-	docker compose -f docker/docker-compose.yml up
+
+# Testing Strategies for Different Environments
+test-dev:
+	pytest tests/unit -v
+
+test-pipeline-ci:
+	pytest tests/unit tests/integration -v --maxfail=1
+
+test-staging:
+	pytest tests/integration tests/e2e tests/smoke -v
+
+test-prod:
+	pytest tests/smoke -v
 
 all: install format test lint download-data mlflow-server run-pipeline app

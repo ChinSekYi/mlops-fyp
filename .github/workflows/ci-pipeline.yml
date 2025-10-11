@@ -73,6 +73,5 @@ jobs:
       - name: Run pipeline
         run: make run-pipeline
 
-      # --- Step 4: Run tests ---
-      #- name: Run pytest
-      #  run:  make test
+      - name: Run pytest
+        run:  mtest-pipeline-ci
