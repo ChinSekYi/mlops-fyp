@@ -11,16 +11,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Install mlflow
 RUN pip install --upgrade pip && \
-    pip install mlflow
+    pip install mlflow psycopg2-binary boto3
 
 EXPOSE 5051
 
+# Start MLflow only after Postgres is ready
 CMD ["sh", "-c", "mlflow server \
-  -h 0.0.0.0 \
-  -p 5051 \
-  --backend-store-uri sqlite:///mlflow.db \
-  --default-artifact-root /tmp/mlartifacts"]
-
+  --host 0.0.0.0 \
+  --port 5051 \
+  --backend-store-uri postgresql://mlflow:mlflow@postgres:5432/mlflowdb \
+  --default-artifact-root s3://$MLFLOW_S3_BUCKET"]
 
 # Create and use buildx builder (only needed once)
 # docker buildx create --use --name multiarch-builder
