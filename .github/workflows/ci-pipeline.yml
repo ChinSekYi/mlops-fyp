@@ -1,4 +1,3 @@
-
 name: CI - pipeline
 
 on:
@@ -8,28 +7,46 @@ on:
     branches: [ "main" ]
 
 jobs:
-
   ci:
     runs-on: ubuntu-latest
+
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+      AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
 
-    # --- Define MLflow service ---
     services:
-      mlflow:
-        image: sychin0606/ci:latest
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: mlflow
+          POSTGRES_PASSWORD: mlflow
+          POSTGRES_DB: mlflowdb
         ports:
-          - 5051:5051
+          - 5432:5432
         options: >-
-          --platform linux/amd64
-          --health-cmd "curl --fail http://localhost:5051/ || exit 1"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 10
+          --health-cmd="pg_isready -U mlflow -d mlflowdb"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+      mlflow:
+        image: sychin0606/mlflow-server:latest
+        ports:
+          - 5050:5050
+        env:
+          DB_USER: mlflow
+          DB_PASSWORD: mlflow
+          DB_NAME: mlflowdb
+          DB_PORT: 5432
+          REAL_DB_ENDPOINT: postgres
+          MLFLOW_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v3
 
       - name: Set up Python
@@ -43,7 +60,7 @@ jobs:
           pip install -r requirements/ci.txt
 
       - name: Pull dataset from DVC
-        run: dvc pull data/raw/creditcard-dev.csv
+        run: dvc pull data/raw/paysim-dev.csv
 
       - name: Load environment variables
         run: |

@@ -101,7 +101,7 @@ class ModelTrainer:
                         name=model_name,
                         registered_model_name=registered_model_name_param,  # uncomment to register model
                     )
-                    mlflow.log_artifact(self.trained_model_file_path)
+                    # Removed: mlflow.log_artifact(self.trained_model_file_path) - redundant with log_model
 
                     all_metrics[model_name] = {
                         "cv_accuracy": cv_acc,

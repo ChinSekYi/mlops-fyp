@@ -129,5 +129,6 @@ def load_object(file_path):
     with open(file_path, "rb") as file_obj:
         return pickle.load(file_obj)
 
+
 if __name__ == "__main__":
     load_config()
