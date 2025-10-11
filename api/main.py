@@ -24,10 +24,15 @@ app = FastAPI(title="Fraud Detection API", version="1.0")
 
 
 def load_model():
-    """Loads the ML model from MLflow using the registered model name and alias."""
+    """Loads the ML model from MLflow using the registered model name and alias, or version."""
 
-    model_uri = f"models:/{MODEL_NAME}@{MODEL_ALIAS}"
-    print(f"Loading model from {model_uri}")
+    try:
+        # Try to load model using alias first
+        model_uri = f"models:/{MODEL_NAME}@{MODEL_ALIAS}"
+    except Exception:
+        # Fallback to version 1 if alias doesn't exist
+        model_version = 1
+        model_uri = f"models:/{MODEL_NAME}/{model_version}"
     return mlflow.sklearn.load_model(model_uri)
 
 
