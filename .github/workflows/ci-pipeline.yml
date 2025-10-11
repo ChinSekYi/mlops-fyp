@@ -45,15 +45,11 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
-        options: |
+        options: >-
           --health-cmd="curl -f http://localhost:5050 || exit 1"
-          --health-interval=10s
-          --health-timeout=5s
+          --health-interval=30s
+          --health-timeout=10s
           --health-retries=10
-          --entrypoint "sh -c 'until pg_isready -h postgres -U mlflow; do sleep 2; done; \
-          mlflow server -h 0.0.0.0 -p 5050 \
-          --backend-store-uri postgresql://mlflow:mlflow@postgres:5432/mlflowdb \
-          --default-artifact-root s3://$MLFLOW_S3_BUCKET'"
 
     steps:
       - name: Checkout repository
