@@ -28,10 +28,6 @@ mlflow-server:
 mlflow-server-staging:
 	docker compose -f docker/docker-compose.staging.yml up
 
-# API servers
-api-server-staging:
-	ENV_FILE=.env.staging uvicorn api.main:app --host 0.0.0.0 --port 8081 --reload
-
 # Linting/Quality
 lint:
 	pylint src api tests --fail-under=7
@@ -62,5 +58,3 @@ test-staging:
 
 test-prod:
 	pytest tests/smoke -v
-
-all: install format test lint download-data mlflow-server run-pipeline app
