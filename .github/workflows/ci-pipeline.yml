@@ -34,7 +34,7 @@ jobs:
       mlflow:
         image: sychin0606/mlflow-server:latest
         ports:
-          - 5051:5050
+          - 5050:5050
         env:
           DB_USER: mlflow
           DB_PASSWORD: mlflow
@@ -60,7 +60,7 @@ jobs:
           pip install -r requirements/ci.txt
 
       - name: Pull dataset from DVC
-        run: dvc pull data/raw/creditcard-dev.csv
+        run: dvc pull data/raw/paysim-dev.csv
 
       - name: Load environment variables
         run: |
@@ -70,8 +70,8 @@ jobs:
       - name: Run quality checks
         run: make check
 
-      # - name: Run pipeline
-      #   run: make run-pipeline
+      - name: Run pipeline
+        run: make run-pipeline
 
       # --- Step 4: Run tests ---
       #- name: Run pytest
