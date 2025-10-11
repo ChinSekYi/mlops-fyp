@@ -45,37 +45,30 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
-        options: >-
-          --health-cmd="curl -f http://localhost:5050 || exit 1"
-          --health-interval=30s
-          --health-timeout=10s
-          --health-retries=10
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-
-      # - name: Set up Python
-      #   uses: actions/setup-python@v4
-      #   with:
-      #     python-version: "3.11"
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
      
-      # - name: Install DVC with S3 support and requirements
-      #   run: |
-      #     pip install dvc[s3]==3.2.2
-      #     pip install -r requirements/ci.txt
+      - name: Install DVC with S3 support and requirements
+        run: |
+          pip install dvc[s3]==3.2.2
+          pip install -r requirements/ci.txt
 
-      # - name: Pull dataset from DVC
-      #   run: dvc pull data/raw/creditcard-dev.csv
+      - name: Pull dataset from DVC
+        run: dvc pull data/raw/creditcard-dev.csv
 
-      # - name: Load environment variables
-      #   run: |
-      #     cat .env.ci >> $GITHUB_ENV
-      #     echo "ENV_FILE=.env.ci" >> $GITHUB_ENV
+      - name: Load environment variables
+        run: |
+          cat .env.ci >> $GITHUB_ENV
+          echo "ENV_FILE=.env.ci" >> $GITHUB_ENV
 
-      # - name: Run quality checks
-      #   run: make check
+      - name: Run quality checks
+        run: make check
 
       # - name: Run pipeline
       #   run: make run-pipeline
