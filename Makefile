@@ -16,8 +16,9 @@ run-pipeline:
 app:
 	streamlit run frontend/fraud_detection_ui.py
 
-api-server:
-	uvicorn api.main:app --host 0.0.0.0 --port 5050 --reload
+# Local API server (for development without Docker)
+api-server-local:
+	uvicorn api.main:app --host 0.0.0.0 --port 8080 --reload
 
 # Docker
 mlflow-server: 
