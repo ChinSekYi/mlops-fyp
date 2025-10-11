@@ -58,11 +58,16 @@ jobs:
           AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
           ARTIFACT_ROOT: s3://${{ secrets.S3_BUCKET }}/mlflow-artifacts
         options: >-
-          --health-cmd "curl -f http://localhost:5051 || exit 1"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 10
-          --entrypoint sh -c "until pg_isready -h postgres -U mlflow; do sleep 2; done; mlflow server --host 0.0.0.0 --port 5051 --backend-store-uri postgresql://mlflow:mlflow@postgres:5432/mlflowdb --default-artifact-root $ARTIFACT_ROOT"
+            --health-cmd "curl -f http://localhost:5051 || exit 1"
+            --health-interval 10s
+            --health-timeout 5s
+            --health-retries 10
+            --entrypoint sh -- -c "until pg_isready -h postgres -U mlflow; do sleep 2; done;
+              mlflow server
+              --host 0.0.0.0
+              --port 5051
+              --backend-store-uri postgresql://mlflow:mlflow@postgres:5432/mlflowdb
+              --default-artifact-root $ARTIFACT_ROOT"
 
         #options: >-
         #  --platform linux/amd64
