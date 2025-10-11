@@ -26,6 +26,20 @@ MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI")
 mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
 
 
+@pytest.fixture(autouse=True)
+def cleanup_mlflow_runs():
+    """Automatically cleanup MLflow runs before and after each test."""
+    # Before test: end any active runs
+    if mlflow.active_run():
+        mlflow.end_run()
+
+    yield  # Run the test
+
+    # After test: end any active runs
+    if mlflow.active_run():
+        mlflow.end_run()
+
+
 @pytest.fixture(scope="module")
 def model():
     """Load the ML model once for all tests."""
