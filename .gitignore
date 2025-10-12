@@ -1,14 +1,15 @@
 # Logs and artifacts
 /logs
 /artifacts
-/outputs
+
 
 # Ignore everything in data/ except .dvc files
 data/processed/
 creditcard.csv
 data/raw/*
 !data/raw/*.dvc
-data/ieee-fraud-detection
+
+# Pythodata/ieee-fraud-detection
 data/kaggle-creditcard
 
 # Python cache
@@ -19,7 +20,9 @@ __pycache__/
 
 # macOS system files
 .DS_Store
-.env
+
+# Environment files (all .env variants)
+.env*
 
 # Folders
 /docs
