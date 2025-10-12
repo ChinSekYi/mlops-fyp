@@ -28,6 +28,10 @@ mlflow-server:
 mlflow-server-staging:
 	docker compose -f docker/docker-compose.staging.yml up
 
+mlflow-server-prod:
+	docker compose -f docker/docker-compose.prod.yml up
+
+
 # Linting/Quality
 lint:
 	pylint src api tests --fail-under=7
