@@ -8,12 +8,14 @@ import os
 
 import mlflow
 import pandas as pd
-from dotenv import load_dotenv
 from fastapi import FastAPI
 from mlflow import MlflowClient
 from pydantic import BaseModel, Field
 
-load_dotenv()
+from src.utils import load_environment
+
+env_file = os.getenv("ENV_FILE", ".env")
+load_environment(env_file)
 
 MODEL_NAME = os.getenv("REGISTERED_MODEL_NAME")
 MODEL_ALIAS = os.getenv("MODEL_ALIAS")
