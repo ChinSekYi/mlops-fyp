@@ -2,3 +2,9 @@
     remote = storage
 ['remote "storage"']
     url = s3://mlops-bucket.store.nus.cloud
+['remote "dev"']
+    url = s3://mlops-dev-raw.store.nus.cloud
+['remote "staging"']
+    url = s3://mlops-stag-raw.store.nus.cloud
+['remote "prod"']
+    url = s3://mlops-prod-raw.store.nus.cloud
