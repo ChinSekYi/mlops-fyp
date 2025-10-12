@@ -60,9 +60,9 @@ class DataIngestion:
                 random_state=self.random_state,
                 stratify=y,
             )
+            print(f"Fraud rates before balancing: {df['isFraud'].mean():.4f}")
             x_train, y_train = balance_classes(x_train, y_train)
-            print(y_train.value_counts())
-            print(y_test.value_counts())
+            print(f"Fraud rates after balancing: {y_train.mean():.4f}")
 
             train = pd.concat([x_train, y_train], axis=1)
             test = pd.concat([x_test, y_test], axis=1)
