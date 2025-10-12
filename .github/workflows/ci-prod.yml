@@ -1,0 +1,39 @@
+name: CD - Production
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  deploy-prod:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push Docker images
+        run: |
+          docker build -t sychin0606/mlflow-server:latest -f docker/Dockerfile.mlflow .
+          docker build -t sychin0606/fraud-api:latest -f docker/Dockerfile.api .
+          docker push sychin0606/mlflow-server:latest
+          docker push sychin0606/fraud-api:latest
+
+      - name: Deploy to EC2 (Production)
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd ~/Downloads/mlops-fyp
+            git pull origin main
+            docker compose -f docker/docker-compose.prod.yml down
+            docker compose -f docker/docker-compose.prod.yml up -d --build
+            make test-prod
