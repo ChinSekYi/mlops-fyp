@@ -35,3 +35,5 @@ outputs/artifacts/preprocessor.pkl
 notebooks/data/processed/test_paysim.csv
 notebooks/data/processed/train_paysim.csv
 notebooks/data/processed/validation_paysim.csv
+.env.production
+.env.staging
