@@ -24,6 +24,10 @@ api-server-local:
 mlflow-server: 
 	docker compose -f docker/docker-compose.yml up
 
+# Staging on same EC2 (different ports)
+mlflow-server-staging:
+	docker compose -f docker/docker-compose.staging.yml up
+
 # Linting/Quality
 lint:
 	pylint src api tests --fail-under=7
@@ -54,5 +58,3 @@ test-staging:
 
 test-prod:
 	pytest tests/smoke -v
-
-all: install format test lint download-data mlflow-server run-pipeline app
