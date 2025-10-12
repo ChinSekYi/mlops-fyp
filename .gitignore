@@ -21,8 +21,10 @@ __pycache__/
 # macOS system files
 .DS_Store
 
-# Environment files (all .env variants)
-.env*
+# Environment files (all .env variants except CI)
+.env
+.env.*
+!.env.ci
 
 # Folders
 /docs
@@ -35,3 +37,5 @@ outputs/artifacts/preprocessor.pkl
 notebooks/data/processed/test_paysim.csv
 notebooks/data/processed/train_paysim.csv
 notebooks/data/processed/validation_paysim.csv
+.env.production
+.env.staging
