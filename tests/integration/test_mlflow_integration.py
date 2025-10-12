@@ -3,7 +3,10 @@ Integration tests for MLflow model registry and tracking functionality.
 Tests model loading, tracking, and registry operations.
 """
 
+import json
 import os
+import tempfile
+import uuid
 
 import mlflow
 import pandas as pd
@@ -102,29 +105,32 @@ class TestMLflowIntegration:
 
     def test_experiment_creation(self):
         """Test creating and accessing MLflow experiments."""
-        test_experiment_name = "test_integration_experiment"
+        # Create unique experiment name - no dependencies on existing experiments!
+        test_experiment_name = f"test_integration_experiment_{uuid.uuid4().hex[:8]}"
 
-        try:
-            # Create or get experiment
-            experiment_id = mlflow.create_experiment(
-                test_experiment_name, tags={"purpose": "integration_testing"}
-            )
-        except mlflow.exceptions.MlflowException:
-            # Experiment already exists
-            experiment = mlflow.get_experiment_by_name(test_experiment_name)
-            experiment_id = experiment.experiment_id
+        # Always create a fresh experiment
+        experiment_id = mlflow.create_experiment(
+            test_experiment_name, tags={"purpose": "integration_testing"}
+        )
 
         assert experiment_id is not None
 
-        # Test logging to experiment
-        with mlflow.start_run(experiment_id=experiment_id):
-            mlflow.log_param("test_param", "test_value")
-            mlflow.log_metric("test_metric", 0.85)
+        try:
+            # Test logging to experiment
+            with mlflow.start_run(experiment_id=experiment_id):
+                mlflow.log_param("test_param", "test_value")
+                mlflow.log_metric("test_metric", 0.85)
 
-            # Verify run was logged
-            run = mlflow.active_run()
-            assert run is not None
-            assert run.info.experiment_id == experiment_id
+                # Verify run was logged
+                run = mlflow.active_run()
+                assert run is not None
+                assert run.info.experiment_id == experiment_id
+        finally:
+            try:
+                client = MlflowClient()
+                client.delete_experiment(experiment_id)
+            except Exception:
+                pass  # Ignore cleanup errors
 
     @pytest.mark.slow
     def test_model_registry_workflow(self):
@@ -153,35 +159,40 @@ class TestMLflowIntegration:
 
     def test_artifact_logging(self):
         """Test artifact logging and retrieval."""
-        test_experiment_name = "test_artifact_experiment"
+        # Create unique experiment name - no dependencies on existing experiments!
+        test_experiment_name = f"test_artifact_experiment_{uuid.uuid4().hex[:8]}"
+
+        # Always create a fresh experiment
+        experiment_id = mlflow.create_experiment(test_experiment_name)
 
         try:
-            experiment_id = mlflow.create_experiment(test_experiment_name)
-        except mlflow.exceptions.MlflowException:
-            experiment = mlflow.get_experiment_by_name(test_experiment_name)
-            experiment_id = experiment.experiment_id
+            with mlflow.start_run(experiment_id=experiment_id):
+                # Log a simple artifact
+                with tempfile.NamedTemporaryFile(
+                    mode="w", delete=False, suffix=".json"
+                ) as f:
+                    json.dump({"test": "artifact"}, f)
+                    temp_file = f.name
 
-        with mlflow.start_run(experiment_id=experiment_id):
-            # Log a simple artifact
-            import json
-            import tempfile
+                try:
+                    mlflow.log_artifact(temp_file, "test_artifacts")
 
-            with tempfile.NamedTemporaryFile(
-                mode="w", delete=False, suffix=".json"
-            ) as f:
-                json.dump({"test": "artifact"}, f)
-                temp_file = f.name
+                    # Verify artifact was logged
+                    run = mlflow.active_run()
+                    client = MlflowClient()
+                    artifacts = client.list_artifacts(run.info.run_id)
 
+                    assert len(artifacts) > 0
+                    assert any(
+                        "test_artifacts" in artifact.path for artifact in artifacts
+                    )
+
+                finally:
+                    os.unlink(temp_file)
+        finally:
+            # Clean up the test experiment
             try:
-                mlflow.log_artifact(temp_file, "test_artifacts")
-
-                # Verify artifact was logged
-                run = mlflow.active_run()
                 client = MlflowClient()
-                artifacts = client.list_artifacts(run.info.run_id)
-
-                assert len(artifacts) > 0
-                assert any("test_artifacts" in artifact.path for artifact in artifacts)
-
-            finally:
-                os.unlink(temp_file)
+                client.delete_experiment(experiment_id)
+            except Exception:
+                pass  # Ignore cleanup errors
