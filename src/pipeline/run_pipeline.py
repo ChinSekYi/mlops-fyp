@@ -10,8 +10,8 @@ import mlflow
 
 from src.utils import load_environment
 
-# Use ENV_FILE if set, otherwise default to .env.dev
-env_file = os.getenv("ENV_FILE", ".env.ci")
+# Use ENV_FILE if set, otherwise default to .env
+env_file = os.getenv("ENV_FILE", ".env")
 load_environment(env_file)
 
 from src.components.data_ingestion import DataIngestion

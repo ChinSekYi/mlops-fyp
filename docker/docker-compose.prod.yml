@@ -1,0 +1,32 @@
+services:
+    mlflow-prod:
+      image: sychin0606/mlflow-server:latest
+      container_name: mlflow-server-prod
+      ports:
+        - "5052:5050"   # External port 5051 → Internal port 5050
+      env_file:
+        - ../.env.prod
+      networks:
+        - mlops-network-prod
+
+    api-prod:
+      image: sychin0606/fraud-api:latest
+      platform: linux/amd64
+      container_name: api-con-prod
+      ports:
+        - "8082:5050"  # External port 8081 → Internal port 5050
+      environment:
+        MLFLOW_TRACKING_URI: http://mlflow-prod:5050
+      env_file:
+        - ../.env.prod
+      networks:
+        - mlops-network-prod
+      depends_on:
+        - mlflow-prod
+
+networks:
+  mlops-network-prod:
+    driver: bridge
+
+# Usage:
+# docker compose -f docker/docker-compose.prod.yml up
