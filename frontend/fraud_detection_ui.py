@@ -1,7 +1,19 @@
+import os
+import sys
+
+# Add project root to Python path
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, project_root)
+
 import requests
 import streamlit as st
 
-API_URL = "http://localhost:8080"
+from src.utils import load_environment
+
+env_file = os.getenv("ENV_FILE", ".env")
+load_environment(env_file)
+API_URL = os.getenv("MODEL_SERVER_IP")
+
 EXPECTED_FEATURES = [
     "step",
     "amount",
