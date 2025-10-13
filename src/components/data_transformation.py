@@ -8,6 +8,7 @@ import pandas as pd
 from src.exception import CustomException
 from src.logger import logging
 from src.utils import (
+    balance_classes_smotenc,
     load_config,
     one_hot_encode_and_align,
     standardize_columns,
@@ -49,8 +50,14 @@ class DataTransformation:
             x_test = test_df.drop(columns=["isFraud"])
             y_test = test_df["isFraud"]
 
+            # Drop col
+            x_train = x_train.drop(["isFlaggedFraud"], axis=1)
+            x_test = x_test.drop(["isFlaggedFraud"], axis=1)
+
+            # One hot encode 'Type' column
             x_train, x_test = one_hot_encode_and_align(x_train, x_test, "type")
 
+            # Standardisation (Normalisation)
             col_names = [
                 "amount",
                 "oldbalanceOrg",
@@ -60,14 +67,32 @@ class DataTransformation:
             ]
             x_train, x_test = standardize_columns(x_train, x_test, col_names)
 
+            # Handle imbalance
+            # print(f"Fraud rates before balancing: {y_train.mean():.4f}")
+            categorical_features = []
+            type_columns = [col for col in x_train.columns if col.startswith("type__")]
+            for col in type_columns:
+                categorical_features.append(x_train.columns.get_loc(col))
+
+            # Add indices for original categorical columns (nameOrig, nameDest)
+            categorical_features.append(x_train.columns.get_loc("nameOrig"))
+            categorical_features.append(x_train.columns.get_loc("nameDest"))
+
+            x_train, y_train = balance_classes_smotenc(
+                x_train, y_train, categorical_features
+            )
+
+            # Tokenisation to convert categorical text data to numerical features. Eg "C1231006815" -> 12345
             x_train, x_test = tokenize_column(x_train, x_test, "nameOrig")
             x_train, x_test = tokenize_column(x_train, x_test, "nameDest")
 
-            x_train = x_train.drop(["nameOrig", "nameDest", "isFlaggedFraud"], axis=1)
+            # Drop col
+            x_train = x_train.drop(["nameOrig", "nameDest"], axis=1)
+            x_test = x_test.drop(["nameOrig", "nameDest"], axis=1)
+
             x_train = x_train.reset_index(drop=True)
             x_train = pd.concat([x_train, y_train], axis=1)
 
-            x_test = x_test.drop(["nameOrig", "nameDest", "isFlaggedFraud"], axis=1)
             x_test = x_test.reset_index(drop=True)
             x_test = pd.concat([x_test, y_test], axis=1)
 
