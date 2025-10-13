@@ -43,7 +43,7 @@ class DataIngestion:
 
     def initiate_data_ingestion(self):
         """
-        Reads the raw data, handles class imbalance, splits into train/test,
+        Reads the raw data, splits into train/test,
         logs with MLflow, and saves files.
         Returns:
             tuple: Paths to train and test data CSV files.
@@ -60,9 +60,6 @@ class DataIngestion:
                 random_state=self.random_state,
                 stratify=y,
             )
-            print(f"Fraud rates before balancing: {df['isFraud'].mean():.4f}")
-            x_train, y_train = balance_classes(x_train, y_train)
-            print(f"Fraud rates after balancing: {y_train.mean():.4f}")
 
             train = pd.concat([x_train, y_train], axis=1)
             test = pd.concat([x_test, y_test], axis=1)
