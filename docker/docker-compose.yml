@@ -14,7 +14,7 @@ services:
       platform: linux/amd64
       container_name: api-con
       ports:
-        - "8080:5050"
+        - "8080:8000"
       environment:
         MLFLOW_TRACKING_URI: http://mlflow-server:5050
       env_file:

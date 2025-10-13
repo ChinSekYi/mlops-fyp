@@ -10,9 +10,12 @@ RUN pip install --no-cache-dir boto3 mlflow
 COPY api/ ./api/
 COPY src/ ./src/ 
 COPY config.yaml .
-EXPOSE 5050
 
-CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "5050", "--reload"]
+# Render expects the app to listen on $PORT (default to 8000 locally)
+ENV PORT=8000
+EXPOSE 8000
+
+CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
 
 # docker build -t api-image -f docker/Dockerfile.api .
 # docker run --rm -d --name api-con --network mlops-network -p 5060:5050 --env-file .env sychin0606/fraud-api:latest
