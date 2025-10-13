@@ -14,7 +14,7 @@ services:
       platform: linux/amd64
       container_name: api-con-staging
       ports:
-        - "8081:5050"  # External port 8081 → Internal port 5050
+        - "8081:8000"  # External port 8081 → Internal port 8000
       environment:
         MLFLOW_TRACKING_URI: http://mlflow-staging:5050
       env_file:
