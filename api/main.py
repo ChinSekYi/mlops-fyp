@@ -12,7 +12,7 @@ from fastapi import FastAPI
 from mlflow import MlflowClient
 from pydantic import BaseModel, Field
 
-from utils import load_environment
+from api.utils import load_environment
 
 env_file = os.getenv("ENV_FILE", ".env")
 load_environment(env_file)
@@ -29,17 +29,46 @@ mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI"))
 print("Active experiment:", mlflow.get_tracking_uri())
 
 
+class DummyModel:
+    """Dummy model for when MLflow is not available"""
+
+    def predict(self, X):
+        # Simple heuristic: classify as fraud if amount > 200000 or oldbalanceOrg == 0
+        import numpy as np
+
+        predictions = []
+        for _, row in X.iterrows():
+            if row["amount"] > 200000 or (
+                row["oldbalanceOrg"] == 0 and row["amount"] > 0
+            ):
+                predictions.append(1)  # Fraud
+            else:
+                predictions.append(0)  # Not fraud
+        return np.array(predictions)
+
+
 def load_model():
     """Loads the ML model from MLflow using the registered model name and alias, or version."""
-
     try:
+        print(f"Attempting to load model {MODEL_NAME} with alias {MODEL_ALIAS}")
         # Try to load model using alias first
         model_uri = f"models:/{MODEL_NAME}@{MODEL_ALIAS}"
-    except Exception:
-        # Fallback to version 1 if alias doesn't exist
-        model_version = 1
-        model_uri = f"models:/{MODEL_NAME}/{model_version}"
-    return mlflow.sklearn.load_model(model_uri)
+        model = mlflow.sklearn.load_model(model_uri)
+        print("✅ Successfully loaded MLflow model")
+        return model
+    except Exception as e:
+        print(f"❌ Could not load MLflow model: {e}")
+        try:
+            # Fallback to version 1 if alias doesn't exist
+            model_version = 1
+            model_uri = f"models:/{MODEL_NAME}/{model_version}"
+            model = mlflow.sklearn.load_model(model_uri)
+            print(f"✅ Successfully loaded MLflow model version {model_version}")
+            return model
+        except Exception as e2:
+            print(f"❌ Could not load any MLflow model: {e2}")
+            print("🔄 Using dummy model for predictions")
+            return DummyModel()
 
 
 model = load_model()
