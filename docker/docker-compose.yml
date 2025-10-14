@@ -1,6 +1,7 @@
 services:
     mlflow:
       image: sychin0606/mlflow-server:latest
+      platform: linux/amd64
       container_name: mlflow-server
       ports:
         - "5050:5050"   
@@ -14,7 +15,7 @@ services:
       platform: linux/amd64
       container_name: api-con
       ports:
-        - "8080:8000"
+        - "8000:8000"
       environment:
         MLFLOW_TRACKING_URI: http://mlflow-server:5050
       env_file:
@@ -23,6 +24,19 @@ services:
         - mlops-network
       depends_on:
         - mlflow
+
+    frontend:
+      image: sychin0606/frontend:latest
+      platform: linux/amd64
+      container_name: frontend-con
+      ports:
+        - "8501:8501"
+      environment:
+        MODEL_SERVER_IP: http://api-con:8000
+      networks:
+        - mlops-network
+      depends_on:
+        - api
 
 networks:
   mlops-network:

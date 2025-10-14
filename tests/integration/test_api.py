@@ -15,7 +15,7 @@ from src.utils import load_environment
 env_file = os.getenv("ENV_FILE", ".env")
 load_environment(env_file)
 
-MODEL_SERVER_IP = os.getenv("MODEL_SERVER_IP", "http://localhost:8080")
+MODEL_SERVER_IP = os.getenv("MODEL_SERVER_IP", "http://localhost:8000")
 
 # Extract predict endpoint and base URL
 if MODEL_SERVER_IP.endswith("/predict"):
@@ -27,7 +27,7 @@ else:
 
 # Validate that MODEL_SERVER_IP is properly set
 if not MODEL_SERVER_IP:
-    MODEL_SERVER_IP = "http://localhost:8080"
+    MODEL_SERVER_IP = "http://localhost:8000"
     BASE_URL = MODEL_SERVER_IP
     PREDICT_URL = f"{MODEL_SERVER_IP}/predict"
 

@@ -8,7 +8,7 @@ sys.path.insert(0, project_root)
 import requests
 import streamlit as st
 
-from src.utils import load_environment
+from utils import load_environment
 
 env_file = os.getenv("ENV_FILE", ".env")
 load_environment(env_file)
