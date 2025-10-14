@@ -4,7 +4,7 @@ import requests
 from dotenv import load_dotenv
 
 load_dotenv()
-MODEL_SERVER_IP = os.getenv("MODEL_SERVER_IP", "http://localhost:8080")
+MODEL_SERVER_IP = os.getenv("MODEL_SERVER_IP", "http://localhost:8000")
 PREDICT_URL = f"{MODEL_SERVER_IP}/predict"
 
 
