@@ -31,8 +31,6 @@ services:
       container_name: frontend-con
       ports:
         - "8501:8501"
-      environment:
-        MODEL_SERVER_IP: http://api-con:8000
       networks:
         - mlops-network
       depends_on:
