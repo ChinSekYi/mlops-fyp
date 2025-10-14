@@ -12,7 +12,7 @@ from fastapi import FastAPI
 from mlflow import MlflowClient
 from pydantic import BaseModel, Field
 
-from src.utils import load_environment
+from utils import load_environment
 
 env_file = os.getenv("ENV_FILE", ".env")
 load_environment(env_file)

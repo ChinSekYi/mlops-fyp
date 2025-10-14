@@ -21,5 +21,6 @@ CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload
 
 # docker build --platform linux/amd64 -t sychin0606/fraud-api:latest -f docker/Dockerfile.api .
 # docker build --no-cache -t sychin0606/fraud-api:latest -f docker/Dockerfile.api .
+# docker build --no-cache --platform linux/amd64 -t sychin0606/fraud-api:latest -f docker/Dockerfile.api .
 # docker tag sychin0606/fraud-api:latest
 # docker push sychin0606/fraud-api:latest
