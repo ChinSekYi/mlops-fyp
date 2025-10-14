@@ -24,6 +24,10 @@ mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
 
 app = FastAPI(title="Fraud Detection API", version="1.0")
 
+# Test render connectivity to MLflow
+mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI"))
+print("Active experiment:", mlflow.get_tracking_uri())
+
 
 def load_model():
     """Loads the ML model from MLflow using the registered model name and alias, or version."""

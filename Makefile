@@ -18,7 +18,7 @@ app:
 
 # Local API server (for development without Docker)
 api-server-local:
-	uvicorn api.main:app --host 0.0.0.0 --port 8080 --reload
+	uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
 
 # Docker
 mlflow-server: 
