@@ -7,7 +7,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install --no-cache-dir boto3 mlflow
 
 COPY api/ ./api/
-COPY src/ ./src/ 
 COPY config.yaml .
 
 EXPOSE 8000
