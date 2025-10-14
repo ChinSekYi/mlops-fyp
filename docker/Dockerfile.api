@@ -6,13 +6,10 @@ COPY api/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install --no-cache-dir boto3 mlflow
 
-# uncomment in prod because we wont be using bind mounts anymore
 COPY api/ ./api/
 COPY src/ ./src/ 
 COPY config.yaml .
 
-# Render expects the app to listen on $PORT (default to 8000 locally)
-ENV PORT=8000
 EXPOSE 8000
 
 CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
