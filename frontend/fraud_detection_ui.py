@@ -31,8 +31,8 @@ EXPECTED_FEATURES = [
     "oldbalanceDest",
     "newbalanceDest",
     "type",
-    "nameOrig_token",
-    "nameDest_token",
+    "nameOrig",  # Raw string input like "C1900756070"
+    "nameDest",  # Raw string input like "C1995455020"
 ]
 
 TYPE_DROPDOWN_VALUES = ["CASH_IN", "CASH_OUT", "DEBIT", "PAYMENT", "TRANSFER"]
@@ -59,20 +59,21 @@ if page == "Predict":
         "oldbalanceDest": 0.0,
         "newbalanceDest": 1000.0,
         "type": "CASH_OUT",
-        "nameOrig_token": 123,
-        "nameDest_token": 456,
+        "nameOrig": "C84071102",
+        "nameDest": "C1576697216",
     }
     sample_fraud = {
-        "step": 2,
-        "amount": 900000.0,
-        "oldbalanceOrg": 1000000.0,
-        "newbalanceOrig": 100000.0,
+        "step": 177,
+        "amount": 1201681.76,
+        "oldbalanceOrg": 1201681.76,
+        "newbalanceOrig": 0.0,
         "oldbalanceDest": 0.0,
-        "newbalanceDest": 900000.0,
+        "newbalanceDest": 0.0,
         "type": "TRANSFER",
-        "nameOrig_token": 789,
-        "nameDest_token": 321,
+        "nameOrig": "C1900756070",
+        "nameDest": "C1995455020",
     }
+
     sample_choice = st.radio(
         "Load sample input?",
         ["None", "Non-Fraud Example", "Fraud Example"],
@@ -83,10 +84,14 @@ if page == "Predict":
     elif sample_choice == "Fraud Example":
         default_values = sample_fraud
     else:
-        default_values = {
-            k: 0.0 if k != "type" else TYPE_DROPDOWN_VALUES[0]
-            for k in EXPECTED_FEATURES
-        }
+        default_values = {}
+        for k in EXPECTED_FEATURES:
+            if k == "type":
+                default_values[k] = TYPE_DROPDOWN_VALUES[0]
+            elif k in ["nameOrig", "nameDest"]:
+                default_values[k] = "C0000000000"
+            else:
+                default_values[k] = 0.0
 
     input_data = {}
     num_cols = 3
@@ -118,14 +123,11 @@ if page == "Predict":
                     ]
                     else feature
                 )
-                if feature in ["nameOrig_token", "nameDest_token"]:
-                    input_data[feature] = st.number_input(
-                        label,
-                        min_value=0,
-                        step=1,
-                        value=int(default_values[feature]),
-                        format="%d",
-                        key=f"num_{feature}_{i}",
+                if feature in ["nameOrig", "nameDest"]:
+                    input_data[feature] = st.text_input(
+                        f"{label} (format: C1234567890)",
+                        value=str(default_values[feature]),
+                        key=f"text_{feature}_{i}",
                     )
                 else:
                     input_data[feature] = st.number_input(
