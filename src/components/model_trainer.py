@@ -46,6 +46,7 @@ class ModelTrainer:
         train_data_path,
         test_data_path,
         registered_model_name_param,
+        preprocessor_path=None,  # Add preprocessor path parameter
     ):
         try:
             train_df = pd.read_csv(train_data_path)
@@ -101,6 +102,18 @@ class ModelTrainer:
                         name=model_name,
                         registered_model_name=registered_model_name_param,  # uncomment to register model
                     )
+
+                    # Log the preprocessor as an artifact
+                    if preprocessor_path and os.path.exists(preprocessor_path):
+                        mlflow.log_artifact(preprocessor_path, "preprocessor")
+                        logging.info(
+                            f"Logged preprocessor artifact: {preprocessor_path}"
+                        )
+                    else:
+                        logging.warning(
+                            "Preprocessor path not provided or file doesn't exist"
+                        )
+
                     # Removed: mlflow.log_artifact(self.trained_model_file_path) - redundant with log_model
 
                     all_metrics[model_name] = {

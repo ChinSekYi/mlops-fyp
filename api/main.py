@@ -47,15 +47,54 @@ class DummyModel:
         return np.array(predictions)
 
 
-def load_model():
-    """Loads the ML model from MLflow using the registered model name and alias, or version."""
+def load_model_and_preprocessor():
+    """Loads both the ML model and preprocessor from MLflow or local files."""
     try:
         print(f"Attempting to load model {MODEL_NAME} with alias {MODEL_ALIAS}")
         # Try to load model using alias first
         model_uri = f"models:/{MODEL_NAME}@{MODEL_ALIAS}"
         model = mlflow.sklearn.load_model(model_uri)
         print("✅ Successfully loaded MLflow model")
-        return model
+
+        # Try to load preprocessor from artifacts
+        try:
+            # Get the run_id from the model version
+            client = MlflowClient()
+            model_version = client.get_model_version_by_alias(
+                name=MODEL_NAME, alias=MODEL_ALIAS
+            )
+            run_id = model_version.run_id
+
+            # Download preprocessor artifact (it's in the 'preprocessor' directory)
+            preprocessor_path = mlflow.artifacts.download_artifacts(
+                run_id=run_id, artifact_path="preprocessor"
+            )
+
+            # The downloaded path will be a directory, so we need to get the actual file
+            import os
+
+            preprocessor_files = os.listdir(preprocessor_path)
+            preprocessor_file = None
+            for file in preprocessor_files:
+                if file.endswith(".pkl"):
+                    preprocessor_file = os.path.join(preprocessor_path, file)
+                    break
+
+            if preprocessor_file:
+                import joblib
+
+                preprocessor = joblib.load(preprocessor_file)
+                print("✅ Successfully loaded preprocessor from MLflow")
+            else:
+                print("⚠️ No .pkl file found in preprocessor artifacts")
+                preprocessor = None
+
+        except Exception as e:
+            print(f"⚠️ Could not load preprocessor from MLflow: {e}")
+            preprocessor = None
+
+        return model, preprocessor
+
     except Exception as e:
         print(f"❌ Could not load MLflow model: {e}")
         try:
@@ -64,14 +103,14 @@ def load_model():
             model_uri = f"models:/{MODEL_NAME}/{model_version}"
             model = mlflow.sklearn.load_model(model_uri)
             print(f"✅ Successfully loaded MLflow model version {model_version}")
-            return model
+            return model, None
         except Exception as e2:
             print(f"❌ Could not load any MLflow model: {e2}")
             print("🔄 Using dummy model for predictions")
-            return DummyModel()
+            return DummyModel(), None
 
 
-model = load_model()
+model, preprocessor = load_model_and_preprocessor()
 
 EXPECTED_FEATURES = [
     "step",
@@ -80,9 +119,9 @@ EXPECTED_FEATURES = [
     "newbalanceOrig",
     "oldbalanceDest",
     "newbalanceDest",
-    "type",
-    "nameOrig_token",
-    "nameDest_token",
+    "type",  # Raw categorical input (CASH_IN, CASH_OUT, etc.)
+    "nameOrig",  # Raw string input (e.g., "C84071102")
+    "nameDest",  # Raw string input (e.g., "C1576697216")
 ]
 
 
@@ -94,8 +133,10 @@ class Transaction(BaseModel):
     oldbalanceDest: float
     newbalanceDest: float
     type: str = Field(..., description="Transaction type", example="CASH_OUT")
-    nameOrig_token: int
-    nameDest_token: int
+    nameOrig: str = Field(..., description="Origin account name", example="C84071102")
+    nameDest: str = Field(
+        ..., description="Destination account name", example="C1576697216"
+    )
 
 
 @app.get("/")
@@ -108,11 +149,39 @@ def health_check():
 def predict(transaction: Transaction):
     """Predicts whether a transaction is fraudulent (1) or not (0) using the trained model."""
 
-    # One-hot encode 'type'
-    type_values = ["CASH_IN", "CASH_OUT", "DEBIT", "PAYMENT", "TRANSFER"]
+    # Convert input to DataFrame
     input_dict = transaction.model_dump()
     df = pd.DataFrame([input_dict])
 
+    # If we have a preprocessor, use it (but need to tokenize first)
+    if preprocessor is not None:
+        try:
+            # Apply tokenization first (same as in training)
+            from src.utils import tokenize_column
+
+            # Create dummy test dataframe for tokenization (tokenize_column expects train and test)
+            df_dummy = df.copy()
+            df_tokenized, _ = tokenize_column(df, df_dummy, "nameOrig")
+            df_tokenized, _ = tokenize_column(df_tokenized, df_dummy, "nameDest")
+
+            # Drop original name columns
+            df_tokenized = df_tokenized.drop(["nameOrig", "nameDest"], axis=1)
+
+            # Apply the preprocessor
+            processed_features = preprocessor.transform(df_tokenized)
+            preds = model.predict(processed_features)
+            return {"prediction": int(preds[0])}
+        except Exception as e:
+            print(f"⚠️ Preprocessor failed, falling back to manual preprocessing: {e}")
+
+    # Fallback: Manual preprocessing (for when preprocessor not available)
+    # Tokenize names manually
+    df["nameOrig_token"] = df["nameOrig"].str.extract(r"(\d+)").astype(int)
+    df["nameDest_token"] = df["nameDest"].str.extract(r"(\d+)").astype(int)
+    df = df.drop(["nameOrig", "nameDest"], axis=1)
+
+    # One-hot encode 'type'
+    type_values = ["CASH_IN", "CASH_OUT", "DEBIT", "PAYMENT", "TRANSFER"]
     for t in type_values:
         df[f"type__{t}"] = (df["type"] == t).astype(int)
     df = df.drop(columns=["type"])
@@ -191,8 +260,8 @@ def feature_info():
             "oldbalanceDest": 0.0,
             "newbalanceDest": 1000.0,
             "type": "CASH_OUT",
-            "nameOrig_token": 123,
-            "nameDest_token": 456,
+            "nameOrig": "C84071102",
+            "nameDest": "C1576697216",
         },
     }
 
@@ -210,8 +279,8 @@ if __name__ == "__main__":
             "oldbalanceDest": 0.0,
             "newbalanceDest": 1000.0,
             "type": "CASH_OUT",
-            "nameOrig_token": 123,
-            "nameDest_token": 456,
+            "nameOrig": "C84071102",
+            "nameDest": "C1576697216",
         }
     )
     output = predict(input)
