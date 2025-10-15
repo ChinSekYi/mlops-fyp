@@ -20,4 +20,5 @@ httpx
 pyyaml
 seaborn
 tensorflow
+imblearn
 #-e .
