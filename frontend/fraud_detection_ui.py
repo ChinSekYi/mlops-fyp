@@ -10,9 +10,18 @@ import streamlit as st
 
 from utils import load_environment
 
-env_file = os.getenv("ENV_FILE", ".env")
-load_environment(env_file)
+# Get API URL from Docker environment variable first, then fallback to .env
 API_URL = os.getenv("MODEL_SERVER_IP")
+if not API_URL:
+    # Fallback: load from .env file
+    env_file = os.getenv("ENV_FILE", ".env")
+    load_environment(env_file)
+    API_URL = os.getenv("MODEL_SERVER_IP")
+
+# Debug: Show what API_URL is being used
+st.write(f"🔗 **API URL:** {API_URL}")
+if not API_URL:
+    st.error("❌ MODEL_SERVER_IP not found in environment variables or .env file")
 
 EXPECTED_FEATURES = [
     "step",
