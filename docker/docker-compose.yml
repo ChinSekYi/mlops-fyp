@@ -8,13 +8,14 @@ services:
       environment:
         MLFLOW_HOST: 0.0.0.0
         MLFLOW_PORT: 5050
-      command: >
-        mlflow server 
-        --host 0.0.0.0 
-        --port 5050 
-        --allowed-hosts mlflow-server,localhost,127.0.0.1,api-con
-        --default-artifact-root s3://${AWS_S3_BUCKET}/mlflow-artifacts
-        --backend-store-uri ${DB_URI}
+      command: [
+        "mlflow", "server",
+        "--host", "0.0.0.0",
+        "--port", "5050",
+        "--allowed-hosts", "*",
+        "--default-artifact-root", "s3://${AWS_S3_BUCKET}/mlflow-artifacts",
+        "--backend-store-uri", "${DB_URI}"
+      ]
       env_file:
         - ../.env
       networks:
