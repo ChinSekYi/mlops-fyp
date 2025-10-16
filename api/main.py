@@ -86,7 +86,7 @@ def load_model_and_preprocessor():
                 preprocessor = None
 
         except Exception as e:
-            print(f"⚠️ Could not load preprocessor from MLflow: {e}")
+            print(f"Could not load preprocessor from MLflow: {e}")
             preprocessor = None
 
         return model, preprocessor
@@ -98,11 +98,11 @@ def load_model_and_preprocessor():
             model_version = 1
             model_uri = f"models:/{MODEL_NAME}/{model_version}"
             model = mlflow.sklearn.load_model(model_uri)
-            print(f"✅ Successfully loaded MLflow model version {model_version}")
+            print(f"Successfully loaded MLflow model version {model_version}")
             return model, None
         except Exception as e2:
-            print(f"❌ Could not load any MLflow model: {e2}")
-            print("🔄 Using dummy model for predictions")
+            print(f"Could not load any MLflow model: {e2}")
+            print("Using dummy model for predictions")
             return DummyModel(), None
 
 
