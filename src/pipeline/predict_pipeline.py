@@ -6,7 +6,7 @@ import os
 import pandas as pd
 
 from src.exception import CustomException
-from src.utils import load_config, load_object
+from src.utils import load_config, load_object, tokenize_column
 
 config = load_config()
 
@@ -24,159 +24,163 @@ class PredictPipeline:
             pred_result = model.predict(data_scaled)
             return pred_result
         except Exception as e:
-            raise CustomException(e, None)
+            import sys
+
+            raise CustomException(e, sys)
 
 
 class CustomData:
     """
-    responsible for taking the inputs that we are giving in the HTML to the backend
+    Responsible for taking PaySim transaction inputs (RAW FORMAT with string account names)
+    and converting them to the format expected by the fraud detection model.
     """
 
     def __init__(
         self,
-        Time: float,
-        V1: float,
-        V2: float,
-        V3: float,
-        V4: float,
-        V5: float,
-        V6: float,
-        V7: float,
-        V8: float,
-        V9: float,
-        V10: float,
-        V11: float,
-        V12: float,
-        V13: float,
-        V14: float,
-        V15: float,
-        V16: float,
-        V17: float,
-        V18: float,
-        V19: float,
-        V20: float,
-        V21: float,
-        V22: float,
-        V23: float,
-        V24: float,
-        V25: float,
-        V26: float,
-        V27: float,
-        V28: float,
-        Amount: float,
+        step: int,
+        amount: float,
+        oldbalanceOrg: float,
+        newbalanceOrig: float,
+        oldbalanceDest: float,
+        newbalanceDest: float,
+        type: str,  # Transaction type: CASH_IN, CASH_OUT, DEBIT, PAYMENT, TRANSFER
+        nameOrig: str,  # Raw account ID like "C1900756070"
+        nameDest: str,  # Raw account ID like "C1995455020"
     ):
-        self.Time = Time
-        self.V1 = V1
-        self.V2 = V2
-        self.V3 = V3
-        self.V4 = V4
-        self.V5 = V5
-        self.V6 = V6
-        self.V7 = V7
-        self.V8 = V8
-        self.V9 = V9
-        self.V10 = V10
-        self.V11 = V11
-        self.V12 = V12
-        self.V13 = V13
-        self.V14 = V14
-        self.V15 = V15
-        self.V16 = V16
-        self.V17 = V17
-        self.V18 = V18
-        self.V19 = V19
-        self.V20 = V20
-        self.V21 = V21
-        self.V22 = V22
-        self.V23 = V23
-        self.V24 = V24
-        self.V25 = V25
-        self.V26 = V26
-        self.V27 = V27
-        self.V28 = V28
-        self.Amount = Amount
+        self.step = step
+        self.amount = amount
+        self.oldbalanceOrg = oldbalanceOrg
+        self.newbalanceOrig = newbalanceOrig
+        self.oldbalanceDest = oldbalanceDest
+        self.newbalanceDest = newbalanceDest
+        self.type = type
+        self.nameOrig = nameOrig
+        self.nameDest = nameDest
 
     def get_data_as_dataframe(self):
         try:
+            # Step 1: Create dataframe with raw data
             custom_data_input = {
-                "Time": [self.Time],
-                "V1": [self.V1],
-                "V2": [self.V2],
-                "V3": [self.V3],
-                "V4": [self.V4],
-                "V5": [self.V5],
-                "V6": [self.V6],
-                "V7": [self.V7],
-                "V8": [self.V8],
-                "V9": [self.V9],
-                "V10": [self.V10],
-                "V11": [self.V11],
-                "V12": [self.V12],
-                "V13": [self.V13],
-                "V14": [self.V14],
-                "V15": [self.V15],
-                "V16": [self.V16],
-                "V17": [self.V17],
-                "V18": [self.V18],
-                "V19": [self.V19],
-                "V20": [self.V20],
-                "V21": [self.V21],
-                "V22": [self.V22],
-                "V23": [self.V23],
-                "V24": [self.V24],
-                "V25": [self.V25],
-                "V26": [self.V26],
-                "V27": [self.V27],
-                "V28": [self.V28],
-                "Amount": [self.Amount],
+                "step": [self.step],
+                "amount": [self.amount],
+                "oldbalanceOrg": [self.oldbalanceOrg],
+                "newbalanceOrig": [self.newbalanceOrig],
+                "oldbalanceDest": [self.oldbalanceDest],
+                "newbalanceDest": [self.newbalanceDest],
+                "type": [self.type],
+                "nameOrig": [self.nameOrig],  # Raw account ID
+                "nameDest": [self.nameDest],  # Raw account ID
             }
-            return pd.DataFrame(custom_data_input)
+            df = pd.DataFrame(custom_data_input)
+
+            # Step 2: Tokenize account names (same approach as API)
+            try:
+                # Use the same tokenization approach as the API with dummy dataframe
+                df_dummy = df.copy()
+                df_tokenized, _ = tokenize_column(df, df_dummy, "nameOrig")
+                df_tokenized, _ = tokenize_column(df_tokenized, df_dummy, "nameDest")
+                df = df_tokenized
+            except Exception as tokenize_error:
+                print(
+                    f"Tokenization function failed, using manual tokenization: {tokenize_error}"
+                )
+                # Fallback: Manual tokenization (extract numbers from account IDs)
+                df["nameOrig_token"] = df["nameOrig"].str.extract(r"(\d+)").astype(int)
+                df["nameDest_token"] = df["nameDest"].str.extract(r"(\d+)").astype(int)
+
+            # Step 3: Drop raw account columns (preprocessor doesn't expect them)
+            df = df.drop(columns=["nameOrig", "nameDest"])
+
+            # Step 4: Reorder columns to match what preprocessor expects
+            # Preprocessor expects: numerical features + categorical features
+            ordered_cols = [
+                "step",
+                "amount",
+                "oldbalanceOrg",
+                "newbalanceOrig",
+                "oldbalanceDest",
+                "newbalanceDest",
+                "nameOrig_token",
+                "nameDest_token",
+                "type",  # Categorical feature - preprocessor will one-hot encode this
+            ]
+            df = df[ordered_cols]
+
+            return df
         except Exception as e:
-            raise CustomException(e, None)
+            import sys
+
+            raise CustomException(e, sys)
 
 
 if __name__ == "__main__":
-    # Example: Provide dummy values for all required features
-    data = CustomData(
-        Time=0.0,
-        V1=0.0,
-        V2=0.0,
-        V3=0.0,
-        V4=0.0,
-        V5=0.0,
-        V6=0.0,
-        V7=0.0,
-        V8=0.0,
-        V9=0.0,
-        V10=0.0,
-        V11=0.0,
-        V12=0.0,
-        V13=0.0,
-        V14=0.0,
-        V15=0.0,
-        V16=0.0,
-        V17=0.0,
-        V18=0.0,
-        V19=0.0,
-        V20=0.0,
-        V21=0.0,
-        V22=0.0,
-        V23=0.0,
-        V24=0.0,
-        V25=0.0,
-        V26=0.0,
-        V27=0.0,
-        V28=0.0,
-        Amount=0.0,
-    )
-    pred_df = data.get_data_as_dataframe()
-    print("Input DataFrame:")
-    print(pred_df)
-    predict_pipeline = PredictPipeline()
-    pred_result = predict_pipeline.predict(pred_df)
-    print("Prediction result:", pred_result)
+    # Test with both non-fraud and fraud examples using RAW data format
 
+    print("=" * 60)
+    print("Testing Prediction Pipeline with Raw PaySim Data")
+    print("=" * 60)
+
+    # Non-fraud example
+    print("\n1. Testing Non-Fraud Example:")
+    data_nonfraud = CustomData(
+        step=1,
+        amount=1000.0,
+        oldbalanceOrg=5000.0,
+        newbalanceOrig=4000.0,
+        oldbalanceDest=0.0,
+        newbalanceDest=1000.0,
+        type="CASH_OUT",
+        nameOrig="C84071102",  # Raw account ID
+        nameDest="C1576697216",  # Raw account ID
+    )
+
+    pred_df_nonfraud = data_nonfraud.get_data_as_dataframe()
+    print("Input DataFrame (after tokenization):")
+    print(pred_df_nonfraud)
+    print(f"DataFrame shape: {pred_df_nonfraud.shape}")
+    print(f"Columns: {list(pred_df_nonfraud.columns)}")
+
+    predict_pipeline = PredictPipeline()
+    pred_result_nonfraud = predict_pipeline.predict(pred_df_nonfraud)
+    print(f"Prediction result: {pred_result_nonfraud}")
+    print(f"Result: {'Fraud' if pred_result_nonfraud[0] == 1 else 'Not Fraud'}")
+
+    # Fraud example (your provided example)
+    print("\n2. Testing Fraud Example:")
+    data_fraud = CustomData(
+        step=177,
+        amount=1201681.76,
+        oldbalanceOrg=1201681.76,
+        newbalanceOrig=0.0,
+        oldbalanceDest=0.0,
+        newbalanceDest=0.0,
+        type="TRANSFER",
+        nameOrig="C1900756070",  # Your fraud example
+        nameDest="C1995455020",  # Your fraud example
+    )
+
+    pred_df_fraud = data_fraud.get_data_as_dataframe()
+    print("Input DataFrame (after tokenization):")
+    print(pred_df_fraud)
+    print(f"DataFrame shape: {pred_df_fraud.shape}")
+    print(f"Columns: {list(pred_df_fraud.columns)}")
+
+    pred_result_fraud = predict_pipeline.predict(pred_df_fraud)
+    print(f"Prediction result: {pred_result_fraud}")
+    print(f"Result: {'Fraud' if pred_result_fraud[0] == 1 else 'Not Fraud'}")
+
+    # Save results
     output_dir = os.path.join("src", "prediction_output")
     os.makedirs(output_dir, exist_ok=True)
-    with open(os.path.join(output_dir, "prediction.txt"), "w") as f:
-        f.write(str(pred_result))
+    with open(os.path.join(output_dir, "prediction_test.txt"), "w") as f:
+        f.write("Prediction Pipeline Test Results\n")
+        f.write("=" * 40 + "\n\n")
+        f.write(
+            f"Non-Fraud Example: {pred_result_nonfraud[0]} ({'Fraud' if pred_result_nonfraud[0] == 1 else 'Not Fraud'})\n"
+        )
+        f.write(
+            f"Fraud Example: {pred_result_fraud[0]} ({'Fraud' if pred_result_fraud[0] == 1 else 'Not Fraud'})\n"
+        )
+
+    print(f"\nTest results saved to {output_dir}/prediction_test.txt")
+    print("=" * 60)

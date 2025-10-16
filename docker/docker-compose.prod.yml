@@ -14,7 +14,7 @@ services:
       platform: linux/amd64
       container_name: api-con-prod
       ports:
-        - "8082:5050"  # External port 8081 → Internal port 5050
+        - "8082:8000"  # External port 8081 → Internal port 5050
       environment:
         MLFLOW_TRACKING_URI: http://mlflow-prod:5050
       env_file:

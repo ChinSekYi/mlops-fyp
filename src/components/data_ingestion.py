@@ -12,9 +12,10 @@ from sklearn.model_selection import train_test_split
 
 from src.exception import CustomException
 from src.logger import logging
-from src.utils import balance_classes, load_config, load_environment
+from src.utils import load_config, load_environment
 
-# If running this script directly, uncomment the next line to ensure environment variables are loaded early
+# If running this script directly, uncomment the next line to ensure
+# environment variables are loaded early
 load_environment(".env")
 config = load_config()
 DATASET_NAME = os.getenv("DATASET_NAME")
@@ -43,7 +44,7 @@ class DataIngestion:
 
     def initiate_data_ingestion(self):
         """
-        Reads the raw data, handles class imbalance, splits into train/test,
+        Reads the raw data, splits into train/test,
         logs with MLflow, and saves files.
         Returns:
             tuple: Paths to train and test data CSV files.
@@ -60,9 +61,6 @@ class DataIngestion:
                 random_state=self.random_state,
                 stratify=y,
             )
-            print(f"Fraud rates before balancing: {df['isFraud'].mean():.4f}")
-            x_train, y_train = balance_classes(x_train, y_train)
-            print(f"Fraud rates after balancing: {y_train.mean():.4f}")
 
             train = pd.concat([x_train, y_train], axis=1)
             test = pd.concat([x_test, y_test], axis=1)

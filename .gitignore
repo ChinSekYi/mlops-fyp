@@ -2,15 +2,11 @@
 /logs
 /artifacts
 
-
 # Ignore everything in data/ except .dvc files
 data/processed/
 creditcard.csv
 data/raw/*
 !data/raw/*.dvc
-
-# Pythodata/ieee-fraud-detection
-data/kaggle-creditcard
 
 # Python cache
 /src/components/__pycache__/
@@ -37,5 +33,3 @@ outputs/artifacts/preprocessor.pkl
 notebooks/data/processed/test_paysim.csv
 notebooks/data/processed/train_paysim.csv
 notebooks/data/processed/validation_paysim.csv
-.env.production
-.env.staging
