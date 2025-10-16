@@ -86,7 +86,7 @@ def load_model_and_preprocessor():
                 preprocessor = None
 
         except Exception as e:
-            print(f"⚠️ Could not load preprocessor from MLflow: {e}")
+            print(f"Could not load preprocessor from MLflow: {e}")
             preprocessor = None
 
         return model, preprocessor
@@ -98,11 +98,11 @@ def load_model_and_preprocessor():
             model_version = 1
             model_uri = f"models:/{MODEL_NAME}/{model_version}"
             model = mlflow.sklearn.load_model(model_uri)
-            print(f"✅ Successfully loaded MLflow model version {model_version}")
+            print(f"Successfully loaded MLflow model version {model_version}")
             return model, None
         except Exception as e2:
-            print(f"❌ Could not load any MLflow model: {e2}")
-            print("🔄 Using dummy model for predictions")
+            print(f"Could not load any MLflow model: {e2}")
+            print("Using dummy model for predictions")
             return DummyModel(), None
 
 
@@ -205,40 +205,102 @@ def predict(transaction: Transaction):
 @app.get("/model-info")
 def get_model_info():
     """Returns metadata about the currently loaded ML model from MLflow."""
-    client = MlflowClient()
+    try:
+        client = MlflowClient()
 
-    model_version_details = client.get_model_version_by_alias(
-        name=MODEL_NAME, alias=MODEL_ALIAS
-    )
+        # Try to get model info by alias first
+        try:
+            model_version_details = client.get_model_version_by_alias(
+                name=MODEL_NAME, alias=MODEL_ALIAS
+            )
 
-    return {
-        "model_name": model_version_details.name,
-        "version": model_version_details.version,
-        "alias": MODEL_ALIAS,
-        "run_id": model_version_details.run_id,
-        "status": model_version_details.status,
-        "creation_timestamp": model_version_details.creation_timestamp,
-        "current_stage": model_version_details.current_stage,
-        "source": model_version_details.source,
-    }
+            return {
+                "model_name": model_version_details.name,
+                "version": model_version_details.version,
+                "alias": MODEL_ALIAS,
+                "run_id": model_version_details.run_id,
+                "status": model_version_details.status,
+                "creation_timestamp": model_version_details.creation_timestamp,
+                "source": "mlflow_alias",
+            }
+
+        except Exception as alias_error:
+            print(f"Could not get model info by alias: {alias_error}")
+
+            # Fallback to version 1
+            try:
+                model_version_details = client.get_model_version(MODEL_NAME, "1")
+
+                return {
+                    "model_name": model_version_details.name,
+                    "version": model_version_details.version,
+                    "alias": "none (using version 1)",
+                    "run_id": model_version_details.run_id,
+                    "status": model_version_details.status,
+                    "creation_timestamp": model_version_details.creation_timestamp,
+                    "source": "mlflow_version_1",
+                }
+
+            except Exception as version_error:
+                print(f"Could not get model info by version: {version_error}")
+                raise version_error
+
+    except Exception as e:
+        print(f"MLflow connection failed: {e}")
+        # Return basic info about the current setup
+        return {
+            "model_name": MODEL_NAME,
+            "version": "unknown",
+            "alias": MODEL_ALIAS,
+            "run_id": "unknown",
+            "status": "using_dummy_model",
+            "creation_timestamp": "unknown",
+            "source": "dummy_fallback",
+            "error": str(e),
+        }
 
 
 @app.get("/metrics")
 def get_model_metrics():
     """Returns metrics and parameters for the current model run from MLflow."""
+    try:
+        client = MlflowClient()
 
-    client = MlflowClient()
-    model_version_details = client.get_model_version_by_alias(
-        name=MODEL_NAME, alias=MODEL_ALIAS
-    )
-    run_id = model_version_details.run_id
-    run = client.get_run(run_id)
+        # Try to get model version by alias first
+        try:
+            model_version_details = client.get_model_version_by_alias(
+                name=MODEL_NAME, alias=MODEL_ALIAS
+            )
+            run_id = model_version_details.run_id
 
-    return {
-        "run_id": run_id,
-        "metrics": run.data.metrics,  # accuracy, auc, f1, etc.
-        "params": run.data.params,  # hyperparameters
-    }
+        except Exception as alias_error:
+            print(f"Could not get model version by alias: {alias_error}")
+
+            # Fallback to version 1
+            try:
+                model_version_details = client.get_model_version(MODEL_NAME, "1")
+                run_id = model_version_details.run_id
+
+            except Exception as version_error:
+                print(f"Could not get model version: {version_error}")
+                raise version_error
+
+        run = client.get_run(run_id)
+
+        return {
+            "run_id": run_id,
+            "metrics": run.data.metrics,  # accuracy, auc, f1, etc.
+            "params": run.data.params,  # hyperparameters
+        }
+
+    except Exception as e:
+        print(f"MLflow connection failed: {e}")
+        return {
+            "run_id": "unknown",
+            "metrics": {"error": "MLflow unavailable"},
+            "params": {"error": "MLflow unavailable"},
+            "error": str(e),
+        }
 
 
 @app.get("/feature-info")

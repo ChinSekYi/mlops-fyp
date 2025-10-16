@@ -10,6 +10,7 @@ EXPOSE 5050
 CMD ["sh", "-c", "mlflow server \
   -h 0.0.0.0 \
   -p 5050 \
+  --allowed-hosts '*' \
   --backend-store-uri postgresql://$DB_USER:$DB_PASSWORD@$REAL_DB_ENDPOINT:$DB_PORT/$DB_NAME \
   --default-artifact-root s3://$MLFLOW_S3_BUCKET"]
 
@@ -18,7 +19,6 @@ CMD ["sh", "-c", "mlflow server \
 # docker run --rm -d --name mlflow-server --network mlops-network -p 5050:5050 --env-file .env mlflow-server-image
 # Outside docker acces mlflow at http://localhost:5050
 
-# docker build -t sychin0606/mlflow-server:latest -f docker/Dockerfile.mlflow .
-# docker tag sychin0606/mlflow-server:latest sychin0606/mlflow-server:dev
+# docker build --no-cache --platform linux/amd64 -t sychin0606/mlflow-server:latest -f docker/Dockerfile.mlflow .
+# docker tag sychin0606/mlflow-server:latest
 # docker push sychin0606/mlflow-server:latest
-# docker push sychin0606/mlflow-server:dev

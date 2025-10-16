@@ -28,10 +28,7 @@ CMD ["sh", "-c", "mlflow server \
 # docker buildx inspect --bootstrap
 
 # Build and push for both amd64 and arm64
-# docker buildx build --platform linux/amd64,linux/arm64 \
-#  -t sychin0606/ci:latest \
-#  -f docker/Dockerfile.ci \
-#  --push .
+# docker buildx build --platform linux/amd64,linux/arm64 -t sychin0606/ci:latest -f docker/Dockerfile.ci  --push .
 
 # docker run -it --rm -p 5051:5051 sychin0606/ci:latest
 
