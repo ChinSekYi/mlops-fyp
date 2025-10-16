@@ -67,6 +67,7 @@ jobs:
       - name: Load environment variables
         run: |
           cat .env.ci >> $GITHUB_ENV
+          echo "" >> $GITHUB_ENV
           echo "ENV_FILE=.env.ci" >> $GITHUB_ENV
 
       - name: Run quality checks
