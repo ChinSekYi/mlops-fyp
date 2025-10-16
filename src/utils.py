@@ -8,9 +8,9 @@ import pickle
 import pandas as pd
 import yaml
 from dotenv import load_dotenv
+from imblearn.over_sampling import SMOTE, SMOTENC
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 from sklearn.preprocessing import StandardScaler
-from sklearn.utils import resample
 
 
 def load_environment(env_file: str = None):
@@ -50,24 +50,74 @@ def save_object(file_path, obj):
         pickle.dump(obj, file_obj)
 
 
-def balance_classes(x_train, y_train, random_state=123):
-    """Upsample the minority class in x_train/y_train to match the majority class size."""
-    train_balanced = x_train.copy()
-    train_balanced["isFraud"] = y_train.values
-    majority_class = train_balanced["isFraud"].value_counts().idxmax()
-    minority_class = train_balanced["isFraud"].value_counts().idxmin()
-    df_majority = train_balanced[train_balanced["isFraud"] == majority_class]
-    df_minority = train_balanced[train_balanced["isFraud"] == minority_class]
-    df_minority_upsampled = resample(
-        df_minority, replace=True, n_samples=len(df_majority), random_state=random_state
-    )
-    train_balanced = pd.concat([df_majority, df_minority_upsampled])
-    train_balanced = train_balanced.sample(
-        frac=1, random_state=random_state
-    ).reset_index(drop=True)
-    x_train_bal = train_balanced.drop("isFraud", axis=1)
-    y_train_bal = train_balanced["isFraud"]
-    return x_train_bal, y_train_bal
+def balance_classes(x_train, y_train, random_state=42):
+    """
+    Balance classes using SMOTE oversampling to upsample minority class.
+
+    Args:
+        x_train: Training features (DataFrame)
+        y_train: Training labels (Series)
+        random_state: Random state for reproducibility
+
+    Returns:
+        Balanced x_train, y_train
+    """
+    # print(f"Original distribution:\n{y_train.value_counts()}")
+    # print(f"Original fraud rate: {y_train.mean():.4f}")
+
+    # Use SMOTE to oversample minority class (fraud cases)
+    smote = SMOTE(random_state=random_state, sampling_strategy="auto")
+    X_resampled, y_resampled = smote.fit_resample(x_train, y_train)
+
+    # Convert back to pandas for consistency
+    X_resampled = pd.DataFrame(X_resampled, columns=x_train.columns)
+    y_resampled = pd.Series(y_resampled, name=y_train.name)
+
+    # print(f"Balanced distribution:\n{y_resampled.value_counts()}")
+    # print(f"Balanced fraud rate: {y_resampled.mean():.4f}")
+
+    return X_resampled, y_resampled
+
+
+def balance_classes_smotenc(x_train, y_train, categorical_features, random_state=123):
+    """
+    Balance classes using SMOTENC for mixed data types (numerical + categorical).
+    c
+    Args:
+        x_train: Training features (DataFrame)
+        y_train: Training labels (Series)
+        categorical_features: List of column indices that are categorical
+        random_state: Random state for reproducibility
+
+    Returns:
+        Balanced x_train, y_train
+    """
+    # print(f"Original distribution:\n{y_train.value_counts()}")
+    # print(f"Original fraud rate: {y_train.mean():.4f}")
+
+    try:
+        # Apply SMOTENC for mixed data types
+        smotenc = SMOTENC(
+            categorical_features=categorical_features,
+            random_state=random_state,
+            sampling_strategy="auto",  # Balance to 50:50
+        )
+
+        X_balanced, y_balanced = smotenc.fit_resample(x_train, y_train)
+
+        # Convert back to pandas for consistency
+        X_balanced = pd.DataFrame(X_balanced, columns=x_train.columns)
+        y_balanced = pd.Series(y_balanced, name=y_train.name)
+
+        # print(f"Balanced distribution:\n{y_balanced.value_counts()}")
+        # print(f"Balanced fraud rate: {y_balanced.mean():.4f}")
+
+        return X_balanced, y_balanced
+
+    except Exception as e:
+        print(f"SMOTENC failed: {e}")
+        print("Falling back to SMOTE...")
+        return balance_classes(x_train, y_train, random_state)
 
 
 def one_hot_encode_and_align(x_train, x_test, column):

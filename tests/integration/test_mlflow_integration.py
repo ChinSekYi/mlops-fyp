@@ -58,32 +58,48 @@ class TestMLflowIntegration:
         except Exception as e:
             pytest.skip(f"MLflow server not available: {e}")
 
-    def test_model_loading_by_alias(self, model):
+    def test_model_loading_by_alias(self, model, preprocessor):
         """Test loading model using alias from fixture."""
         # The model fixture should successfully load the model
         assert model is not None
+        assert preprocessor is not None
 
-        # Test the model can make predictions
+        # Test the model can make predictions with raw data
         test_data = pd.DataFrame(
             {
                 "step": [1],
+                "type": ["CASH_OUT"],
                 "amount": [100.0],
+                "nameOrig": ["C123456789"],
                 "oldbalanceOrg": [1000.0],
                 "newbalanceOrig": [900.0],
+                "nameDest": ["C987654321"],
                 "oldbalanceDest": [0.0],
                 "newbalanceDest": [100.0],
-                "type__CASH_IN": [0],
-                "type__CASH_OUT": [1],
-                "type__DEBIT": [0],
-                "type__PAYMENT": [0],
-                "type__TRANSFER": [0],
-                "nameOrig_token": [123],
-                "nameDest_token": [456],
             }
         )
 
         try:
-            prediction = model.predict(test_data)
+            # Apply tokenization first (like the API does)
+            from src.utils import tokenize_column
+
+            # Create dummy test dataframe for tokenization (tokenize_column expects train and test)
+            test_data_dummy = test_data.copy()
+            test_data_tokenized, _ = tokenize_column(
+                test_data, test_data_dummy, "nameOrig"
+            )
+            test_data_tokenized, _ = tokenize_column(
+                test_data_tokenized, test_data_dummy, "nameDest"
+            )
+
+            # Drop original name columns
+            test_data_tokenized = test_data_tokenized.drop(
+                ["nameOrig", "nameDest"], axis=1
+            )
+
+            # Apply preprocessing then predict
+            processed_data = preprocessor.transform(test_data_tokenized)
+            prediction = model.predict(processed_data)
             assert len(prediction) == 1
             assert prediction[0] in [0, 1]  # Binary classification
         except Exception as e:

@@ -18,7 +18,7 @@ app:
 
 # Local API server (for development without Docker)
 api-server-local:
-	uvicorn api.main:app --host 0.0.0.0 --port 8080 --reload
+	uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
 
 # Docker
 mlflow-server: 
@@ -58,7 +58,11 @@ test-pipeline-ci:
 	pytest tests/unit tests/integration -v --maxfail=1
 
 test-staging:
-	pytest tests/integration tests/e2e tests/smoke -v
+	pytest tests/integration tests/e2e  -v
 
 test-prod:
 	pytest tests/smoke -v
+
+
+rmi:
+	docker rmi $(docker images -q)
