@@ -6,6 +6,7 @@ and feature info.
 
 import os
 
+import joblib
 import mlflow
 import pandas as pd
 from fastapi import FastAPI
@@ -30,7 +31,7 @@ print("Active experiment:", mlflow.get_tracking_uri())
 
 
 class DummyModel:
-    """Dummy model for when MLflow is not available"""
+    # Dummy model for when MLflow is not available
 
     def predict(self, X):
         # Simple heuristic: classify as fraud if amount > 200000 or oldbalanceOrg == 0
@@ -70,9 +71,6 @@ def load_model_and_preprocessor():
                 run_id=run_id, artifact_path="preprocessor"
             )
 
-            # The downloaded path will be a directory, so we need to get the actual file
-            import os
-
             preprocessor_files = os.listdir(preprocessor_path)
             preprocessor_file = None
             for file in preprocessor_files:
@@ -81,12 +79,10 @@ def load_model_and_preprocessor():
                     break
 
             if preprocessor_file:
-                import joblib
-
                 preprocessor = joblib.load(preprocessor_file)
-                print("✅ Successfully loaded preprocessor from MLflow")
+                print("Successfully loaded preprocessor from MLflow")
             else:
-                print("⚠️ No .pkl file found in preprocessor artifacts")
+                print("No .pkl file found in preprocessor artifacts")
                 preprocessor = None
 
         except Exception as e:
@@ -96,7 +92,7 @@ def load_model_and_preprocessor():
         return model, preprocessor
 
     except Exception as e:
-        print(f"❌ Could not load MLflow model: {e}")
+        print(f"Could not load MLflow model: {e}")
         try:
             # Fallback to version 1 if alias doesn't exist
             model_version = 1

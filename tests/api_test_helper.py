@@ -44,23 +44,22 @@ def start_api_server():
     # Start the server
     try:
         cmd = ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "5050"]
-        process = subprocess.Popen(
+        with subprocess.Popen(
             cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=project_root
-        )
+        ) as process:
+            # Wait a moment for server to start
+            time.sleep(3)
 
-        # Wait a moment for server to start
-        time.sleep(3)
+            # Check if server started successfully
+            if check_api_health():
+                print(f"API server started successfully (PID: {process.pid})")
+                return True
 
-        # Check if server started successfully
-        if check_api_health():
-            print(f"API server started successfully (PID: {process.pid})")
-            return True
-        else:
             print("Failed to start API server")
             process.terminate()
             return False
 
-    except Exception as e:
+    except (subprocess.SubprocessError, OSError) as e:
         print(f"Error starting API server: {e}")
         return False
 

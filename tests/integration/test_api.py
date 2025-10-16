@@ -155,10 +155,10 @@ class TestAPIIntegration:
                 "oldbalanceOrg": 181.0,
                 "newbalanceOrig": 0.0,
                 "oldbalanceDest": 0.0,
-                "newbalanceDest": 0.0,
+                "newbalanceDest": 181.0,
                 "type": trans_type,
-                "nameOrig_token": 123,
-                "nameDest_token": 456,
+                "nameOrig": "C84071102",  # Raw account ID string
+                "nameDest": "C1576697216",  # Raw account ID string
             }
 
             try:
@@ -196,10 +196,10 @@ class TestAPIIntegration:
             "oldbalanceOrg": 181.0,
             "newbalanceOrig": 0.0,
             "oldbalanceDest": 0.0,
-            "newbalanceDest": 0.0,
+            "newbalanceDest": 181.0,
             "type": "CASH_OUT",
-            "nameOrig_token": 123,
-            "nameDest_token": 456,
+            "nameOrig": "C84071102",  # Raw account ID
+            "nameDest": "C1576697216",  # Raw account ID
         }
 
         try:
@@ -218,10 +218,10 @@ class TestAPIIntegration:
             "oldbalanceOrg": 181.0,
             "newbalanceOrig": 0.0,
             "oldbalanceDest": 0.0,
-            "newbalanceDest": 0.0,
+            "newbalanceDest": 181.0,
             "type": "INVALID_TYPE",  # Invalid transaction type
-            "nameOrig_token": 123,
-            "nameDest_token": 456,
+            "nameOrig": "C84071102",  # Raw account ID
+            "nameDest": "C1576697216",  # Raw account ID
         }
 
         try:

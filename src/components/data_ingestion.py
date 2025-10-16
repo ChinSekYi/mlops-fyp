@@ -12,9 +12,10 @@ from sklearn.model_selection import train_test_split
 
 from src.exception import CustomException
 from src.logger import logging
-from src.utils import balance_classes, load_config, load_environment
+from src.utils import load_config, load_environment
 
-# If running this script directly, uncomment the next line to ensure environment variables are loaded early
+# If running this script directly, uncomment the next line to ensure
+# environment variables are loaded early
 load_environment(".env")
 config = load_config()
 DATASET_NAME = os.getenv("DATASET_NAME")
