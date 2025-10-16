@@ -51,13 +51,13 @@ class ModelTrainer:
     ):
         """
         Train and evaluate multiple models, then log the best one to MLflow.
-        
+
         Args:
             train_data_path: Path to training data CSV
-            test_data_path: Path to test data CSV  
+            test_data_path: Path to test data CSV
             registered_model_name_param: Name for MLflow model registration
             preprocessor_path: Path to preprocessor pickle file
-            
+
         Returns:
             dict: Training and testing metrics for all models
         """
@@ -120,8 +120,7 @@ class ModelTrainer:
                     if preprocessor_path and os.path.exists(preprocessor_path):
                         mlflow.log_artifact(preprocessor_path, "preprocessor")
                         logging.info(
-                            f"Logged preprocessor artifact: "
-                            f"{preprocessor_path}"
+                            f"Logged preprocessor artifact: " f"{preprocessor_path}"
                         )
                     else:
                         logging.warning(
