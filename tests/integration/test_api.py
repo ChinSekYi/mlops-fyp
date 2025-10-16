@@ -15,7 +15,7 @@ from src.utils import load_environment
 env_file = os.getenv("ENV_FILE", ".env")
 load_environment(env_file)
 
-MODEL_SERVER_IP = os.getenv("MODEL_SERVER_IP", "http://localhost:8080")
+MODEL_SERVER_IP = os.getenv("MODEL_SERVER_IP", "http://localhost:8000")
 
 # Extract predict endpoint and base URL
 if MODEL_SERVER_IP.endswith("/predict"):
@@ -27,7 +27,7 @@ else:
 
 # Validate that MODEL_SERVER_IP is properly set
 if not MODEL_SERVER_IP:
-    MODEL_SERVER_IP = "http://localhost:8080"
+    MODEL_SERVER_IP = "http://localhost:8000"
     BASE_URL = MODEL_SERVER_IP
     PREDICT_URL = f"{MODEL_SERVER_IP}/predict"
 
@@ -155,10 +155,10 @@ class TestAPIIntegration:
                 "oldbalanceOrg": 181.0,
                 "newbalanceOrig": 0.0,
                 "oldbalanceDest": 0.0,
-                "newbalanceDest": 0.0,
+                "newbalanceDest": 181.0,
                 "type": trans_type,
-                "nameOrig_token": 123,
-                "nameDest_token": 456,
+                "nameOrig": "C84071102",  # Raw account ID string
+                "nameDest": "C1576697216",  # Raw account ID string
             }
 
             try:
@@ -196,10 +196,10 @@ class TestAPIIntegration:
             "oldbalanceOrg": 181.0,
             "newbalanceOrig": 0.0,
             "oldbalanceDest": 0.0,
-            "newbalanceDest": 0.0,
+            "newbalanceDest": 181.0,
             "type": "CASH_OUT",
-            "nameOrig_token": 123,
-            "nameDest_token": 456,
+            "nameOrig": "C84071102",  # Raw account ID
+            "nameDest": "C1576697216",  # Raw account ID
         }
 
         try:
@@ -218,10 +218,10 @@ class TestAPIIntegration:
             "oldbalanceOrg": 181.0,
             "newbalanceOrig": 0.0,
             "oldbalanceDest": 0.0,
-            "newbalanceDest": 0.0,
+            "newbalanceDest": 181.0,
             "type": "INVALID_TYPE",  # Invalid transaction type
-            "nameOrig_token": 123,
-            "nameDest_token": 456,
+            "nameOrig": "C84071102",  # Raw account ID
+            "nameDest": "C1576697216",  # Raw account ID
         }
 
         try:
