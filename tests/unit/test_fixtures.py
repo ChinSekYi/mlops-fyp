@@ -12,7 +12,7 @@ def test_mock_raw_df_fixture(mock_raw_df):
     assert isinstance(mock_raw_df, pd.DataFrame)
 
     # Verify it has the expected structure
-    assert len(mock_raw_df) == 12  # 12 rows
+    assert len(mock_raw_df) == 50  # 50 rows (updated for pipeline integration tests)
     assert len(mock_raw_df.columns) >= 10  # At least 10 columns
 
     # Verify expected columns exist
@@ -48,7 +48,7 @@ def test_sample_input_fixture(sample_input):
     # Verify it's a dictionary
     assert isinstance(sample_input, dict)
 
-    # Verify expected keys exist
+    # Verify expected keys exist (RAW format)
     expected_keys = [
         "step",
         "amount",
@@ -57,8 +57,8 @@ def test_sample_input_fixture(sample_input):
         "oldbalanceDest",
         "newbalanceDest",
         "type",
-        "nameOrig_token",
-        "nameDest_token",
+        "nameOrig",  # Raw account ID string
+        "nameDest",  # Raw account ID string
     ]
 
     for key in expected_keys:
@@ -68,6 +68,12 @@ def test_sample_input_fixture(sample_input):
     assert isinstance(sample_input["step"], int)
     assert isinstance(sample_input["amount"], float)
     assert isinstance(sample_input["type"], str)
+    assert isinstance(
+        sample_input["nameOrig"], str
+    )  # Should be string like "C84071102"
+    assert isinstance(
+        sample_input["nameDest"], str
+    )  # Should be string like "C1576697216"
 
     print("✅ sample_input fixture is working correctly!")
 
@@ -75,18 +81,39 @@ def test_sample_input_fixture(sample_input):
 def test_fixtures_consistency(mock_raw_df, sample_input):
     """Test that fixtures are consistent with each other."""
 
-    # The sample_input should have the same structure as processed data from mock_raw_df
-    # After transformation, nameOrig and nameDest become nameOrig_token and nameDest_token
+    # Both fixtures should use the same RAW format
+    # mock_raw_df represents raw data, sample_input represents raw API input
 
-    # Check that sample_input has tokenized versions of name columns
-    assert "nameOrig_token" in sample_input
-    assert "nameDest_token" in sample_input
-
-    # Check that mock_raw_df has the original name columns
+    # Check that both have raw name columns (not tokenized)
     assert "nameOrig" in mock_raw_df.columns
     assert "nameDest" in mock_raw_df.columns
+    assert "nameOrig" in sample_input
+    assert "nameDest" in sample_input
 
-    # Check data consistency
-    assert isinstance(
-        sample_input["amount"], type(float(mock_raw_df["amount"].iloc[0]))
-    )
+    # Check that both use the same transaction types
+    valid_types = ["CASH_IN", "CASH_OUT", "DEBIT", "PAYMENT", "TRANSFER"]
+    assert sample_input["type"] in valid_types
+    assert all(t in valid_types for t in mock_raw_df["type"].unique())
+
+    # Check data consistency - both should have same structure
+    common_fields = [
+        "step",
+        "amount",
+        "oldbalanceOrg",
+        "newbalanceOrig",
+        "oldbalanceDest",
+        "newbalanceDest",
+        "type",
+    ]
+
+    for field in common_fields:
+        assert field in sample_input, f"sample_input missing field: {field}"
+        assert field in mock_raw_df.columns, f"mock_raw_df missing column: {field}"
+
+    # Check account ID format consistency (should be strings starting with C/M)
+    assert isinstance(sample_input["nameOrig"], str)
+    assert isinstance(sample_input["nameDest"], str)
+    assert all(isinstance(x, str) for x in mock_raw_df["nameOrig"])
+    assert all(isinstance(x, str) for x in mock_raw_df["nameDest"])
+
+    print("✅ Fixtures are consistent with raw data format!")

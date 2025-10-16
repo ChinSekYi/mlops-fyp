@@ -136,10 +136,7 @@ class TestDataIngestion:
 
     @patch("src.components.data_ingestion.pd.read_csv")
     @patch("src.components.data_ingestion.train_test_split")
-    @patch("src.components.data_ingestion.balance_classes")
-    def test_initiate_data_ingestion(
-        self, mock_balance, mock_split, mock_read_csv, mock_raw_df
-    ):
+    def test_initiate_data_ingestion(self, mock_split, mock_read_csv, mock_raw_df):
         """Test data ingestion process with mocked dependencies."""
         mock_read_csv.return_value = mock_raw_df
 
@@ -150,9 +147,6 @@ class TestDataIngestion:
             pd.Series([0, 1]),
             pd.Series([0, 1]),  # y_train, y_test
         )
-
-        # Mock balance_classes
-        mock_balance.return_value = (mock_raw_df.iloc[:2], pd.Series([0, 1]))
 
         # Test
         ingestion = DataIngestion()
@@ -167,7 +161,7 @@ class TestDataIngestion:
             # These assertions ensure your code is actually using the functions it's supposed to use
             mock_read_csv.assert_called_once()  # Verifies that pd.read_csv() was called exactly one time during the test
             mock_split.assert_called_once()
-            mock_balance.assert_called_once()
+            # Note: balance_classes is now called in data_transformation, not data_ingestion
 
 
 class TestDataTransformation:
@@ -181,56 +175,32 @@ class TestDataTransformation:
         assert hasattr(transformation, "processed_test_data_path")
 
     @patch("src.components.data_transformation.pd.read_csv")
-    @patch("src.components.data_transformation.one_hot_encode_and_align")
-    @patch("src.components.data_transformation.standardize_columns")
     @patch("src.components.data_transformation.tokenize_column")
+    @patch("src.components.data_transformation.balance_classes_smotenc")
     def test_initiate_data_transformation(
-        self, mock_tokenize, mock_standardize, mock_onehot, mock_read_csv, mock_raw_df
+        self, mock_balance, mock_tokenize, mock_read_csv, mock_raw_df
     ):
-        # side_effect allows a mock to return different values on successive calls
+        # Mock CSV reading
         mock_read_csv.side_effect = [mock_raw_df, mock_raw_df]
 
-        # Mock transformation functions - when called, they return the same mock data every time
-        # These functions normally transform data, but we mock them to skip actual processing
-        mock_onehot.return_value = (
-            mock_raw_df,
-            mock_raw_df,
-        )  # Returns tuple: (train_df, test_df)
-        mock_standardize.return_value = (mock_raw_df, mock_raw_df)
-
-        # Create DataFrame that still has original columns but also has tokenized columns
-        # This simulates the state after tokenization but before dropping original columns
+        # Create DataFrame with tokenized columns (simulating tokenize_column output)
         mock_after_tokenize_df = mock_raw_df.copy()
+        # Generate token values for 50 rows (matching the updated fixture size)
         mock_after_tokenize_df["nameOrig_token"] = [
-            123,
-            456,
-            789,
-            12,
-            345,
-            678,
-            901,
-            234,
-            567,
-            890,
-            123,
-            456,
+            i + 100 for i in range(len(mock_raw_df))
         ]
         mock_after_tokenize_df["nameDest_token"] = [
-            345,
-            678,
-            901,
-            234,
-            567,
-            890,
-            123,
-            456,
-            789,
-            12,
-            345,
-            678,
+            i + 200 for i in range(len(mock_raw_df))
         ]
 
+        # Mock tokenize_column to return tokenized data
         mock_tokenize.return_value = (mock_after_tokenize_df, mock_after_tokenize_df)
+
+        # Mock balance_classes_smotenc
+        mock_balance.return_value = (
+            mock_after_tokenize_df.iloc[:6],
+            pd.Series([0, 1, 0, 1, 0, 1]),
+        )
 
         # Test
         transformation = DataTransformation()
@@ -238,21 +208,29 @@ class TestDataTransformation:
             transformation, "processed_train_data_path", "/tmp/processed_train.csv"
         ), patch.object(
             transformation, "processed_test_data_path", "/tmp/processed_test.csv"
+        ), patch.object(
+            transformation, "preprocessor_ob_file_path", "/tmp/preprocessor.pkl"
         ), patch(
             "pandas.DataFrame.to_csv"
         ), patch(
             "os.makedirs"
+        ), patch(
+            "src.components.data_transformation.save_object"
         ):
 
-            train_path, test_path, _ = transformation.initiate_data_transformation(
-                "/tmp/train.csv", "/tmp/test.csv"
+            train_path, test_path, preprocessor_path, _ = (
+                transformation.initiate_data_transformation(
+                    "/tmp/train.csv", "/tmp/test.csv"
+                )
             )
 
             assert train_path == transformation.processed_train_data_path
             assert test_path == transformation.processed_test_data_path
+            assert preprocessor_path == transformation.preprocessor_ob_file_path
             assert mock_read_csv.call_count == 2
-            mock_onehot.assert_called_once()
-            mock_standardize.assert_called_once()
+            # tokenize_column should be called twice (once for nameOrig, once for nameDest)
+            assert mock_tokenize.call_count == 2
+            mock_balance.assert_called_once()
 
 
 class TestModelTrainer:

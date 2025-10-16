@@ -1,3 +1,8 @@
+"""
+Model training module for the credit card fraud detection pipeline.
+Trains, evaluates, and logs a logistic regression model.
+"""
+
 import os
 import sys
 
@@ -24,10 +29,6 @@ processed_train_data_path = trainer_config["processed_train_data_path"]
 processed_test_data_path = trainer_config["processed_test_data_path"]
 registered_model_name = os.getenv("REGISTERED_MODEL_NAME")
 artifact_path = os.getenv("ARTIFACT_PATH")
-"""
-Model training module for the credit card fraud detection pipeline.
-Trains, evaluates, and logs a logistic regression model.
-"""
 
 
 class ModelTrainer:
@@ -48,6 +49,18 @@ class ModelTrainer:
         registered_model_name_param,
         preprocessor_path=None,  # Add preprocessor path parameter
     ):
+        """
+        Train and evaluate multiple models, then log the best one to MLflow.
+        
+        Args:
+            train_data_path: Path to training data CSV
+            test_data_path: Path to test data CSV  
+            registered_model_name_param: Name for MLflow model registration
+            preprocessor_path: Path to preprocessor pickle file
+            
+        Returns:
+            dict: Training and testing metrics for all models
+        """
         try:
             train_df = pd.read_csv(train_data_path)
             test_df = pd.read_csv(test_data_path)
@@ -100,14 +113,15 @@ class ModelTrainer:
                         sk_model=model,
                         input_example=x_train.iloc[[0]],
                         name=model_name,
-                        registered_model_name=registered_model_name_param,  # uncomment to register model
+                        registered_model_name=registered_model_name_param,
                     )
 
                     # Log the preprocessor as an artifact
                     if preprocessor_path and os.path.exists(preprocessor_path):
                         mlflow.log_artifact(preprocessor_path, "preprocessor")
                         logging.info(
-                            f"Logged preprocessor artifact: {preprocessor_path}"
+                            f"Logged preprocessor artifact: "
+                            f"{preprocessor_path}"
                         )
                     else:
                         logging.warning(
@@ -132,11 +146,10 @@ class ModelTrainer:
 
 if __name__ == "__main__":
     modeltrainer = ModelTrainer()
-    training_metrics, testing_metrics = modeltrainer.initiate_model_trainer(
+    metrics = modeltrainer.initiate_model_trainer(
         processed_train_data_path,
         processed_test_data_path,
         registered_model_name,
     )
 
-    print(f"training_data results: {training_metrics}")
-    print(f"testing_data results: {testing_metrics}")
+    print(f"training_data results: {metrics}")
