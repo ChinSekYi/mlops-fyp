@@ -207,13 +207,13 @@ def get_model_info():
     """Returns metadata about the currently loaded ML model from MLflow."""
     try:
         client = MlflowClient()
-        
+
         # Try to get model info by alias first
         try:
             model_version_details = client.get_model_version_by_alias(
                 name=MODEL_NAME, alias=MODEL_ALIAS
             )
-            
+
             return {
                 "model_name": model_version_details.name,
                 "version": model_version_details.version,
@@ -221,16 +221,16 @@ def get_model_info():
                 "run_id": model_version_details.run_id,
                 "status": model_version_details.status,
                 "creation_timestamp": model_version_details.creation_timestamp,
-                "source": "mlflow_alias"
+                "source": "mlflow_alias",
             }
-            
+
         except Exception as alias_error:
             print(f"Could not get model info by alias: {alias_error}")
-            
+
             # Fallback to version 1
             try:
                 model_version_details = client.get_model_version(MODEL_NAME, "1")
-                
+
                 return {
                     "model_name": model_version_details.name,
                     "version": model_version_details.version,
@@ -238,13 +238,13 @@ def get_model_info():
                     "run_id": model_version_details.run_id,
                     "status": model_version_details.status,
                     "creation_timestamp": model_version_details.creation_timestamp,
-                    "source": "mlflow_version_1"
+                    "source": "mlflow_version_1",
                 }
-                
+
             except Exception as version_error:
                 print(f"Could not get model info by version: {version_error}")
                 raise version_error
-                
+
     except Exception as e:
         print(f"MLflow connection failed: {e}")
         # Return basic info about the current setup
@@ -256,7 +256,7 @@ def get_model_info():
             "status": "using_dummy_model",
             "creation_timestamp": "unknown",
             "source": "dummy_fallback",
-            "error": str(e)
+            "error": str(e),
         }
 
 
@@ -265,41 +265,41 @@ def get_model_metrics():
     """Returns metrics and parameters for the current model run from MLflow."""
     try:
         client = MlflowClient()
-        
+
         # Try to get model version by alias first
         try:
             model_version_details = client.get_model_version_by_alias(
                 name=MODEL_NAME, alias=MODEL_ALIAS
             )
             run_id = model_version_details.run_id
-            
+
         except Exception as alias_error:
             print(f"Could not get model version by alias: {alias_error}")
-            
+
             # Fallback to version 1
             try:
                 model_version_details = client.get_model_version(MODEL_NAME, "1")
                 run_id = model_version_details.run_id
-                
+
             except Exception as version_error:
                 print(f"Could not get model version: {version_error}")
                 raise version_error
-        
+
         run = client.get_run(run_id)
-        
+
         return {
             "run_id": run_id,
             "metrics": run.data.metrics,  # accuracy, auc, f1, etc.
             "params": run.data.params,  # hyperparameters
         }
-        
+
     except Exception as e:
         print(f"MLflow connection failed: {e}")
         return {
             "run_id": "unknown",
             "metrics": {"error": "MLflow unavailable"},
             "params": {"error": "MLflow unavailable"},
-            "error": str(e)
+            "error": str(e),
         }
 
 
