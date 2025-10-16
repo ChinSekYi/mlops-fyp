@@ -14,7 +14,7 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
-      AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
+      AWS_S3_BUCKET_CI: ${{ secrets.AWS_S3_BUCKET_CI }}
 
     services:
       postgres:
@@ -41,7 +41,7 @@ jobs:
           DB_NAME: mlflowdb
           DB_PORT: 5432
           REAL_DB_ENDPOINT: postgres
-          MLFLOW_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
+          MLFLOW_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET_CI }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
@@ -59,8 +59,10 @@ jobs:
           pip install dvc[s3]==3.2.2
           pip install -r requirements/ci.txt
 
-      - name: Pull dataset from DVC
-        run: dvc pull data/raw/paysim-dev.csv
+      - name: Configure DVC remote and pull dataset
+        run: |
+          dvc remote modify storage url s3://${{ secrets.AWS_S3_BUCKET_CI }}
+          dvc pull -r storage data/raw/paysim-dev.csv
 
       - name: Load environment variables
         run: |
