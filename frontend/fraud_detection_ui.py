@@ -125,6 +125,15 @@ if page == "Predict":
                         value=str(default_values[feature]),
                         key=f"text_{feature}_{sample_choice}_{i}",  # Include sample_choice in key
                     )
+                elif feature == "step":
+                    input_data[feature] = st.number_input(
+                        f"{label} (time step - must be positive integer)",
+                        min_value=1,
+                        step=1,
+                        format="%d",
+                        value=int(default_values[feature]),
+                        key=f"num_{feature}_{sample_choice}_{i}",  # Include sample_choice in key
+                    )
                 else:
                     input_data[feature] = st.number_input(
                         label,
