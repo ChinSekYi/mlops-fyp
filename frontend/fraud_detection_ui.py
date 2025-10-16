@@ -18,10 +18,6 @@ if not API_URL:
     load_environment(env_file)
     API_URL = os.getenv("MODEL_SERVER_IP")
 
-# Debug: Show what API_URL is being used
-st.write(f"🔗 **API URL:** {API_URL}")
-if not API_URL:
-    st.error("❌ MODEL_SERVER_IP not found in environment variables or .env file")
 
 EXPECTED_FEATURES = [
     "step",
@@ -108,7 +104,7 @@ if page == "Predict":
                         if default_values[feature] in TYPE_DROPDOWN_VALUES
                         else 0
                     ),
-                    key=f"type_{i}",
+                    key=f"type_{sample_choice}_{i}",  # Include sample_choice in key
                 )
             else:
                 label = (
@@ -127,7 +123,7 @@ if page == "Predict":
                     input_data[feature] = st.text_input(
                         f"{label} (format: C1234567890)",
                         value=str(default_values[feature]),
-                        key=f"text_{feature}_{i}",
+                        key=f"text_{feature}_{sample_choice}_{i}",  # Include sample_choice in key
                     )
                 else:
                     input_data[feature] = st.number_input(
@@ -136,7 +132,7 @@ if page == "Predict":
                         step=0.01,
                         format="%.2f",
                         value=float(default_values[feature]),
-                        key=f"num_{feature}_{i}",
+                        key=f"num_{feature}_{sample_choice}_{i}",  # Include sample_choice in key
                     )
     if st.button("Predict", key="single"):
         payload = input_data

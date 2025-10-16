@@ -58,7 +58,11 @@ test-pipeline-ci:
 	pytest tests/unit tests/integration -v --maxfail=1
 
 test-staging:
-	pytest tests/integration tests/e2e tests/smoke -v
+	pytest tests/integration tests/e2e  -v
 
 test-prod:
 	pytest tests/smoke -v
+
+
+rmi:
+	docker rmi $(docker images -q)

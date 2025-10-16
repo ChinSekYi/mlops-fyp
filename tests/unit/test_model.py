@@ -1,7 +1,6 @@
 """
 Unit tests for the Model
 Tests model load, shape
-
 """
 
 import numpy as np
@@ -13,12 +12,9 @@ def test_model_load(model):
     assert model is not None
 
 
-def test_model_prediction_shape(model):
+def test_model_prediction_shape(model, preprocessor):
     """Check that model returns correct output length on dummy input."""
-    # PaySim dataset after preprocessing has 13 features:
-    # step, amount, oldbalanceOrg, newbalanceOrig, oldbalanceDest, newbalanceDest,
-    # type__CASH_IN, type__CASH_OUT, type__DEBIT, type__PAYMENT, type__TRANSFER,
-    # nameOrig_token, nameDest_token
+    # PaySim dataset in RAW format (before preprocessing):
     sample_input = pd.DataFrame(
         {
             "step": [1],
@@ -27,16 +23,32 @@ def test_model_prediction_shape(model):
             "newbalanceOrig": [4000.0],
             "oldbalanceDest": [0.0],
             "newbalanceDest": [1000.0],
-            "type__CASH_IN": [0],
-            "type__CASH_OUT": [1],
-            "type__DEBIT": [0],
-            "type__PAYMENT": [0],
-            "type__TRANSFER": [0],
-            "nameOrig_token": [123],
-            "nameDest_token": [456],
+            "type": ["CASH_OUT"],
+            "nameOrig": ["C84071102"],
+            "nameDest": ["C1576697216"],
         }
     )
-    preds = model.predict(sample_input)
-    print(f"preds is {preds}")  # preds is [0]
+
+    if preprocessor is not None:
+        # If we have a preprocessor, we need to tokenize first (like in main.py)
+        from src.utils import tokenize_column
+
+        # Apply tokenization
+        sample_copy = sample_input.copy()
+        sample_dummy = sample_input.copy()
+        sample_tokenized, _ = tokenize_column(sample_copy, sample_dummy, "nameOrig")
+        sample_tokenized, _ = tokenize_column(
+            sample_tokenized, sample_dummy, "nameDest"
+        )
+        sample_tokenized = sample_tokenized.drop(["nameOrig", "nameDest"], axis=1)
+
+        # Apply preprocessor
+        data_scaled = preprocessor.transform(sample_tokenized)
+        preds = model.predict(data_scaled)
+    else:
+        # No preprocessor, model should handle raw data directly
+        preds = model.predict(sample_input)
+
+    print(f"preds is {preds}")
     assert len(preds) == 1
     assert isinstance(preds[0], (int, float, np.integer, np.floating))
