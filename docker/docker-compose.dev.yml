@@ -1,0 +1,34 @@
+services:
+
+    api:
+      image: sychin0606/fraud-api:latest
+      platform: linux/amd64
+      container_name: api-con
+      ports:
+        - "8000:8000"
+      environment:
+        MLFLOW_TRACKING_URI: http://13.212.203.176:5050
+      env_file:
+        - ../.env
+      networks:
+        - mlops-network
+
+    frontend:
+      image: sychin0606/frontend:latest
+      platform: linux/amd64
+      container_name: frontend-con
+      ports:
+        - "8501:8501"
+      environment:
+        MODEL_SERVER_IP: http://api-con:8000
+      networks:
+        - mlops-network
+      depends_on:
+        - api
+
+networks:
+  mlops-network:
+    driver: bridge
+
+# docker compose -f docker/docker-compose.yml up
+

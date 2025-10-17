@@ -17,3 +17,5 @@ CMD ["sh", "-c", "mlflow server \
 # docker build --no-cache --platform linux/amd64 -t sychin0606/mlflow-server:latest -f docker/Dockerfile.mlflow .
 # docker tag sychin0606/mlflow-server:latest
 # docker push sychin0606/mlflow-server:latest
+
+# docker pull sychin0606/mlflow-server:latest
