@@ -59,16 +59,16 @@ jobs:
           pip install dvc[s3]==3.2.2
           pip install -r requirements/ci.txt
 
-      - name: Configure DVC remote and pull dataset
-        run: |
-          dvc remote modify storage url s3://${{ secrets.AWS_S3_BUCKET_CI }}
-          dvc pull -r storage data/raw/paysim-dev.csv
-
       - name: Load environment variables
         run: |
           cat .env.ci >> $GITHUB_ENV
           echo "" >> $GITHUB_ENV
           echo "ENV_FILE=.env.ci" >> $GITHUB_ENV
+
+      - name: Configure DVC remote and pull dataset
+        run: |
+          dvc remote modify storage url s3://${{ secrets.AWS_S3_BUCKET_CI }}
+          dvc pull -r storage data/raw/$DATASET_NAME
 
       - name: Run quality checks
         run: make check
