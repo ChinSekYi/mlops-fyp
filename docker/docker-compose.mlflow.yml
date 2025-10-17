@@ -1,0 +1,18 @@
+services:
+    mlflow-server:
+      image: sychin0606/mlflow-server:latest
+      platform: linux/amd64
+      container_name: mlflow-server
+      ports:
+        - "5050:5050"   
+      environment:
+        MLFLOW_HOST: 0.0.0.0
+        MLFLOW_PORT: 5050
+      env_file:
+        - ../.env.mlflow
+
+
+# docker compose -f docker/docker-compose.mlflow.yml up
+
+## In mlflow-server-dev
+# docker compose -f docker-compose.mlflow.yml up
