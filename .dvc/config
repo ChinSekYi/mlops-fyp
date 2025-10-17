@@ -4,7 +4,10 @@
     url = s3://mlops-bucket.store.nus.cloud
 ['remote "dev"']
     url = s3://mlops-dev-raw.store.nus.cloud
+    profile = dev-raw
 ['remote "staging"']
     url = s3://mlops-stag-raw.store.nus.cloud
+    profile = stag-raw
 ['remote "prod"']
     url = s3://mlops-prod-raw.store.nus.cloud
+    profile = prod-raw
