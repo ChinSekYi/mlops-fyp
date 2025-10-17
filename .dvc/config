@@ -7,7 +7,7 @@
     profile = dev-raw
 ['remote "staging"']
     url = s3://mlops-stag-raw.store.nus.cloud
-    profile = staging-raw
+    profile = stag-raw
 ['remote "prod"']
     url = s3://mlops-prod-raw.store.nus.cloud
     profile = prod-raw
