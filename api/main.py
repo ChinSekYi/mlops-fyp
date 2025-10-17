@@ -222,6 +222,9 @@ def get_model_info():
                 "status": model_version_details.status,
                 "creation_timestamp": model_version_details.creation_timestamp,
                 "source": "mlflow_alias",
+                "mlflow_tracking_uri": MLFLOW_TRACKING_URI,
+                "s3_bucket": os.getenv("MLFLOW_S3_BUCKET"),
+                "environment": os.getenv("ENV", "unknown"),
             }
 
         except Exception as alias_error:
@@ -239,6 +242,9 @@ def get_model_info():
                     "status": model_version_details.status,
                     "creation_timestamp": model_version_details.creation_timestamp,
                     "source": "mlflow_version_1",
+                    "mlflow_tracking_uri": MLFLOW_TRACKING_URI,
+                    "s3_bucket": os.getenv("MLFLOW_S3_BUCKET"),
+                    "environment": os.getenv("ENV", "unknown"),
                 }
 
             except Exception as version_error:
@@ -256,6 +262,9 @@ def get_model_info():
             "status": "using_dummy_model",
             "creation_timestamp": "unknown",
             "source": "dummy_fallback",
+            "mlflow_tracking_uri": MLFLOW_TRACKING_URI,
+            "s3_bucket": os.getenv("MLFLOW_S3_BUCKET"),
+            "environment": os.getenv("ENV", "unknown"),
             "error": str(e),
         }
 
