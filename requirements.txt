@@ -1,4 +1,4 @@
-numpy>=1.26.0,<2.2.0
+numpy==2.2.6
 pandas==2.2.2
 scikit-learn==1.6.0
 isort==5.13.2
@@ -10,8 +10,9 @@ mlflow==3.3.1
 boto3==1.39.11
 psycopg2-binary==2.9.10
 pydantic==2.11.9
-python-dotenv==1.0.0
-streamlit==1.49.1
+dotenv==0.9.9
+mlflow==3.3.1
+streamlit=1.49.1
 pytest==8.3.3
 pytest-asyncio==1.2.0
 pylint==3.2.7
