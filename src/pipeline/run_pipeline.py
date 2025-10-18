@@ -8,7 +8,7 @@ import os
 
 import mlflow
 
-from src.utils import load_environment
+from src.core.utils import load_environment
 
 # Use ENV_FILE if set, otherwise default to .env
 env_file = os.getenv("ENV_FILE", ".env")

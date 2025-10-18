@@ -5,8 +5,8 @@ import os
 
 import pandas as pd
 
-from src.exception import CustomException
-from src.utils import load_config, load_object, tokenize_column
+from src.core.exception import CustomException
+from src.core.utils import load_config, load_object, tokenize_column
 
 config = load_config()
 
@@ -170,9 +170,9 @@ if __name__ == "__main__":
     print(f"Result: {'Fraud' if pred_result_fraud[0] == 1 else 'Not Fraud'}")
 
     # Save results
-    output_dir = os.path.join("src", "prediction_output")
+    output_dir = os.path.join("src", "pipeline", "prediction_output")
     os.makedirs(output_dir, exist_ok=True)
-    with open(os.path.join(output_dir, "prediction_test.txt"), "w") as f:
+    with open(os.path.join(output_dir, "prediction_results.txt"), "w") as f:
         f.write("Prediction Pipeline Test Results\n")
         f.write("=" * 40 + "\n\n")
         f.write(
@@ -182,5 +182,5 @@ if __name__ == "__main__":
             f"Fraud Example: {pred_result_fraud[0]} ({'Fraud' if pred_result_fraud[0] == 1 else 'Not Fraud'})\n"
         )
 
-    print(f"\nTest results saved to {output_dir}/prediction_test.txt")
+    print(f"\nTest results saved to {output_dir}/prediction_results.txt")
     print("=" * 60)

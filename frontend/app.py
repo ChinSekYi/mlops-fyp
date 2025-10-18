@@ -8,16 +8,19 @@ sys.path.insert(0, project_root)
 import requests
 import streamlit as st
 
-from utils import load_environment
+from frontend.utils import load_environment
 
 # Get API URL from Docker environment variable first, then fallback to .env
+"""
 API_URL = os.getenv("MODEL_SERVER_IP")
 if not API_URL:
     # Fallback: load from .env file
     env_file = os.getenv("ENV_FILE", ".env")
     load_environment(env_file)
     API_URL = os.getenv("MODEL_SERVER_IP")
-
+"""
+env_file = os.getenv("ENV_FILE", ".env")
+load_environment(env_file)
 
 EXPECTED_FEATURES = [
     "step",

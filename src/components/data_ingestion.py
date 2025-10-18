@@ -10,9 +10,9 @@ import mlflow
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
-from src.exception import CustomException
-from src.logger import logging
-from src.utils import load_config, load_environment
+from src.core.exception import CustomException
+from src.core.logger import logging
+from src.core.utils import load_config, load_environment
 
 # If running this script directly, uncomment the next line to ensure
 # environment variables are loaded early
