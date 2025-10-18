@@ -86,6 +86,8 @@ if page == "Predict":
                 default_values[k] = TYPE_DROPDOWN_VALUES[0]
             elif k in ["nameOrig", "nameDest"]:
                 default_values[k] = "C0000000000"
+            elif k == "step":
+                default_values[k] = 1
             else:
                 default_values[k] = 0.0
 

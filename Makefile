@@ -1,38 +1,15 @@
 .PHONY: install download-data run-pipeline app lint test format flake check mlflow-server all
 
+# =========================
+# Universal Commands (run anywhere)
+# =========================
 install:
 	pip install --upgrade pip &&\
 		pip install -r requirements.txt
 
-# Data
-download-data:
-	dvc pull
-
-# Pipeline/ML
 run-pipeline: 
 	python3 -m src.pipeline.run_pipeline
 
-# App
-app:
-	streamlit run frontend/fraud_detection_ui.py
-
-# Local API server (for development without Docker)
-api-server-local:
-	uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
-
-# Docker
-mlflow-server: 
-	docker compose -f docker/docker-compose.yml up
-
-# Staging on same EC2 (different ports)
-mlflow-server-staging:
-	docker compose -f docker/docker-compose.staging.yml up
-
-mlflow-server-prod:
-	docker compose -f docker/docker-compose.prod.yml up
-
-
-# Linting/Quality
 lint:
 	pylint src api tests --fail-under=7
 
@@ -45,12 +22,52 @@ flake:
 
 check: format lint flake
 
-# Test
+
+
+# =========================
+# MLflow Server EC2 Commands (run only on MLflow server EC2)
+# =========================
+# Note: requires setup -> aws configure --profile <env>-bkt
+mlflow-dev-up:
+	docker compose -f docker/docker-compose.mlflow-server-dev.yml up
+
+mlflow-staging-up:
+	docker compose -f docker/docker-compose.mlflow-server-staging.yml up
+
+mlflow-prod-up:
+	docker compose -f docker/docker-compose.mlflow-server-prod.yml up
+
+
+# =========================
+# App/Frontend EC2 Commands (run only on app/frontend EC2)
+# =========================
+# Requires `export AWS_PROFILE=<env>-bkt, export AWS_DEFAULT_PROFILE=<env>-bkt`
+up-dev:
+	docker compose -f docker/docker-compose.dev.yml up
+up-staging:
+	docker compose -f docker/docker-compose.staging.yml up
+up-prod:
+	docker compose -f docker/docker-compose.prod.yml up
+
+# =========================
+# Data Commands (run anywhere with DVC configured)
+# =========================
+# Requires `aws configure --profile <env>-raw`
+download-data-dev:
+	dvc pull -r dev
+
+download-data-staging:
+	dvc pull -r staging
+
+download-data-prod:
+	dvc pull -r prod
+
+# =========================
+# Test Commands
+# =========================
 test:
 	pytest -v --disable-warnings tests/
 
-
-# Testing Strategies for Different Environments
 test-dev:
 	pytest tests/unit -v
 
@@ -63,6 +80,10 @@ test-staging:
 test-prod:
 	pytest tests/smoke -v
 
-
+# =========================
+# Others
+# =========================
+aws-list-profiles:
+	aws configure list-profiles
 rmi:
 	docker rmi $(docker images -q)
