@@ -7,7 +7,7 @@ services:
       ports:
         - "8000:8000"
       env_file:
-        - ../env/.env.dev_machine
+        - ../../env/.env.dev_machine
       networks:
         - mlops-network
 
