@@ -23,9 +23,9 @@ jobs:
       - name: Build and push Docker images
         run: |
           docker build -t sychin0606/mlflow-server:latest -f docker/Dockerfile.mlflow .
-          docker build -t sychin0606/fraud-api:latest -f docker/Dockerfile.api .
+          docker build -t sychin0606/backend:latest -f docker/Dockerfile.backend .
           docker push sychin0606/mlflow-server:latest
-          docker push sychin0606/fraud-api:latest
+          docker push sychin0606/backend:latest
 
       - name: Deploy to EC2 (Production)
         uses: appleboy/ssh-action@v1.0.3

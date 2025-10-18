@@ -1,0 +1,18 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY ../../backend/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir boto3 mlflow
+
+COPY ../../backend/ ./backend/
+COPY ../../configs/config.yaml .
+
+EXPOSE 8000
+
+CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+
+
+# docker build --no-cache --platform linux/amd64 -t sychin0606/backend:latest -f infra/docker/Dockerfile.backend .
+# docker push sychin0606/backend:latest
