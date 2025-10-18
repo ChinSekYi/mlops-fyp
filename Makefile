@@ -22,7 +22,7 @@ flake:
 
 check: format lint flake
 
-
+app: streamlit run frontend/app.py
 
 # =========================
 # MLflow Server EC2 Commands (run only on MLflow server EC2)
@@ -94,3 +94,5 @@ aws-list-profiles:
 	aws configure list-profiles
 rmi:
 	docker rmi $(docker images -q)
+rm:
+	docker container prune -f
