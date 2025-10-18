@@ -16,9 +16,9 @@ from sklearn.model_selection import cross_val_score
 from sklearn.naive_bayes import GaussianNB
 from sklearn.tree import DecisionTreeClassifier
 
-from src.exception import CustomException
-from src.logger import logging
-from src.utils import load_config
+from src.core.exception import CustomException
+from src.core.logger import logging
+from src.core.utils import load_config, save_object
 
 config = load_config()
 
@@ -127,8 +127,6 @@ class ModelTrainer:
                             "Preprocessor path not provided or file doesn't exist"
                         )
 
-                    # Removed: mlflow.log_artifact(self.trained_model_file_path) - redundant with log_model
-
                     all_metrics[model_name] = {
                         "cv_accuracy": cv_acc,
                         "test_accuracy": test_accuracy,
@@ -136,6 +134,9 @@ class ModelTrainer:
                         "test_recall": test_recall,
                         "test_f1": test_f1,
                     }
+
+            # Save the last model.pkl for testing predict_pipeline locally
+            save_object(file_path=self.trained_model_file_path, obj=model)
 
             return all_metrics
 

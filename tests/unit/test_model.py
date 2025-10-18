@@ -6,6 +6,8 @@ Tests model load, shape
 import numpy as np
 import pandas as pd
 
+from src.core.utils import tokenize_column
+
 
 def test_model_load(model):
     """Check that the model can be loaded."""
@@ -30,9 +32,6 @@ def test_model_prediction_shape(model, preprocessor):
     )
 
     if preprocessor is not None:
-        # If we have a preprocessor, we need to tokenize first (like in main.py)
-        from src.utils import tokenize_column
-
         # Apply tokenization
         sample_copy = sample_input.copy()
         sample_dummy = sample_input.copy()

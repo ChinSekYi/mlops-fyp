@@ -13,7 +13,7 @@ import pandas as pd
 import pytest
 from mlflow import MlflowClient
 
-from src.utils import load_environment
+from src.core.utils import load_environment, tokenize_column
 
 # Load environment
 env_file = os.getenv("ENV_FILE", ".env")
@@ -80,9 +80,6 @@ class TestMLflowIntegration:
         )
 
         try:
-            # Apply tokenization first (like the API does)
-            from src.utils import tokenize_column
-
             # Create dummy test dataframe for tokenization (tokenize_column expects train and test)
             test_data_dummy = test_data.copy()
             test_data_tokenized, _ = tokenize_column(

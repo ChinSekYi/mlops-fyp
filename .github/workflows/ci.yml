@@ -61,7 +61,7 @@ jobs:
 
       - name: Load environment variables
         run: |
-          cat .env.ci >> $GITHUB_ENV
+          cat env/.env.ci >> $GITHUB_ENV
           echo "" >> $GITHUB_ENV
           echo "ENV_FILE=.env.ci" >> $GITHUB_ENV
 
@@ -77,4 +77,4 @@ jobs:
         run: make run-pipeline
 
       - name: Run pytest
-        run:  make test-pipeline-ci
+        run: make test-pipeline-ci

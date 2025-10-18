@@ -11,14 +11,14 @@ run-pipeline:
 	python3 -m src.pipeline.run_pipeline
 
 lint:
-	pylint src api tests --fail-under=7
+	pylint src backend frontend tests --fail-under=7
 
 format:
 	isort .
 	black .
 
 flake:
-	flake8 src api tests
+	flake8 src backend frontend tests
 
 check: format lint flake
 
@@ -29,13 +29,13 @@ check: format lint flake
 # =========================
 # Note: requires setup -> aws configure --profile <env>-bkt
 mlflow-dev-up:
-	docker compose -f docker/docker-compose.mlflow-server-dev.yml up
+	docker compose -f infra/compose-files/docker-compose.mlflow-server-dev.yml up
 
 mlflow-staging-up:
-	docker compose -f docker/docker-compose.mlflow-server-staging.yml up
+	docker compose -f infra/compose-files/docker-compose.mlflow-server-staging.yml up
 
 mlflow-prod-up:
-	docker compose -f docker/docker-compose.mlflow-server-prod.yml up
+	docker compose -f infra/compose-files/docker-compose.mlflow-server-prod.yml up
 
 
 # =========================
@@ -43,11 +43,11 @@ mlflow-prod-up:
 # =========================
 # Requires `export AWS_PROFILE=<env>-bkt, export AWS_DEFAULT_PROFILE=<env>-bkt`
 up-dev:
-	docker compose -f docker/docker-compose.dev.yml up
+	docker compose -f infra/compose-files/docker-compose.dev.yml up
 up-staging:
-	docker compose -f docker/docker-compose.staging.yml up
+	docker compose -f infra/compose-files/docker-compose.staging.yml up
 up-prod:
-	docker compose -f docker/docker-compose.prod.yml up
+	docker compose -f infra/compose-files/docker-compose.prod.yml up
 
 # =========================
 # Data Commands (run anywhere with DVC configured)
@@ -65,6 +65,13 @@ download-data-prod:
 # =========================
 # Test Commands
 # =========================
+test-pipeline:
+	python3 -m src.components.data_ingestion
+	python3 -m src.components.data_transformation
+	python3 -m src.components.model_trainer
+	python3 -m src.pipeline.predict_pipeline
+	python3 -m src.pipeline.run_pipeline
+
 test:
 	pytest -v --disable-warnings tests/
 
@@ -74,7 +81,7 @@ test-dev:
 test-pipeline-ci:
 	pytest tests/unit tests/integration -v --maxfail=1
 
-test-staging:
+test-staging: #requires the right aws bucket credentials #ensure mlflow server & banckend+frontend server are running
 	pytest tests/integration tests/e2e  -v
 
 test-prod:
