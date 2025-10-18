@@ -5,7 +5,7 @@ and a utility function to format error messages with file name, line number, and
 
 import sys
 
-from src.logger import logging
+from src.core.logger import logging
 
 
 def error_message_detail(error, error_detail: sys):

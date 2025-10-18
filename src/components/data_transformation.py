@@ -8,9 +8,14 @@ from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
-from src.exception import CustomException
-from src.logger import logging
-from src.utils import balance_classes_smotenc, load_config, save_object, tokenize_column
+from src.core.exception import CustomException
+from src.core.logger import logging
+from src.core.utils import (
+    balance_classes_smotenc,
+    load_config,
+    save_object,
+    tokenize_column,
+)
 
 config = load_config()
 transformation_config = config["data_transformation"]

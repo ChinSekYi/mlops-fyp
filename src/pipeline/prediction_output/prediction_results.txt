@@ -2,4 +2,4 @@ Prediction Pipeline Test Results
 ========================================
 
 Non-Fraud Example: 0 (Not Fraud)
-Fraud Example: 0 (Not Fraud)
+Fraud Example: 1 (Fraud)
