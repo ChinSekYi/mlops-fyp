@@ -7,7 +7,7 @@ services:
       ports:
         - "8080:8000" 
       env_file:
-        - ../.env.stag_machine
+        - ../env/.env.stag_machine
       networks:
         - mlops-network-staging
     frontend-staging:
@@ -28,4 +28,4 @@ networks:
     driver: bridge
 
 # Usage:
-# docker compose -f docker/docker-compose.staging.yml up
+# docker compose -f infra/docker/docker-compose.staging.yml up

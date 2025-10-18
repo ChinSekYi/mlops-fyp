@@ -47,5 +47,5 @@ networks:
   mlops-network:
     driver: bridge
 
-# docker compose -f docker/docker-compose.all.yml up
+# docker compose -f infra/docker/docker-compose.all.yml up
 

@@ -1,30 +1,32 @@
 services:
-    api-prod:
+
+    api:
       image: sychin0606/fraud-api:latest
       platform: linux/amd64
-      container_name: api-con-prod
+      container_name: api-con
       ports:
-        - "8080:8000"  
+        - "8000:8000"
       env_file:
-        - ../.env.prod_machine
+        - ../env/.env.dev_machine
       networks:
-        - mlops-network-prod
-  
-    frontend-prod:
+        - mlops-network
+
+    frontend:
       image: sychin0606/frontend:latest
       platform: linux/amd64
       container_name: frontend-con
       ports:
         - "8501:8501"
       environment:
-        MODEL_SERVER_IP: http://api-con-prod:8000
+        MODEL_SERVER_IP: http://api-con:8000
       networks:
-        - mlops-network-prod
+        - mlops-network
       depends_on:
-        - api-prod
+        - api
+
 networks:
-  mlops-network-prod:
+  mlops-network:
     driver: bridge
 
-# Usage:
-# docker compose -f docker/docker-compose.prod.yml up
+# docker compose -f infra/docker/docker-compose.dev.yml up
+
