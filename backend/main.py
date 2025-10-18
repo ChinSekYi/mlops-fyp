@@ -11,10 +11,10 @@ import mlflow
 import pandas as pd
 from fastapi import FastAPI
 from mlflow import MlflowClient
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from backend.utils import load_environment
-from src.core.utils import tokenize_column
+from src.pipeline.predict_pipeline import CustomData, PredictPipeline
 
 env_file = os.getenv("ENV_FILE", ".env")
 load_environment(env_file)
@@ -26,9 +26,29 @@ mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
 
 app = FastAPI(title="Fraud Detection API", version="1.0")
 
-# Test render connectivity to MLflow
-mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI"))
-print("Active experiment:", mlflow.get_tracking_uri())
+EXPECTED_FEATURES = [
+    "step",
+    "amount",
+    "oldbalanceOrg",
+    "newbalanceOrig",
+    "oldbalanceDest",
+    "newbalanceDest",
+    "type",
+    "nameOrig",
+    "nameDest",
+]
+
+
+class TransactionInput(BaseModel):
+    step: int
+    amount: float
+    oldbalanceOrg: float
+    newbalanceOrig: float
+    oldbalanceDest: float
+    newbalanceDest: float
+    type: str
+    nameOrig: str
+    nameDest: str
 
 
 class DummyModel:
@@ -52,11 +72,11 @@ class DummyModel:
 def load_model_and_preprocessor():
     """Loads both the ML model and preprocessor from MLflow or local files."""
     try:
-        print(f"Attempting to load model {MODEL_NAME} with alias {MODEL_ALIAS}")
         # Try to load model using alias first
+        print(f"Attempting to load model {MODEL_NAME} with alias {MODEL_ALIAS}")
         model_uri = f"models:/{MODEL_NAME}@{MODEL_ALIAS}"
         model = mlflow.sklearn.load_model(model_uri)
-        print("✅ Successfully loaded MLflow model")
+        print("Successfully loaded MLflow model")
 
         # Try to load preprocessor from artifacts
         try:
@@ -109,32 +129,6 @@ def load_model_and_preprocessor():
 
 model, preprocessor = load_model_and_preprocessor()
 
-EXPECTED_FEATURES = [
-    "step",
-    "amount",
-    "oldbalanceOrg",
-    "newbalanceOrig",
-    "oldbalanceDest",
-    "newbalanceDest",
-    "type",  # Raw categorical input (CASH_IN, CASH_OUT, etc.)
-    "nameOrig",  # Raw string input (e.g., "C84071102")
-    "nameDest",  # Raw string input (e.g., "C1576697216")
-]
-
-
-class Transaction(BaseModel):
-    step: int
-    amount: float
-    oldbalanceOrg: float
-    newbalanceOrig: float
-    oldbalanceDest: float
-    newbalanceDest: float
-    type: str = Field(..., description="Transaction type", example="CASH_OUT")
-    nameOrig: str = Field(..., description="Origin account name", example="C84071102")
-    nameDest: str = Field(
-        ..., description="Destination account name", example="C1576697216"
-    )
-
 
 @app.get("/")
 def health_check():
@@ -143,60 +137,13 @@ def health_check():
 
 
 @app.post("/predict")
-def predict(transaction: Transaction):
+def predict(inputData: TransactionInput):
     """Predicts whether a transaction is fraudulent (1) or not (0) using the trained model."""
-
-    # Convert input to DataFrame
-    input_dict = transaction.model_dump()
-    df = pd.DataFrame([input_dict])
-
-    if preprocessor is not None:
-        try:
-            # Create dummy test dataframe for tokenization (tokenize_column expects train and test)
-            df_dummy = df.copy()
-            df_tokenized, _ = tokenize_column(df, df_dummy, "nameOrig")
-            df_tokenized, _ = tokenize_column(df_tokenized, df_dummy, "nameDest")
-
-            # Drop original name columns
-            df_tokenized = df_tokenized.drop(["nameOrig", "nameDest"], axis=1)
-
-            # Apply the preprocessor
-            processed_features = preprocessor.transform(df_tokenized)
-            preds = model.predict(processed_features)
-            return {"prediction": int(preds[0])}
-        except Exception as e:
-            print(f"⚠️ Preprocessor failed, falling back to manual preprocessing: {e}")
-
-    # Fallback: Manual preprocessing (for when preprocessor not available)
-    # Tokenize names manually
-    df["nameOrig_token"] = df["nameOrig"].str.extract(r"(\d+)").astype(int)
-    df["nameDest_token"] = df["nameDest"].str.extract(r"(\d+)").astype(int)
-    df = df.drop(["nameOrig", "nameDest"], axis=1)
-
-    # One-hot encode 'type'
-    type_values = ["CASH_IN", "CASH_OUT", "DEBIT", "PAYMENT", "TRANSFER"]
-    for t in type_values:
-        df[f"type__{t}"] = (df["type"] == t).astype(int)
-    df = df.drop(columns=["type"])
-
-    ordered_cols = [
-        "step",
-        "amount",
-        "oldbalanceOrg",
-        "newbalanceOrig",
-        "oldbalanceDest",
-        "newbalanceDest",
-        "type__CASH_IN",
-        "type__CASH_OUT",
-        "type__DEBIT",
-        "type__PAYMENT",
-        "type__TRANSFER",
-        "nameOrig_token",
-        "nameDest_token",
-    ]
-    df = df[ordered_cols]
-    preds = model.predict(df)
-    return {"prediction": int(preds[0])}
+    custom_data = CustomData(**inputData.dict())
+    input_df = custom_data.get_data_as_dataframe()
+    predict_pipeline = PredictPipeline()
+    pred_result = predict_pipeline.predict(input_df)
+    return {"prediction": int(pred_result[0])}
 
 
 @app.get("/model-info")
@@ -240,7 +187,7 @@ def get_model_info():
                     "source": "mlflow_version_1",
                     "mlflow_tracking_uri": MLFLOW_TRACKING_URI,
                     "s3_bucket": os.getenv("MLFLOW_S3_BUCKET"),
-                    "environment": os.getenv("ENV", "unknown"),
+                    "environment": os.getenv("ENV_USED", "unknown"),
                 }
 
             except Exception as version_error:
@@ -260,7 +207,7 @@ def get_model_info():
             "source": "dummy_fallback",
             "mlflow_tracking_uri": MLFLOW_TRACKING_URI,
             "s3_bucket": os.getenv("MLFLOW_S3_BUCKET"),
-            "environment": os.getenv("ENV", "unknown"),
+            "environment": os.getenv("ENV_USED", "unknown"),
             "error": str(e),
         }
 
@@ -330,21 +277,20 @@ def feature_info():
 
 
 if __name__ == "__main__":
-    print(MODEL_NAME)
-    print(model)
-
-    input = Transaction(
-        **{
-            "step": 1,
-            "amount": 1000.0,
-            "oldbalanceOrg": 5000.0,
-            "newbalanceOrig": 4000.0,
-            "oldbalanceDest": 0.0,
-            "newbalanceDest": 1000.0,
-            "type": "CASH_OUT",
-            "nameOrig": "C84071102",
-            "nameDest": "C1576697216",
-        }
-    )
-    output = predict(input)
-    print(output)
+    pass
+    # sample curl request
+    """
+        curl -X POST "http://localhost:8000/predict" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "step": 1,
+        "amount": 1000.0,
+        "oldbalanceOrg": 5000.0,
+        "newbalanceOrig": 4000.0,
+        "oldbalanceDest": 0.0,
+        "newbalanceDest": 1000.0,
+        "type": "CASH_OUT",
+        "nameOrig": "C84071102",
+        "nameDest": "C1576697216"
+      }'
+    """
