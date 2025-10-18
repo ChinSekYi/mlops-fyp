@@ -7,7 +7,7 @@ import os
 
 import pytest
 
-from src.utils import load_environment
+from src.core.utils import load_environment
 
 # Load environment
 env_file = os.getenv("ENV_FILE", ".env")

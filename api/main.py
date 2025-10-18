@@ -14,6 +14,7 @@ from mlflow import MlflowClient
 from pydantic import BaseModel, Field
 
 from api.utils import load_environment
+from src.core.utils import tokenize_column
 
 env_file = os.getenv("ENV_FILE", ".env")
 load_environment(env_file)
@@ -149,12 +150,8 @@ def predict(transaction: Transaction):
     input_dict = transaction.model_dump()
     df = pd.DataFrame([input_dict])
 
-    # If we have a preprocessor, use it (but need to tokenize first)
     if preprocessor is not None:
         try:
-            # Apply tokenization first (same as in training)
-            from src.utils import tokenize_column
-
             # Create dummy test dataframe for tokenization (tokenize_column expects train and test)
             df_dummy = df.copy()
             df_tokenized, _ = tokenize_column(df, df_dummy, "nameOrig")
