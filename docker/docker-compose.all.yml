@@ -1,3 +1,5 @@
+# for local development
+# spins up mlflow, api and frontend containers
 services:
     mlflow:
       image: sychin0606/mlflow-server:latest
