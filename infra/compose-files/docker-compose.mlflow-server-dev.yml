@@ -1,4 +1,4 @@
-# mlflow docker compose file for all environments
+# mlflow docker compose file for env environment
 services:
     mlflow-server:
       image: sychin0606/mlflow-server:latest
@@ -10,10 +10,10 @@ services:
         MLFLOW_HOST: 0.0.0.0
         MLFLOW_PORT: 5050
       env_file:
-        - ../env/.env.mlflow
+        - ../../env/.env.mlflow
 
 
-# docker compose -f infra/docker/docker-compose.mlflow.yml up
+# docker compose -f infra/docker/docker-compose.mlflow-server-dev.yml up
 
 ## In mlflow-server-dev
-# docker compose -f docker-compose.mlflow.yml up
+# docker compose -f docker-compose.mlflow-server-dev.yml up

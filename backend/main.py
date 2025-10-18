@@ -13,7 +13,7 @@ from fastapi import FastAPI
 from mlflow import MlflowClient
 from pydantic import BaseModel, Field
 
-from api.utils import load_environment
+from backend.utils import load_environment
 from src.core.utils import tokenize_column
 
 env_file = os.getenv("ENV_FILE", ".env")
