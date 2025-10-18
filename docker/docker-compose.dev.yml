@@ -6,10 +6,8 @@ services:
       container_name: api-con
       ports:
         - "8000:8000"
-      environment:
-        MLFLOW_TRACKING_URI: http://13.212.203.176:5050
       env_file:
-        - ../.env
+        - ../.env.dev_machine
       networks:
         - mlops-network
 
@@ -30,5 +28,5 @@ networks:
   mlops-network:
     driver: bridge
 
-# docker compose -f docker/docker-compose.yml up
+# docker compose -f docker/docker-compose.dev.yml up
 
