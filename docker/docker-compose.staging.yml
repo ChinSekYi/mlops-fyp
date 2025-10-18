@@ -1,28 +1,27 @@
 services:
-    mlflow-staging:
-      image: sychin0606/mlflow-server:latest
-      container_name: mlflow-server-staging
-      ports:
-        - "5051:5050"   # External port 5051 → Internal port 5050
-      env_file:
-        - ../.env.staging
-      networks:
-        - mlops-network-staging
 
     api-staging:
       image: sychin0606/fraud-api:latest
       platform: linux/amd64
       container_name: api-con-staging
       ports:
-        - "8081:8000"  # External port 8081 → Internal port 8000
-      environment:
-        MLFLOW_TRACKING_URI: http://mlflow-staging:5050
+        - "8080:8000" 
       env_file:
-        - ../.env.staging
+        - ../.env.stag_machine
       networks:
         - mlops-network-staging
+    frontend-staging:
+      image: sychin0606/frontend:latest
+      platform: linux/amd64
+      container_name: frontend-con-staging
+      ports:
+        - "8501:8501"
+      environment:
+        MODEL_SERVER_IP: http://api-con-staging:8000
+      networks:
+        -  mlops-network-staging
       depends_on:
-        - mlflow-staging
+        - api-staging
 
 networks:
   mlops-network-staging:

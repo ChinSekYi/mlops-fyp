@@ -223,8 +223,7 @@ def get_model_info():
                 "creation_timestamp": model_version_details.creation_timestamp,
                 "source": "mlflow_alias",
                 "mlflow_tracking_uri": MLFLOW_TRACKING_URI,
-                "s3_bucket": os.getenv("MLFLOW_S3_BUCKET"),
-                "environment": os.getenv("ENV", "unknown"),
+                "environment": os.getenv("ENV_USED", "unknown"),
             }
 
         except Exception as alias_error:
