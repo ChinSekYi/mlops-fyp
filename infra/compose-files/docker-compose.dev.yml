@@ -1,13 +1,13 @@
 services:
 
-    api:
-      image: sychin0606/fraud-api:latest
+    backend:
+      image: sychin0606/backend:latest
       platform: linux/amd64
-      container_name: api-con
+      container_name: backend-con
       ports:
         - "8000:8000"
       env_file:
-        - ../.env.dev_machine
+        - ../../env/.env.dev_machine
       networks:
         - mlops-network
 
@@ -18,15 +18,15 @@ services:
       ports:
         - "8501:8501"
       environment:
-        MODEL_SERVER_IP: http://api-con:8000
+        MODEL_SERVER_IP: http://backend-con:8000
       networks:
         - mlops-network
       depends_on:
-        - api
+        - backend
 
 networks:
   mlops-network:
     driver: bridge
 
-# docker compose -f docker/docker-compose.dev.yml up
+# docker compose -f infra/docker/docker-compose.dev.yml up
 

@@ -14,8 +14,6 @@ CMD ["sh", "-c", "mlflow server \
   --backend-store-uri postgresql://$DB_USER:$DB_PASSWORD@$REAL_DB_ENDPOINT:$DB_PORT/$DB_NAME \
   --default-artifact-root s3://$MLFLOW_S3_BUCKET"]
 
-# docker build --no-cache --platform linux/amd64 -t sychin0606/mlflow-server:latest -f docker/Dockerfile.mlflow .
-# docker tag sychin0606/mlflow-server:latest
+# docker build --no-cache --platform linux/amd64 -t sychin0606/mlflow-server:latest -f infra/docker/Dockerfile.mlflow .
 # docker push sychin0606/mlflow-server:latest
-
 # docker pull sychin0606/mlflow-server:latest

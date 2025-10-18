@@ -15,24 +15,21 @@ from sklearn.preprocessing import StandardScaler
 
 def load_environment(env_file: str = None):
     """
-    Load environment variables from a file.
-    Default is .env at project root.
+    Load environment variables from a file in the /env directory at the project root.
+    Default is .env in /env.
     """
-    if env_file is None:
-        env_file = ".env"
-
-    load_dotenv(env_file)
-    print(f"[ENV] Loaded environment from {env_file}")
-
-    # Optional: ensure ENV is set
-    os.environ.setdefault("ENV", "dev")
+    project_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+    env_dir = os.path.join(project_root, "env")
+    env_file = env_file or ".env"
+    env_path = os.path.join(env_dir, env_file)
+    load_dotenv(env_path)
+    print(f"[ENV] Loaded environment from {env_path}")
 
 
 def load_config():
-    """Load configuration from the config.yaml file at the project root."""
-    config_path = os.path.join(
-        os.path.dirname(os.path.dirname(__file__)), "config.yaml"
-    )
+    """Load configuration from the config.yaml file in the /configs directory at the project root."""
+    project_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+    config_path = os.path.join(project_root, "configs", "config.yaml")
     with open(config_path, "r", encoding="utf-8") as f:
         return yaml.safe_load(f)
 
