@@ -65,6 +65,13 @@ download-data-prod:
 # =========================
 # Test Commands
 # =========================
+test-pipeline:
+	python3 -m src.components.data_ingestion
+	python3 -m src.components.data_transformation
+	python3 -m src.components.model_trainer
+	python3 -m src.pipeline.predict_pipeline
+	python3 -m src.pipeline.run_pipeline
+
 test:
 	pytest -v --disable-warnings tests/
 

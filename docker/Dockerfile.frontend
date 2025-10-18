@@ -8,7 +8,7 @@ RUN pip install -r frontend/requirements.txt
 
 EXPOSE 8501
 
-CMD ["streamlit", "run", "frontend/fraud_detection_ui.py", "--server.port=8501", "--server.address=0.0.0.0"]
+CMD ["streamlit", "run", "frontend/app.py", "--server.port=8501", "--server.address=0.0.0.0"]
 
 
 # docker build  --no-cache --platform linux/amd64 -t sychin0606/frontend:latest -f docker/Dockerfile.frontend .

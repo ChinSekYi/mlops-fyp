@@ -29,13 +29,11 @@ def load_environment(env_file: str = None):
 
 
 def load_config():
-    """Load configuration from the config.yaml file at the project root."""
-    config_path = os.path.join(
-        os.path.dirname(os.path.dirname(__file__)), "config.yaml"
-    )
+    """Load configuration from the config.yaml file in the /configs directory at the project root."""
+    project_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+    config_path = os.path.join(project_root, "configs", "config.yaml")
     with open(config_path, "r", encoding="utf-8") as f:
         return yaml.safe_load(f)
-
 
 def save_object(file_path, obj):
     """

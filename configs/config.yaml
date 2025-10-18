@@ -8,14 +8,14 @@ data_ingestion:
 data_transformation:
   processed_train_data_path: data/processed/processed_train.csv
   processed_test_data_path: data/processed/processed_test.csv
-  preprocessor_ob_file_path: outputs/artifacts/preprocessor.pkl
+  preprocessor_ob_file_path: artifacts/preprocessor/preprocessor.pkl
 
 model_trainer:
-  trained_model_file_path: outputs/models/model.pkl
-  metrics_file_path: outputs/metrics/metrics.json
+  trained_model_file_path: artifacts/models/model.pkl
+  metrics_file_path: artifacts/metrics/metrics.json
   processed_train_data_path: data/processed/processed_train.csv
   processed_test_data_path: data/processed/processed_test.csv
 
 predict_pipeline:
-  model_path: outputs/models/model.pkl
-  preprocessor_path: outputs/artifacts/preprocessor.pkl
+  model_path: artifacts/models/model.pkl
+  preprocessor_path: artifacts/preprocessor/preprocessor.pkl
