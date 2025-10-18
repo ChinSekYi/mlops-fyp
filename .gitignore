@@ -1,10 +1,5 @@
-# Logs and artifacts
-/logs
-/artifacts
-
 # Ignore everything in data/ except .dvc files
 data/processed/
-creditcard.csv
 data/raw/*
 !data/raw/*.dvc
 
@@ -18,9 +13,8 @@ __pycache__/
 .DS_Store
 
 # Environment files (all .env variants except CI)
-.env
-.env.*
-!.env.ci
+/env/*
+!/env/.env.ci
 
 # Folders
 /docs
@@ -29,7 +23,5 @@ __pycache__/
 # MLflow tracking and artifacts
 /mlruns
 /mlartifacts
-outputs/artifacts/preprocessor.pkl
-notebooks/data/processed/test_paysim.csv
-notebooks/data/processed/train_paysim.csv
-notebooks/data/processed/validation_paysim.csv
+/logs
+/artifacts

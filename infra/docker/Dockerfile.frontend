@@ -2,7 +2,7 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-COPY /frontend ./frontend/
+COPY ../../frontend ./frontend/
 
 RUN pip install -r frontend/requirements.txt
 
@@ -11,5 +11,5 @@ EXPOSE 8501
 CMD ["streamlit", "run", "frontend/app.py", "--server.port=8501", "--server.address=0.0.0.0"]
 
 
-# docker build  --no-cache --platform linux/amd64 -t sychin0606/frontend:latest -f docker/Dockerfile.frontend .
+# docker build  --no-cache --platform linux/amd64 -t sychin0606/frontend:latest -f infra/docker/Dockerfile.frontend .
 # docker push sychin0606/frontend:latest
