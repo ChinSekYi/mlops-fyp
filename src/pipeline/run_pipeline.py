@@ -5,9 +5,9 @@ Runs data ingestion, transformation, and model training with MLflow tracking.
 
 # flake8: noqa
 import os
-
 import mlflow
-
+import warnings
+warnings.filterwarnings("ignore")
 from src.core.utils import load_environment
 
 # Use ENV_FILE if set, otherwise default to .env
@@ -20,7 +20,6 @@ from src.components.model_trainer import ModelTrainer
 
 RUN_NAME = os.getenv("RUN_NAME")
 DATASET_NAME = os.getenv("DATASET_NAME")
-# ARTIFACT_PATH = os.getenv("ARTIFACT_PATH")
 ALGORITHM_TYPE = os.getenv("ALGO_TYPE")
 REGISTERED_MODEL_NAME = os.getenv("REGISTERED_MODEL_NAME")
 

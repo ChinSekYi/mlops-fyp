@@ -1,13 +1,13 @@
 services:
 
-    api-staging:
-      image: sychin0606/fraud-api:latest
+    backend-staging:
+      image: sychin0606/backend:latest
       platform: linux/amd64
-      container_name: api-con-staging
+      container_name: backend-con-staging
       ports:
         - "8080:8000" 
       env_file:
-        - ../env/.env.stag_machine
+        - ../../env/.env.stag_machine
       networks:
         - mlops-network-staging
     frontend-staging:
@@ -17,11 +17,11 @@ services:
       ports:
         - "8501:8501"
       environment:
-        MODEL_SERVER_IP: http://api-con-staging:8000
+        MODEL_SERVER_IP: http://backend-con-staging:8000
       networks:
         -  mlops-network-staging
       depends_on:
-        - api-staging
+        - backend-staging
 
 networks:
   mlops-network-staging:

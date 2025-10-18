@@ -77,4 +77,4 @@ jobs:
         run: make run-pipeline
 
       - name: Run pytest
-        run:  make test-pipeline-ci
+        run: make test-pipeline-ci
