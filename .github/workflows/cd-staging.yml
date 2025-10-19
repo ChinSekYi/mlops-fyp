@@ -41,6 +41,9 @@ jobs:
             cd ~/mlops-fyp
             git pull origin staging
             echo "${{ secrets.ENV_STAGING_CONTENTS }}" > .env.stag_machine
+            export ENV_FILE=.env.stag_machine
+            export AWS_PROFILE=stag-bkt
+            export AWS_DEFAULT_PROFILE=stag-bkt
             docker compose -f docker/docker-compose.staging.yml down
             docker compose -f docker/docker-compose.staging.yml up -d --build
             make run-pipeline
