@@ -11,8 +11,14 @@ from fastapi import FastAPI
 from mlflow import MlflowClient
 from pydantic import BaseModel
 
-from backend.utils import get_model_version_details, get_run_details, load_environment
-from src.pipeline.predict_pipeline import CustomData, PredictPipeline
+from backend.utils import (
+    get_model_version_details,
+    get_run_details,
+    load_environment,
+    load_model_and_preprocessor,
+    predict,
+)
+from src.pipeline.predict_pipeline import CustomData
 
 env_file = os.getenv("ENV_FILE", ".env")
 load_environment(env_file)
@@ -22,8 +28,7 @@ MODEL_ALIAS = os.getenv("MODEL_ALIAS")
 MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI")
 mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
 
-predict_pipeline = PredictPipeline()
-model, preprocessor = predict_pipeline.load_model_and_preprocessor()
+model, preprocessor = load_model_and_preprocessor(MODEL_NAME, MODEL_ALIAS)
 app = FastAPI(title="Fraud Detection API", version="1.0")
 
 
@@ -46,21 +51,10 @@ def health_check():
 
 
 @app.post("/predict")
-def predict(inputData: TransactionInput):
+def predict_endpoint(inputData: TransactionInput):
     """Predicts whether a transaction is fraudulent (1) or not (0) using the trained model."""
     custom_data = CustomData(**inputData.dict())
-    input_df = custom_data.get_data_as_dataframe()
-    if preprocessor is not None:
-        try:
-            data_scaled = preprocessor.transform(input_df)
-            pred_result = model.predict(data_scaled)
-        except Exception as e:
-            print(f"Preprocessor failed: {e}. Using raw features.")
-            pred_result = model.predict(input_df)
-    else:
-        print("Preprocessor not found. Using raw features.")
-        pred_result = model.predict(input_df)
-    return {"prediction": int(pred_result[0])}
+    return predict(custom_data, model, preprocessor)
 
 
 @app.get("/model-info")
@@ -131,7 +125,7 @@ if __name__ == "__main__":
     pass
     # sample curl request
     """
-        curl -X POST "http://localhost:8000/predict" \
+        curl -X POST "http://localhost:8001/predict" \
       -H "Content-Type: application/json" \
       -d '{
         "step": 1,
