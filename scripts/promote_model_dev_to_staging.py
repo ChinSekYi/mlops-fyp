@@ -5,14 +5,13 @@ Promotes the champion model from the dev MLflow server to the staging MLflow ser
 Loads environment variables from ENV_FILE (recommended: env/.env.dev_machine).
 
 REMINDER:
+- Only use this script in the mlops-dev EC2 machine (not on staging or prod EC2).
 - Both mlflow-server-dev and mlflow-server-staging must be running and accessible.
 - Ensure correct environment variables are set in your env file.
 - Run with:
     ENV_FILE=env/.env.dev_machine python3 scripts/promote_model_dev_to_staging.py
 """
-
 import os
-
 import mlflow
 from dotenv import load_dotenv
 from mlflow import MlflowClient
