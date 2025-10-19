@@ -1,13 +1,15 @@
 import os
+
 import mlflow
-from mlflow import MlflowClient
 from dotenv import load_dotenv
+from mlflow import MlflowClient
 
 
 def load_environment(env_file: str = None):
     load_dotenv(env_file or ".env")
 
-load_environment(os.getenv("ENV_FILE", ".env"))
+
+load_environment(os.getenv("ENV_FILE", ".env.dev_machine"))
 MLFLOW_TRACKING_PRIVATE_IP_DEV = os.getenv("MLFLOW_TRACKING_PRIVATE_IP_DEV")
 MLFLOW_TRACKING_PRIVATE_IP_STAGING = os.getenv("MLFLOW_TRACKING_PRIVATE_IP_STAGING")
 MODEL_NAME = os.getenv("REGISTERED_MODEL_NAME")
@@ -23,9 +25,10 @@ mlflow.set_tracking_uri(DEV_TRACKING_URI)
 dev_client = MlflowClient()
 model_version = dev_client.get_model_version_by_alias(MODEL_NAME, MODEL_ALIAS)
 run_id = model_version.run_id
+print(f"Champion dev model is version {model_version}")
 
 # Download model artifact locally
-model_uri = f"models:/{MODEL_NAME}/{model_version}"
+model_uri = f"models:/{MODEL_NAME}/{model_version.version}"
 dev_chamption_model = mlflow.sklearn.load_model(model_uri)
 local_path = f"../artifacts/model/"
 print(f"Downloaded model to {local_path}")
@@ -47,4 +50,3 @@ with mlflow.start_run(run_name="model_promotion") as run:
 
     # Model registry and version creation is handled by mlflow.sklearn.log_model
     print(f"Promoted model to staging: {STAGING_MODEL_NAME}")
-    

@@ -1,11 +1,13 @@
 import os
+
 import mlflow
-from mlflow import MlflowClient
 from dotenv import load_dotenv
+from mlflow import MlflowClient
 
 
 def load_environment(env_file: str = None):
     load_dotenv(env_file or ".env")
+
 
 load_environment(os.getenv("ENV_FILE", ".env"))
 MLFLOW_TRACKING_PRIVATE_IP_STAGING = os.getenv("MLFLOW_TRACKING_PRIVATE_IP_STAGING")
