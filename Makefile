@@ -50,6 +50,15 @@ up-prod:
 	docker compose -f infra/compose-files/docker-compose.prod.yml up
 
 # =========================
+# Model Promotion
+# =========================
+promote-model-dev:
+	python3 -m scripts.promote_model_dev_to_staging
+
+promote-model-staging:
+	python3 -m scripts.promote_model_staging_to_prod
+
+# =========================
 # Data Commands (run anywhere with DVC configured)
 # =========================
 # Requires `aws configure --profile <env>-raw`
@@ -86,15 +95,6 @@ test-staging: #requires the right aws bucket credentials #ensure mlflow server &
 
 test-prod:
 	pytest tests/smoke -v
-
-# =========================
-# Model Promotion
-# =========================
-promote-model-dev:
-    ENV_FILE=.env.dev_machine python scripts/promote_model_dev_to_staging.py
-
-promote-model-staging:
-    ENV_FILE=.env.stag_machine python scripts/promote_model_staging_to_prod.py
 
 # =========================
 # Others
