@@ -1,8 +1,8 @@
 name: CI - pipeline
 
 on:
-  push:
-    branches: [ "dev", "dev-machine", "staging"]
+  #push:
+  #  branches: [ "dev", "dev-machine", "staging"]
   pull_request:
     branches: [ "staging", "main" ]
 
