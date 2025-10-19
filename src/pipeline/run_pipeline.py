@@ -5,8 +5,10 @@ Runs data ingestion, transformation, and model training with MLflow tracking.
 
 # flake8: noqa
 import os
-import mlflow
 import warnings
+
+import mlflow
+
 warnings.filterwarnings("ignore")
 from src.core.utils import load_environment
 

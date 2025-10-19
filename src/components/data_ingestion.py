@@ -5,6 +5,7 @@ Handles reading, sampling, splitting, and logging datasets.
 
 # flake8: noqa
 import os
+import warnings
 
 import mlflow
 import pandas as pd
@@ -13,6 +14,9 @@ from sklearn.model_selection import train_test_split
 from src.core.exception import CustomException
 from src.core.logger import logging
 from src.core.utils import load_config, load_environment
+
+warnings.filterwarnings("ignore")
+from src.core.utils import load_environment
 
 # If running this script directly, uncomment the next line to ensure
 # environment variables are loaded early
