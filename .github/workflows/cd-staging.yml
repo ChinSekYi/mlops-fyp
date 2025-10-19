@@ -21,12 +21,14 @@ jobs:
 
       - name: Build and push backend image
         run: |
-          docker build -t sychin0606/backend:latest -f docker/Dockerfile.backend .
+          # docker build -t sychin0606/backend:latest -f infra/docker/Dockerfile.backend .
+          docker build --no-cache --platform linux/amd64 -t sychin0606/backend:latest -f infra/docker/Dockerfile.backend .
           docker push sychin0606/backend:latest
 
       - name: Build and push frontend image
         run: |
-          docker build -t sychin0606/frontend:latest -f docker/Dockerfile.frontend .
+          # docker build -t sychin0606/frontend:latest -f infra/docker/Dockerfile.frontend .
+          docker build  --no-cache --platform linux/amd64 -t sychin0606/frontend:latest -f infra/docker/Dockerfile.frontend .
           docker push sychin0606/frontend:latest
       
       - name: Deploy to EC2 (Staging)
