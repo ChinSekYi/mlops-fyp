@@ -4,14 +4,12 @@
 import os
 import sys
 
-import joblib
 import mlflow
 import numpy as np
 import pandas as pd
-from mlflow import MlflowClient
 
 from src.core.exception import CustomException
-from src.core.utils import load_config, load_environment, tokenize_column
+from src.core.utils import load_config, load_environment, load_object, tokenize_column
 
 env_file = os.getenv("ENV_FILE", ".env")
 load_environment(env_file)
@@ -29,7 +27,6 @@ preprocessor_path = predict_config["preprocessor_path"]
 
 
 class DummyModel:
-    # Dummy model for when MLflow is not available
 
     def predict(self, X):
         # Simple heuristic: classify as fraud if amount > 200000 or oldbalanceOrg == 0
@@ -45,69 +42,13 @@ class DummyModel:
 
 
 class PredictPipeline:
-    @staticmethod
-    def load_model_and_preprocessor():
-        """Loads both the ML model and preprocessor from MLflow or local files."""
-        try:
-            # Try to load model using alias first
-            print(f"Attempting to load model {MODEL_NAME} with alias {MODEL_ALIAS}")
-            model_uri = f"models:/{MODEL_NAME}@{MODEL_ALIAS}"
-            model = mlflow.sklearn.load_model(model_uri)
 
-            # Try to load preprocessor from artifacts
-            try:
-                client = MlflowClient()
-                model_version = client.get_model_version_by_alias(
-                    name=MODEL_NAME, alias=MODEL_ALIAS
-                )
-                run_id = model_version.run_id
-
-                # Download preprocessor artifact (it's in the 'preprocessor' directory)
-                preprocessor_path = mlflow.artifacts.download_artifacts(
-                    run_id=run_id, artifact_path="preprocessor"
-                )
-
-                preprocessor_files = os.listdir(preprocessor_path)
-                preprocessor_file = None
-                for file in preprocessor_files:
-                    if file.endswith(".pkl"):
-                        preprocessor_file = os.path.join(preprocessor_path, file)
-                        break
-
-                if preprocessor_file:
-                    preprocessor = joblib.load(preprocessor_file)
-                    print("Successfully loaded preprocessor from MLflow")
-                else:
-                    print("No .pkl file found in preprocessor artifacts")
-                    preprocessor = None
-
-            except Exception as e:
-                print(f"Could not load preprocessor from MLflow: {e}")
-                preprocessor = None
-
-            return model, preprocessor
-
-        except Exception as e:
-            print(f"Could not load MLflow model: {e}")
-            try:
-                # Fallback to version 1 if alias doesn't exist
-                model_version = 1
-                model_uri = f"models:/{MODEL_NAME}/{model_version}"
-                model = mlflow.sklearn.load_model(model_uri)
-                print(f"Successfully loaded MLflow model version {model_version}")
-                return model, None
-            except Exception as e2:
-                print(f"Could not load any MLflow model: {e2}")
-                print("Using dummy model for predictions")
-                return DummyModel(), None
-
-    def predict(self, features):
+    def predict(self, features, model, preprocessor, DummyModel):
         """
         Makes a prediction using the loaded ML model and preprocessor.
         If MLflow model or preprocessor fails, falls back to DummyModel or raw features.
         """
         try:
-            model, preprocessor = self.load_model_and_preprocessor()
             if model is None:
                 raise ValueError("Model could not be loaded.")
             if preprocessor is not None:
@@ -235,6 +176,10 @@ if __name__ == "__main__":
     print("Testing Prediction Pipeline with Raw PaySim Data")
     print("=" * 60)
 
+    # use local model and preprocessor
+    model = load_object(file_path=model_path)
+    preprocessor = load_object(file_path=preprocessor_path)
+
     # Non-fraud example
     print("\n1. Testing Non-Fraud Example:")
     data_nonfraud = CustomData(
@@ -256,7 +201,9 @@ if __name__ == "__main__":
     print(f"Columns: {list(pred_df_nonfraud.columns)}")
 
     predict_pipeline = PredictPipeline()
-    pred_result_nonfraud = predict_pipeline.predict(pred_df_nonfraud)
+    pred_result_nonfraud = predict_pipeline.predict(
+        pred_df_nonfraud, model, preprocessor, DummyModel
+    )
     print(f"Prediction result: {pred_result_nonfraud}")
     print(f"Result: {'Fraud' if pred_result_nonfraud[0] == 1 else 'Not Fraud'}")
 
@@ -280,7 +227,9 @@ if __name__ == "__main__":
     print(f"DataFrame shape: {pred_df_fraud.shape}")
     print(f"Columns: {list(pred_df_fraud.columns)}")
 
-    pred_result_fraud = predict_pipeline.predict(pred_df_fraud)
+    pred_result_fraud = predict_pipeline.predict(
+        pred_df_fraud, model, preprocessor, DummyModel
+    )
     print(f"Prediction result: {pred_result_fraud}")
     print(f"Result: {'Fraud' if pred_result_fraud[0] == 1 else 'Not Fraud'}")
 
