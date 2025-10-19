@@ -1,5 +1,5 @@
-# Only use this in EC2 mlflow-server-dev
-# set .env.mlflow_dev as .env
+# Only use this in EC2 mlflow-server-staging
+# set .env.mlflow_stag as .env
 services:
     mlflow-server:
       image: sychin0606/mlflow-server:latest
@@ -14,7 +14,7 @@ services:
         - .env
 
 
-# docker compose -f infra/docker/docker-compose.mlflow-server-dev.yml up
+# docker compose -f infra/docker/docker-compose.mlflow-server-staging.yml up
 
-## In mlflow-server-dev
-# docker compose -f docker-compose.mlflow-server-dev.yml up
+## In mlflow-server-staging
+# docker compose -f docker-compose.mlflow-server-staging.yml up
