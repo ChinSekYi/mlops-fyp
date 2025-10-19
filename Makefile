@@ -53,10 +53,10 @@ up-prod:
 # Model Promotion
 # =========================
 promote-model-dev:
-	python3 -m scripts.promote_model_dev_to_staging
+    ENV_FILE=env/.env.dev_machine python3 scripts/promote_model_dev_to_staging.py
 
 promote-model-staging:
-	python3 -m scripts.promote_model_staging_to_prod
+	ENV_FILE=env/.env.stag_machine python3 scripts/promote_model_staging_to_prod.py
 
 # =========================
 # Data Commands (run anywhere with DVC configured)
