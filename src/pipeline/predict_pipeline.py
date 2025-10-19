@@ -2,11 +2,24 @@
 # flake8: noqa
 
 import os
+import sys
 
+import joblib
+import mlflow
+import numpy as np
 import pandas as pd
+from mlflow import MlflowClient
 
 from src.core.exception import CustomException
-from src.core.utils import load_config, load_object, tokenize_column
+from src.core.utils import load_config, load_environment, tokenize_column
+
+env_file = os.getenv("ENV_FILE", ".env")
+load_environment(env_file)
+
+MODEL_NAME = os.getenv("REGISTERED_MODEL_NAME")
+MODEL_ALIAS = os.getenv("MODEL_ALIAS")
+MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI")
+mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
 
 config = load_config()
 
@@ -15,18 +28,110 @@ model_path = predict_config["model_path"]
 preprocessor_path = predict_config["preprocessor_path"]
 
 
+class DummyModel:
+    # Dummy model for when MLflow is not available
+
+    def predict(self, X):
+        # Simple heuristic: classify as fraud if amount > 200000 or oldbalanceOrg == 0
+        predictions = []
+        for _, row in X.iterrows():
+            if row["amount"] > 200000 or (
+                row["oldbalanceOrg"] == 0 and row["amount"] > 0
+            ):
+                predictions.append(1)  # Fraud
+            else:
+                predictions.append(0)  # Not fraud
+        return np.array(predictions)
+
+
 class PredictPipeline:
-    def predict(self, features):
+    @staticmethod
+    def load_model_and_preprocessor():
+        """Loads both the ML model and preprocessor from MLflow or local files."""
         try:
-            model = load_object(file_path=model_path)
-            preprocessor = load_object(file_path=preprocessor_path)
-            data_scaled = preprocessor.transform(features)
-            pred_result = model.predict(data_scaled)
+            # Try to load model using alias first
+            print(f"Attempting to load model {MODEL_NAME} with alias {MODEL_ALIAS}")
+            model_uri = f"models:/{MODEL_NAME}@{MODEL_ALIAS}"
+            model = mlflow.sklearn.load_model(model_uri)
+
+            # Try to load preprocessor from artifacts
+            try:
+                client = MlflowClient()
+                model_version = client.get_model_version_by_alias(
+                    name=MODEL_NAME, alias=MODEL_ALIAS
+                )
+                run_id = model_version.run_id
+
+                # Download preprocessor artifact (it's in the 'preprocessor' directory)
+                preprocessor_path = mlflow.artifacts.download_artifacts(
+                    run_id=run_id, artifact_path="preprocessor"
+                )
+
+                preprocessor_files = os.listdir(preprocessor_path)
+                preprocessor_file = None
+                for file in preprocessor_files:
+                    if file.endswith(".pkl"):
+                        preprocessor_file = os.path.join(preprocessor_path, file)
+                        break
+
+                if preprocessor_file:
+                    preprocessor = joblib.load(preprocessor_file)
+                    print("Successfully loaded preprocessor from MLflow")
+                else:
+                    print("No .pkl file found in preprocessor artifacts")
+                    preprocessor = None
+
+            except Exception as e:
+                print(f"Could not load preprocessor from MLflow: {e}")
+                preprocessor = None
+
+            return model, preprocessor
+
+        except Exception as e:
+            print(f"Could not load MLflow model: {e}")
+            try:
+                # Fallback to version 1 if alias doesn't exist
+                model_version = 1
+                model_uri = f"models:/{MODEL_NAME}/{model_version}"
+                model = mlflow.sklearn.load_model(model_uri)
+                print(f"Successfully loaded MLflow model version {model_version}")
+                return model, None
+            except Exception as e2:
+                print(f"Could not load any MLflow model: {e2}")
+                print("Using dummy model for predictions")
+                return DummyModel(), None
+
+    def predict(self, features):
+        """
+        Makes a prediction using the loaded ML model and preprocessor.
+        If MLflow model or preprocessor fails, falls back to DummyModel or raw features.
+        """
+        try:
+            model, preprocessor = self.load_model_and_preprocessor()
+            if model is None:
+                raise ValueError("Model could not be loaded.")
+            if preprocessor is not None:
+                try:
+                    data_scaled = preprocessor.transform(features)
+                    pred_result = model.predict(data_scaled)
+                except Exception as preproc_error:
+                    print(
+                        f"Preprocessor transform failed: {preproc_error}. Using raw features."
+                    )
+                    pred_result = model.predict(features)
+            else:
+                print("Preprocessor not found. Using raw features.")
+                pred_result = model.predict(features)
             return pred_result
         except Exception as e:
-            import sys
-
-            raise CustomException(e, sys)
+            print(f"Prediction failed: {e}. Falling back to DummyModel.")
+            dummy_model = DummyModel()
+            try:
+                pred_result = dummy_model.predict(features)
+                return pred_result
+            except Exception as dummy_error:
+                print(f"DummyModel prediction failed: {dummy_error}")
+                raise CustomException(dummy_error, sys)
 
 
 class CustomData:
@@ -34,6 +139,18 @@ class CustomData:
     Responsible for taking PaySim transaction inputs (RAW FORMAT with string account names)
     and converting them to the format expected by the fraud detection model.
     """
+
+    EXPECTED_FEATURES = [
+        "step",
+        "amount",
+        "oldbalanceOrg",
+        "newbalanceOrig",
+        "oldbalanceDest",
+        "newbalanceDest",
+        "type",
+        "nameOrig",
+        "nameDest",
+    ]
 
     def __init__(
         self,
@@ -68,14 +185,13 @@ class CustomData:
                 "oldbalanceDest": [self.oldbalanceDest],
                 "newbalanceDest": [self.newbalanceDest],
                 "type": [self.type],
-                "nameOrig": [self.nameOrig],  # Raw account ID
-                "nameDest": [self.nameDest],  # Raw account ID
+                "nameOrig": [self.nameOrig],
+                "nameDest": [self.nameDest],
             }
             df = pd.DataFrame(custom_data_input)
 
             # Step 2: Tokenize account names (same approach as API)
             try:
-                # Use the same tokenization approach as the API with dummy dataframe
                 df_dummy = df.copy()
                 df_tokenized, _ = tokenize_column(df, df_dummy, "nameOrig")
                 df_tokenized, _ = tokenize_column(df_tokenized, df_dummy, "nameDest")
@@ -92,7 +208,6 @@ class CustomData:
             df = df.drop(columns=["nameOrig", "nameDest"])
 
             # Step 4: Reorder columns to match what preprocessor expects
-            # Preprocessor expects: numerical features + categorical features
             ordered_cols = [
                 "step",
                 "amount",
