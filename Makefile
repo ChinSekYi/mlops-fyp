@@ -108,7 +108,7 @@ test-pipeline-ci:
 	pytest tests/unit tests/integration -v --maxfail=1
 
 test-staging: #requires the right aws bucket credentials #ensure mlflow server & banckend+frontend server are running
-	d tests/e2e  -v
+	pytest tests/e2e  -v
 
 test-prod:
 	pytest tests/smoke -v
