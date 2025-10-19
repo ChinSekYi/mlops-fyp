@@ -18,12 +18,10 @@ from src.core.utils import load_config, load_environment
 warnings.filterwarnings("ignore")
 from src.core.utils import load_environment
 
-# If running this script directly, uncomment the next line to ensure
-# environment variables are loaded early
-load_environment(".env")
-config = load_config()
+load_environment(os.getenv("ENV_FILE", ".env"))
 DATASET_NAME = os.getenv("DATASET_NAME")
 
+config = load_config()
 ingestion_config = config["data_ingestion"]
 RAW_DATA_PATH_ = ingestion_config["raw_data_path"]
 RAW_DATA_PATH = os.path.join(RAW_DATA_PATH_, DATASET_NAME)
