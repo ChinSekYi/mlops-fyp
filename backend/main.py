@@ -125,7 +125,7 @@ if __name__ == "__main__":
     pass
     # sample curl request
     """
-        curl -X POST "http://localhost:8001/predict" \
+        curl -X POST "http://localhost:8000/predict" \
       -H "Content-Type: application/json" \
       -d '{
         "step": 1,
