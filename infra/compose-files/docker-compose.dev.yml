@@ -1,10 +1,10 @@
 services:
 
     backend:
-      build:
-        context: ../../
-        dockerfile: infra/docker/Dockerfile.backend
-      #image: sychin0606/backend:latest
+      #build:
+      #  context: ../../
+      #  dockerfile: infra/docker/Dockerfile.backend
+      image: sychin0606/backend:latest
       platform: linux/amd64
       container_name: backend-con
       ports:
@@ -15,10 +15,10 @@ services:
         - mlops-network
 
     frontend:
-      build:
-          context: ../../
-          dockerfile: infra/docker/Dockerfile.frontend
-      #image: sychin0606/frontend:latest
+      #build:
+      #    context: ../../
+      #    dockerfile: infra/docker/Dockerfile.frontend
+      image: sychin0606/frontend:latest
       platform: linux/amd64
       container_name: frontend-con
       ports:

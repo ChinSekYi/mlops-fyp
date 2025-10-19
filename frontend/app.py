@@ -1,10 +1,8 @@
 import os
-import sys
+
 import requests
 import streamlit as st
-sys.path.append(os.path.dirname(__file__))
 from utils import load_environment
-
 
 env_file = os.getenv("ENV_FILE", ".env")
 API_URL = os.getenv("MODEL_SERVER_IP")

@@ -21,3 +21,16 @@ def load_environment(env_file: str = None):
         env_path = os.path.join(env_dir, ".env")
     load_dotenv(env_path)
     print(f"[ENV] Loaded environment from {env_path}")
+
+
+def get_model_version_details(client, model_name, model_alias):
+    """Get model version details by alias, fallback to version 1."""
+    try:
+        return client.get_model_version_by_alias(name=model_name, alias=model_alias)
+    except Exception:
+        return client.get_model_version(model_name, "1")
+
+
+def get_run_details(client, run_id):
+    """Get run details for a given run_id."""
+    return client.get_run(run_id)
