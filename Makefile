@@ -88,6 +88,15 @@ test-prod:
 	pytest tests/smoke -v
 
 # =========================
+# Model Promotion
+# =========================
+promote-model-dev:
+    ENV_FILE=.env.dev_machine python scripts/promote_model_dev_to_staging.py
+
+promote-model-staging:
+    ENV_FILE=.env.stag_machine python scripts/promote_model_staging_to_prod.py
+
+# =========================
 # Others
 # =========================
 aws-list-profiles:
@@ -96,3 +105,4 @@ rmi:
 	docker rmi $(docker images -q)
 rm:
 	docker container prune -f
+
