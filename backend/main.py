@@ -8,7 +8,6 @@ import os
 
 import joblib
 import mlflow
-import pandas as pd
 from fastapi import FastAPI
 from mlflow import MlflowClient
 from pydantic import BaseModel
