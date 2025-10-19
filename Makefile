@@ -52,12 +52,24 @@ up-prod:
 # =========================
 # Model Promotion
 # =========================
+
+download-champion-dev:
+	AWS_PROFILE=dev-bkt AWS_DEFAULT_PROFILE=dev-bkt ENV_FILE=env/.env.dev_machine python3 scripts/download_champion_model_dev.py
+
+upload-champion-to-staging:
+	AWS_PROFILE=stag-bkt AWS_DEFAULT_PROFILE=stag-bkt ENV_FILE=env/.env.stag_machine python3 scripts/upload_champion_model_to_staging.py
+
 promote-model-dev:
-    ENV_FILE=env/.env.dev_machine python3 scripts/promote_model_dev_to_staging.py
+	download-champion-dev && upload-champion-to-staging
+
+download-champion-staging:
+	AWS_PROFILE=stag-bkt AWS_DEFAULT_PROFILE=stag-bkt ENV_FILE=env/.env.stag_machine python3 scripts/download_champion_model_staging.py
+
+upload-champion-to-prod:
+	AWS_PROFILE=prod-bkt AWS_DEFAULT_PROFILE=prod-bkt ENV_FILE=env/.env.prod_machine python3 scripts/upload_champion_model_to_prod.py
 
 promote-model-staging:
-	ENV_FILE=env/.env.stag_machine python3 scripts/promote_model_staging_to_prod.py
-
+	download-champion-staging && upload-champion-to-prod
 # =========================
 # Data Commands (run anywhere with DVC configured)
 # =========================
