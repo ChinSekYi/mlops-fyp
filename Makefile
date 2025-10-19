@@ -22,7 +22,7 @@ flake:
 
 check: format lint flake
 
-
+app: streamlit run frontend/app.py
 
 # =========================
 # MLflow Server EC2 Commands (run only on MLflow server EC2)
@@ -82,7 +82,7 @@ test-pipeline-ci:
 	pytest tests/unit tests/integration -v --maxfail=1
 
 test-staging: #requires the right aws bucket credentials #ensure mlflow server & banckend+frontend server are running
-	pytest tests/integration tests/e2e  -v
+	d tests/e2e  -v
 
 test-prod:
 	pytest tests/smoke -v
@@ -94,3 +94,5 @@ aws-list-profiles:
 	aws configure list-profiles
 rmi:
 	docker rmi $(docker images -q)
+rm:
+	docker container prune -f

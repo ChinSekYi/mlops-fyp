@@ -5,6 +5,7 @@ Trains, evaluates, and logs a logistic regression model.
 
 import os
 import sys
+import warnings
 
 import mlflow
 import mlflow.sklearn
@@ -19,6 +20,8 @@ from sklearn.tree import DecisionTreeClassifier
 from src.core.exception import CustomException
 from src.core.logger import logging
 from src.core.utils import load_config, save_object
+
+warnings.filterwarnings("ignore")
 
 config = load_config()
 

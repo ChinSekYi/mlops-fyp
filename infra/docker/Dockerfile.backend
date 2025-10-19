@@ -2,17 +2,22 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-COPY ../../backend/requirements.txt .
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install --no-cache-dir boto3 mlflow
 
-COPY ../../backend/ ./backend/
-COPY ../../configs/config.yaml .
+COPY src/  ./src/
+COPY backend/ ./backend/
+RUN mkdir -p ./configs
+COPY configs/config.yaml ./configs/config.yaml
 
+ENV PYTHONPATH=/app
 EXPOSE 8000
 
 CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
-
+# uvicorn backend.main:app --reload
 
 # docker build --no-cache --platform linux/amd64 -t sychin0606/backend:latest -f infra/docker/Dockerfile.backend .
 # docker push sychin0606/backend:latest
+
+# docker build --no-cache --platform linux/amd64 -t sychin0606/backend:latest -f infra/docker/Dockerfile.backend . && docker push sychin0606/backend:latest
