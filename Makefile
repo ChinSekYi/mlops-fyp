@@ -62,6 +62,7 @@ upload-champion-to-staging:
 promote-model-dev:
 	$(MAKE) download-champion-dev
 	$(MAKE) upload-champion-to-staging
+	AWS_PROFILE=dev-bkt AWS_DEFAULT_PROFILE=dev-bkt
 
 download-champion-staging:
 	AWS_PROFILE=stag-bkt AWS_DEFAULT_PROFILE=stag-bkt ENV_FILE=env/.env.stag_machine python3 scripts/download_champion_model_staging.py
@@ -72,6 +73,7 @@ upload-champion-to-prod:
 promote-model-staging:
 	$(MAKE) download-champion-staging
 	$(MAKE) upload-champion-to-prod
+	AWS_PROFILE=stag-bkt AWS_DEFAULT_PROFILE=stag-bkt
 
 # =========================
 # Data Commands (run anywhere with DVC configured)

@@ -9,13 +9,17 @@ REMINDER:
 - Run with:
     AWS_PROFILE=stag-bkt ENV_FILE=env/.env.stag_machine python3 scripts/download_champion_model_staging.py
 """
+
 import os
+
 import mlflow
 from dotenv import load_dotenv
 from mlflow import MlflowClient
 
+
 def load_environment(env_file: str = None):
     load_dotenv(env_file or ".env")
+
 
 load_environment(os.getenv("ENV_FILE", "env/.env.stag_machine"))
 MLFLOW_TRACKING_PRIVATE_IP_STAGING = os.getenv("MLFLOW_TRACKING_PRIVATE_IP_STAGING")
