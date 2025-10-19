@@ -1,3 +1,16 @@
+"""
+Script: promote_model_dev_to_staging.py
+
+Promotes the champion model from the dev MLflow server to the staging MLflow server.
+Loads environment variables from ENV_FILE (recommended: env/.env.dev_machine).
+
+REMINDER:
+- Both mlflow-server-dev and mlflow-server-staging must be running and accessible.
+- Ensure correct environment variables are set in your env file.
+- Run with:
+    ENV_FILE=env/.env.dev_machine python3 scripts/promote_model_dev_to_staging.py
+"""
+
 import os
 
 import mlflow
@@ -9,10 +22,11 @@ def load_environment(env_file: str = None):
     load_dotenv(env_file or ".env")
 
 
-load_environment(os.getenv("ENV_FILE", ".env.dev_machine"))
+load_environment(os.getenv("ENV_FILE", "env/.env.dev_machine"))
 MLFLOW_TRACKING_PRIVATE_IP_DEV = os.getenv("MLFLOW_TRACKING_PRIVATE_IP_DEV")
 MLFLOW_TRACKING_PRIVATE_IP_STAGING = os.getenv("MLFLOW_TRACKING_PRIVATE_IP_STAGING")
 MODEL_NAME = os.getenv("REGISTERED_MODEL_NAME")
+print("Loaded MODEL_NAME:", MODEL_NAME)
 
 # Configuration
 DEV_TRACKING_URI = f"http://{MLFLOW_TRACKING_PRIVATE_IP_DEV}:5050"
@@ -27,11 +41,10 @@ model_version = dev_client.get_model_version_by_alias(MODEL_NAME, MODEL_ALIAS)
 run_id = model_version.run_id
 print(f"Champion dev model is version {model_version}")
 
-# Download model artifact locally
+# Download model from MLflow
 model_uri = f"models:/{MODEL_NAME}/{model_version.version}"
-dev_chamption_model = mlflow.sklearn.load_model(model_uri)
-local_path = f"../artifacts/model/"
-print(f"Downloaded model to {local_path}")
+dev_champion_model = mlflow.sklearn.load_model(model_uri)
+print(f"Downloaded model from {model_uri}")
 
 # Retrieve model_name from run tags
 run_info = dev_client.get_run(run_id)
@@ -43,10 +56,9 @@ staging_client = MlflowClient()
 
 with mlflow.start_run(run_name="model_promotion") as run:
     mlflow.sklearn.log_model(
-        sk_model=mlflow.sklearn.load_model(local_path),
+        sk_model=dev_champion_model,
         name=model_name_tag,
         registered_model_name=STAGING_MODEL_NAME,
     )
-
     # Model registry and version creation is handled by mlflow.sklearn.log_model
     print(f"Promoted model to staging: {STAGING_MODEL_NAME}")
