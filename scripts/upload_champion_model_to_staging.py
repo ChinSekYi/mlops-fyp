@@ -9,19 +9,23 @@ Only use this script with stag-bkt credentials.
 Run with:
     AWS_PROFILE=stag-bkt ENV_FILE=env/.env.stag_machine python3 scripts/upload_champion_model_to_staging.py
 """
+
+import json
 import os
+
 import mlflow
 from dotenv import load_dotenv
 from mlflow import MlflowClient
 from mlflow.models.signature import ModelSignature
-import json
 
 STAGING_MODEL_NAME = "staging.fraud-detection-model"  # Or use same name if desired
 LOCAL_MODEL_DIR = "artifacts/models/dev_champion_model"
 
+
 # Use MLFLOW_TRACKING_URI from environment (should be set in .env.stag_machine)
 def load_environment(env_file: str = None):
     load_dotenv(env_file or ".env")
+
 
 load_environment(os.getenv("ENV_FILE", "env/.env.stag_machine"))
 mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI"))
@@ -51,7 +55,7 @@ with mlflow.start_run(run_name="model_promotion") as run:
     log_model_kwargs = dict(
         sk_model=mlflow.sklearn.load_model(LOCAL_MODEL_DIR),
         name=model_name_tag,
-        registered_model_name=STAGING_MODEL_NAME
+        registered_model_name=STAGING_MODEL_NAME,
     )
     if signature:
         log_model_kwargs["signature"] = signature
@@ -59,26 +63,12 @@ with mlflow.start_run(run_name="model_promotion") as run:
         log_model_kwargs["input_example"] = input_example
     mlflow.sklearn.log_model(**log_model_kwargs)
 
-    # Log preprocessor artifact if exists (handle nested preprocessor/preprocessor file)
-    preprocessor_dir = os.path.join(LOCAL_MODEL_DIR, "preprocessor")
-    if os.path.exists(preprocessor_dir):
-        found = False
-        # Check for nested preprocessor/preprocessor file
-        nested_preprocessor = os.path.join(preprocessor_dir, "preprocessor")
-        if os.path.isfile(nested_preprocessor):
-            mlflow.log_artifact(nested_preprocessor, artifact_path="preprocessor")
-            print(f"Logged nested preprocessor artifact: {nested_preprocessor}")
-            found = True
-        # Log any other files in preprocessor_dir
-        for file in os.listdir(preprocessor_dir):
-            file_path = os.path.join(preprocessor_dir, file)
-            if os.path.isfile(file_path) and file != "preprocessor":
-                mlflow.log_artifact(file_path, artifact_path="preprocessor")
-                print(f"Logged preprocessor artifact: {file_path}")
-                found = True
-        if not found:
-            print(f"No preprocessor files found in {preprocessor_dir}")
+    # Log preprocessor artifact from fixed path (as in model_trainer)
+    preprocessor_path = "artifacts/preprocessor/preprocessor.pkl"
+    if os.path.isfile(preprocessor_path):
+        mlflow.log_artifact(preprocessor_path, artifact_path="preprocessor")
+        print(f"Logged preprocessor artifact: {preprocessor_path}")
     else:
-        print("No preprocessor artifact found to log.")
+        print(f"No preprocessor artifact found at {preprocessor_path}")
 
     print(f"Promoted model to staging: {STAGING_MODEL_NAME}")
