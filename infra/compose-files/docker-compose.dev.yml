@@ -1,9 +1,6 @@
 services:
 
     backend:
-      #build:
-      #  context: ../../
-      #  dockerfile: infra/docker/Dockerfile.backend
       image: sychin0606/backend:latest
       platform: linux/amd64
       container_name: backend-con
