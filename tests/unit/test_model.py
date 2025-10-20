@@ -3,10 +3,14 @@ Unit tests for the Model
 Tests model load, shape
 """
 
-import numpy as np
-import pandas as pd
+import warnings
 
-from src.core.utils import tokenize_column
+import numpy as np
+import pytest
+
+from src.pipeline.predict_pipeline import CustomData
+
+warnings.filterwarnings("ignore")
 
 
 def test_model_load(model):
@@ -16,36 +20,28 @@ def test_model_load(model):
 
 def test_model_prediction_shape(model, preprocessor):
     """Check that model returns correct output length on dummy input."""
-    # PaySim dataset in RAW format (before preprocessing):
-    sample_input = pd.DataFrame(
-        {
-            "step": [1],
-            "amount": [1000.0],
-            "oldbalanceOrg": [5000.0],
-            "newbalanceOrig": [4000.0],
-            "oldbalanceDest": [0.0],
-            "newbalanceDest": [1000.0],
-            "type": ["CASH_OUT"],
-            "nameOrig": ["C84071102"],
-            "nameDest": ["C1576697216"],
-        }
-    )
+    # Prepare raw input matching model expectation
+    sample_input = CustomData(
+        step=1,
+        amount=1000.0,
+        oldbalanceOrg=5000.0,
+        newbalanceOrig=4000.0,
+        oldbalanceDest=0.0,
+        newbalanceDest=1000.0,
+        type="CASH_OUT",
+        nameOrig="C84071102",
+        nameDest="C1576697216",
+    ).get_data_as_dataframe()
+
+    if preprocessor is None:
+        pytest.skip("Preprocessor is required for model prediction shape test.")
+    data_scaled = preprocessor.transform(sample_input)
+    preds = model.predict(data_scaled)
 
     if preprocessor is not None:
-        # Apply tokenization
-        sample_copy = sample_input.copy()
-        sample_dummy = sample_input.copy()
-        sample_tokenized, _ = tokenize_column(sample_copy, sample_dummy, "nameOrig")
-        sample_tokenized, _ = tokenize_column(
-            sample_tokenized, sample_dummy, "nameDest"
-        )
-        sample_tokenized = sample_tokenized.drop(["nameOrig", "nameDest"], axis=1)
-
-        # Apply preprocessor
-        data_scaled = preprocessor.transform(sample_tokenized)
+        data_scaled = preprocessor.transform(sample_input)
         preds = model.predict(data_scaled)
     else:
-        # No preprocessor, model should handle raw data directly
         preds = model.predict(sample_input)
 
     print(f"preds is {preds}")
