@@ -46,13 +46,20 @@ class DataIngestion:
 
     def initiate_data_ingestion(self):
         """
-        Reads the raw data, splits into train/test,
+        Reads the raw data in chunks, splits into train/test,
         logs with MLflow, and saves files.
         Returns:
             tuple: Paths to train and test data CSV files.
         """
         try:
-            df = pd.read_csv(self.raw_data_path)
+            print(f"Reading raw data in chunks from {self.raw_data_path}")
+            chunks = []
+            for chunk in pd.read_csv(self.raw_data_path, chunksize=100000):
+                chunks.append(chunk)
+                print(f"Read chunk with shape: {chunk.shape}")
+            df = pd.concat(chunks, ignore_index=True)
+            print(f"Concatenated DataFrame shape: {df.shape}")
+
             x = df.drop("isFraud", axis=1)
             y = df["isFraud"]
 
