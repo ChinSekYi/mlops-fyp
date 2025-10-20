@@ -138,7 +138,8 @@ class TestDataIngestion:
     @patch("src.components.data_ingestion.train_test_split")
     def test_initiate_data_ingestion(self, mock_split, mock_read_csv, mock_raw_df):
         """Test data ingestion process with mocked dependencies."""
-        mock_read_csv.return_value = mock_raw_df
+        # Mock pd.read_csv to return an iterator of DataFrames (chunks)
+        mock_read_csv.return_value = iter([mock_raw_df])
 
         # Mock train_test_split
         mock_split.return_value = (
