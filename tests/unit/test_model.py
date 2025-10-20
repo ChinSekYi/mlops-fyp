@@ -6,9 +6,8 @@ Tests model load, shape
 import warnings
 
 import numpy as np
-import pandas as pd
+import pytest
 
-from src.core.utils import one_hot_encode_and_align
 from src.pipeline.predict_pipeline import CustomData
 
 warnings.filterwarnings("ignore")
@@ -21,7 +20,7 @@ def test_model_load(model):
 
 def test_model_prediction_shape(model, preprocessor):
     """Check that model returns correct output length on dummy input."""
-    # Always preprocess input to match model expectation
+    # Prepare raw input matching model expectation
     sample_input = CustomData(
         step=1,
         amount=1000.0,
@@ -34,37 +33,16 @@ def test_model_prediction_shape(model, preprocessor):
         nameDest="C1576697216",
     ).get_data_as_dataframe()
 
-    # One-hot encode 'type' to match model features
-    # Use a dummy train DataFrame with all possible types for alignment
-    all_types = ["CASH_IN", "CASH_OUT", "DEBIT", "PAYMENT", "TRANSFER"]
-    dummy_train = sample_input.copy()
-    dummy_train = pd.concat(
-        [
-            CustomData(
-                step=1,
-                amount=1000.0,
-                oldbalanceOrg=5000.0,
-                newbalanceOrig=4000.0,
-                oldbalanceDest=0.0,
-                newbalanceDest=1000.0,
-                type=t,
-                nameOrig="C84071102",
-                nameDest="C1576697216",
-            ).get_data_as_dataframe()
-            for t in all_types
-        ],
-        ignore_index=True,
-    )
-
-    dummy_train_encoded, sample_input_encoded = one_hot_encode_and_align(
-        dummy_train, sample_input, "type"
-    )
+    if preprocessor is None:
+        pytest.skip("Preprocessor is required for model prediction shape test.")
+    data_scaled = preprocessor.transform(sample_input)
+    preds = model.predict(data_scaled)
 
     if preprocessor is not None:
-        data_scaled = preprocessor.transform(sample_input_encoded)
+        data_scaled = preprocessor.transform(sample_input)
         preds = model.predict(data_scaled)
     else:
-        preds = model.predict(sample_input_encoded)
+        preds = model.predict(sample_input)
 
     print(f"preds is {preds}")
     assert len(preds) == 1
