@@ -28,15 +28,9 @@ app: streamlit run frontend/app.py
 # MLflow Server EC2 Commands (run only on MLflow server EC2)
 # =========================
 # Note: requires setup -> aws configure --profile <env>-bkt
-mlflow-dev-up:
-	docker compose -f infra/compose-files/docker-compose.mlflow-server-dev.yml up
-
-mlflow-staging-up:
-	docker compose -f infra/compose-files/docker-compose.mlflow-server-staging.yml up
-
-mlflow-prod-up:
-	docker compose -f infra/compose-files/docker-compose.mlflow-server-prod.yml up
-
+# Can only run on dedicated MLflow-server EC2
+mlflow: # replace <env> with dev, staging or prod
+	docker compose -f docker-compose.mlflow-server-<env>.yml up
 
 # =========================
 # App/Frontend EC2 Commands (run only on app/frontend EC2)

@@ -20,22 +20,30 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and push Docker images
+      - name: Build and push backend image
         run: |
-          docker build -t sychin0606/mlflow-server:latest -f docker/Dockerfile.mlflow .
-          docker build -t sychin0606/backend:latest -f docker/Dockerfile.backend .
-          docker push sychin0606/mlflow-server:latest
+          docker build --no-cache --platform linux/amd64 -t sychin0606/backend:latest -f infra/docker/Dockerfile.backend .
           docker push sychin0606/backend:latest
 
-      - name: Deploy to EC2 (Production)
+      - name: Build and push frontend image
+        run: |
+          docker build  --no-cache --platform linux/amd64 -t sychin0606/frontend:latest -f infra/docker/Dockerfile.frontend .
+          docker push sychin0606/frontend:latest
+      
+      - name: Deploy to EC2 (Prod)
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.EC2_HOST }}
+          host: ${{ secrets.MLOPS_PROD_MACHINE_NAME }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd ~/Downloads/mlops-fyp
+            cd ~/mlops-fyp
             git pull origin main
-            docker compose -f docker/docker-compose.prod.yml down
-            docker compose -f docker/docker-compose.prod.yml up -d --build
+            echo "${{ secrets.ENV_PROD_CONTENTS }}" > .env.prod_machine
+            export ENV_FILE=.env.prod_machine
+            export AWS_PROFILE=prod-bkt
+            export AWS_DEFAULT_PROFILE=prod-bkt
+            docker compose -f infra/compose-files/docker-compose.staging.yml down
+            docker compose -f infra/compose-files/docker-compose.staging.yml up -d --build
+            make run-pipeline
             make test-prod

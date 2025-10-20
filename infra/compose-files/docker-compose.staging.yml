@@ -19,7 +19,7 @@ services:
       environment:
         MODEL_SERVER_IP: http://backend-con-staging:8000
       networks:
-        -  mlops-network-staging
+        - mlops-network-staging
       depends_on:
         - backend-staging
 
