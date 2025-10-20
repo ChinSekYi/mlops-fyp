@@ -36,8 +36,6 @@ jobs:
           host: ${{ secrets.MLOPS_PROD_MACHINE_NAME }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
-          timeout: 120m
-          command_timeout: 120m
           script: |
             cd ~/mlops-fyp
             git pull origin main
@@ -49,5 +47,5 @@ jobs:
             docker compose -f infra/compose-files/docker-compose.prod.yml up -d --build
             make install
             export PATH=$PATH:~/.local/bin
-            make run-pipeline
+            # NOTE: make run-pipeline is omitted here because it takes 40+ minutes to complete and may cause SSH timeouts in CI/CD.
             make test-prod
