@@ -1,17 +1,16 @@
 """
 conftest.py
 
-Shared pytest fixtures for FYP tests - simplified version
+Shared pytest fixtures for testing
 """
 
 import os
 
-import joblib
 import mlflow
 import pandas as pd
 import pytest
-from mlflow import MlflowClient
 
+from backend.utils import load_model_and_preprocessor
 from src.core.utils import load_environment
 
 # Use ENV_FILE if set, otherwise default to .env
@@ -34,90 +33,10 @@ def cleanup_mlflow_runs():
 
 @pytest.fixture(scope="module")
 def model_and_preprocessor():
-    """Load both model and preprocessor from MLflow (simplified from main.py)."""
+    """Load both model and preprocessor from MLflow or fallback to dummy model."""
     MODEL_NAME = os.getenv("REGISTERED_MODEL_NAME")
     MODEL_ALIAS = os.getenv("MODEL_ALIAS")
-
-    model = None
-    preprocessor = None
-
-    # Try loading with alias first
-    try:
-        print(f"Loading model {MODEL_NAME} with alias {MODEL_ALIAS}")
-        model_uri = f"models:/{MODEL_NAME}@{MODEL_ALIAS}"
-        model = mlflow.sklearn.load_model(model_uri)
-        print("✅ Successfully loaded MLflow model with alias")
-
-        # Load preprocessor from alias
-        client = MlflowClient()
-        model_version = client.get_model_version_by_alias(
-            name=MODEL_NAME, alias=MODEL_ALIAS
-        )
-        run_id = model_version.run_id
-
-    except Exception as e:
-        print(f"⚠️ Alias loading failed: {e}")
-
-        # Fallback to version 1
-        try:
-            print(f"Trying to load model {MODEL_NAME} version 1")
-            model_uri = f"models:/{MODEL_NAME}/1"
-            model = mlflow.sklearn.load_model(model_uri)
-            print("✅ Successfully loaded MLflow model version 1")
-
-            # Get run_id for version 1
-            client = MlflowClient()
-            model_version = client.get_model_version(MODEL_NAME, "1")
-            run_id = model_version.run_id
-
-        except Exception as e:
-            print(f"❌ Version 1 loading failed: {e}")
-            model = None
-            run_id = None
-
-    # Load preprocessor if we have a model and run_id
-    if model is not None and run_id is not None:
-        try:
-            preprocessor_path = mlflow.artifacts.download_artifacts(
-                run_id=run_id, artifact_path="preprocessor"
-            )
-
-            preprocessor_files = os.listdir(preprocessor_path)
-            preprocessor_file = None
-            for file in preprocessor_files:
-                if file.endswith(".pkl"):
-                    preprocessor_file = os.path.join(preprocessor_path, file)
-                    break
-
-            if preprocessor_file:
-                preprocessor = joblib.load(preprocessor_file)
-                print("✅ Successfully loaded preprocessor from MLflow")
-            else:
-                preprocessor = None
-                print("⚠️ No preprocessor found")
-
-        except Exception as e:
-            print(f"⚠️ Could not load preprocessor: {e}")
-            preprocessor = None
-
-    # Return actual model if loaded successfully
-    if model is not None:
-        return model, preprocessor
-
-    # Final fallback to dummy model
-    print("🔄 Using dummy model for testing")
-
-    # Simple dummy model for testing that can handle raw data
-    class DummyModelWithPreprocessor:
-        def predict(self, X):
-            import numpy as np
-
-            # Simple rule: fraud if amount > 200000
-            return np.array(
-                [1 if row["amount"] > 200000 else 0 for _, row in X.iterrows()]
-            )
-
-    return DummyModelWithPreprocessor(), None
+    return load_model_and_preprocessor(MODEL_NAME, MODEL_ALIAS)
 
 
 @pytest.fixture(scope="module")
