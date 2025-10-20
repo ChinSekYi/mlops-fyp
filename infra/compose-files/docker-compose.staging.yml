@@ -5,7 +5,7 @@ services:
       platform: linux/amd64
       container_name: backend-con-staging
       ports:
-        - "8080:8000" 
+        - "8000:8000" 
       env_file:
         - ../../env/.env.stag_machine
       networks:
@@ -19,7 +19,7 @@ services:
       environment:
         MODEL_SERVER_IP: http://backend-con-staging:8000
       networks:
-        -  mlops-network-staging
+        - mlops-network-staging
       depends_on:
         - backend-staging
 
