@@ -90,6 +90,7 @@ class ModelTrainer:
                     run_name=model_name, nested=mlflow.active_run() is not None
                 ):
                     mlflow.log_param("model_type", model_name)
+                    mlflow.set_tag("model_name", model_name)
                     mlflow.log_params(model.get_params())
 
                     # Cross-validation accuracy
