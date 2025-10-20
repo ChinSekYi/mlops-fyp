@@ -44,8 +44,10 @@ mlflow-prod-up:
 # Requires `export AWS_PROFILE=<env>-bkt, export AWS_DEFAULT_PROFILE=<env>-bkt`
 up-dev:
 	docker compose -f infra/compose-files/docker-compose.dev.yml up
+
 up-staging:
 	docker compose -f infra/compose-files/docker-compose.staging.yml up
+
 up-prod:
 	docker compose -f infra/compose-files/docker-compose.prod.yml up
 
@@ -101,10 +103,10 @@ test-pipeline:
 test:
 	pytest -v --disable-warnings tests/
 
-test-dev:
+test-dev: # works in local
 	pytest tests/unit -v
 
-test-pipeline-ci:
+test-pipeline-ci: # works if aws profile is set to dev_bkt
 	pytest tests/unit tests/integration -v --maxfail=1
 
 test-staging: #requires the right aws bucket credentials #ensure mlflow server & banckend+frontend server are running

@@ -7,13 +7,18 @@ import json
 import os
 import tempfile
 import uuid
+import warnings
 
 import mlflow
 import pandas as pd
 import pytest
 from mlflow import MlflowClient
 
-from src.core.utils import load_environment, tokenize_column
+from backend.utils import load_model_and_preprocessor
+from src.core.utils import load_environment, one_hot_encode_and_align
+from src.pipeline.predict_pipeline import CustomData
+
+warnings.filterwarnings("ignore")
 
 # Load environment
 env_file = os.getenv("ENV_FILE", ".env")
@@ -58,44 +63,57 @@ class TestMLflowIntegration:
         except Exception as e:
             pytest.skip(f"MLflow server not available: {e}")
 
-    def test_model_loading_by_alias(self, model, preprocessor):
-        """Test loading model using alias from fixture."""
-        # The model fixture should successfully load the model
-        assert model is not None
-        assert preprocessor is not None
+    def test_model_loading_by_alias(self):
+        """Test loading model using MLflow alias."""
+        if not MODEL_NAME or not MODEL_ALIAS:
+            pytest.skip("MODEL_NAME or MODEL_ALIAS not configured")
 
-        # Test the model can make predictions with raw data
-        test_data = pd.DataFrame(
-            {
-                "step": [1],
-                "type": ["CASH_OUT"],
-                "amount": [100.0],
-                "nameOrig": ["C123456789"],
-                "oldbalanceOrg": [1000.0],
-                "newbalanceOrig": [900.0],
-                "nameDest": ["C987654321"],
-                "oldbalanceDest": [0.0],
-                "newbalanceDest": [100.0],
-            }
+        # Use backend utility to load model and preprocessor
+        model, preprocessor = load_model_and_preprocessor(MODEL_NAME, MODEL_ALIAS)
+        assert model is not None
+
+        # Prepare test input and one-hot encode 'type' to match model features
+        test_input = CustomData(
+            step=1,
+            amount=100.0,
+            oldbalanceOrg=1000.0,
+            newbalanceOrig=900.0,
+            oldbalanceDest=0.0,
+            newbalanceDest=100.0,
+            type="CASH_OUT",
+            nameOrig="C123456789",
+            nameDest="C987654321",
+        ).get_data_as_dataframe()
+
+        # Create dummy train DataFrame with all possible types for alignment
+        all_types = ["CASH_IN", "CASH_OUT", "DEBIT", "PAYMENT", "TRANSFER"]
+        dummy_train = pd.concat(
+            [
+                CustomData(
+                    step=1,
+                    amount=100.0,
+                    oldbalanceOrg=1000.0,
+                    newbalanceOrig=900.0,
+                    oldbalanceDest=0.0,
+                    newbalanceDest=100.0,
+                    type=t,
+                    nameOrig="C123456789",
+                    nameDest="C987654321",
+                ).get_data_as_dataframe()
+                for t in all_types
+            ],
+            ignore_index=True,
+        )
+
+        dummy_train_encoded, test_input_encoded = one_hot_encode_and_align(
+            dummy_train, test_input, "type"
         )
 
         try:
-            # Create dummy test dataframe for tokenization (tokenize_column expects train and test)
-            test_data_dummy = test_data.copy()
-            test_data_tokenized, _ = tokenize_column(
-                test_data, test_data_dummy, "nameOrig"
-            )
-            test_data_tokenized, _ = tokenize_column(
-                test_data_tokenized, test_data_dummy, "nameDest"
-            )
-
-            # Drop original name columns
-            test_data_tokenized = test_data_tokenized.drop(
-                ["nameOrig", "nameDest"], axis=1
-            )
-
-            # Apply preprocessing then predict
-            processed_data = preprocessor.transform(test_data_tokenized)
+            if preprocessor is not None:
+                processed_data = preprocessor.transform(test_input_encoded)
+            else:
+                processed_data = test_input_encoded
             prediction = model.predict(processed_data)
             assert len(prediction) == 1
             assert prediction[0] in [0, 1]  # Binary classification
