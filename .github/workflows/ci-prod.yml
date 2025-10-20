@@ -36,6 +36,8 @@ jobs:
           host: ${{ secrets.MLOPS_PROD_MACHINE_NAME }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
+          timeout: 120m
+          command_timeout: 120m
           script: |
             cd ~/mlops-fyp
             git pull origin main
