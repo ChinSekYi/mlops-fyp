@@ -2,12 +2,12 @@
 Script: upload_champion_model_to_staging.py
 
 Uploads a locally saved champion model to the staging MLflow server and registers it.
-Use AWS_PROFILE=stag-bkt and ENV_FILE=env/.env.stag_machine.
+Use AWS_PROFILE=stag-bkt and ENV_FILE=.env.stag_machine.
 
 REMINDER:
 Only use this script with stag-bkt credentials.
 Run with:
-    AWS_PROFILE=stag-bkt ENV_FILE=env/.env.stag_machine python3 scripts/upload_champion_model_to_staging.py
+    AWS_PROFILE=stag-bkt ENV_FILE=.env.stag_machine
 """
 
 import json
@@ -18,15 +18,15 @@ from dotenv import load_dotenv
 from mlflow import MlflowClient
 from mlflow.models.signature import ModelSignature
 
-STAGING_MODEL_NAME = "staging.fraud-detection-model"  # Or use same name if desired
+STAGING_MODEL_NAME = "staging.fraud-detection-model"
 LOCAL_MODEL_DIR = "artifacts/models/dev_champion_model"
 
 
-# Use MLFLOW_TRACKING_URI from environment (should be set in .env.stag_machine)
 def load_environment(env_file: str = None):
     load_dotenv(env_file or ".env")
 
 
+# Load env and configurations
 load_environment(os.getenv("ENV_FILE", "env/.env.stag_machine"))
 mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI"))
 staging_client = MlflowClient()

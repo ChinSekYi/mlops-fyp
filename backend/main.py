@@ -20,6 +20,7 @@ from backend.utils import (
 )
 from src.pipeline.predict_pipeline import CustomData
 
+# Load env and configurations
 env_file = os.getenv("ENV_FILE", ".env")
 load_environment(env_file)
 
@@ -66,8 +67,11 @@ def get_model_info():
         model_version_details = get_model_version_details(
             client, MODEL_NAME, MODEL_ALIAS
         )
+        run = get_run_details(client, model_version_details.run_id)
+        model_name_tag = run.data.tags.get("model_name")
         return {
             "model_name": model_version_details.name,
+            "model_name_tag": model_name_tag,
             "version": model_version_details.version,
             "alias": MODEL_ALIAS,
             "run_id": model_version_details.run_id,

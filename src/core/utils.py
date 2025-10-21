@@ -59,9 +59,6 @@ def balance_classes(x_train, y_train, random_state=42):
     Returns:
         Balanced x_train, y_train
     """
-    # print(f"Original distribution:\n{y_train.value_counts()}")
-    # print(f"Original fraud rate: {y_train.mean():.4f}")
-
     # Use SMOTE to oversample minority class (fraud cases)
     smote = SMOTE(random_state=random_state, sampling_strategy="auto")
     X_resampled, y_resampled = smote.fit_resample(x_train, y_train)
@@ -69,9 +66,6 @@ def balance_classes(x_train, y_train, random_state=42):
     # Convert back to pandas for consistency
     X_resampled = pd.DataFrame(X_resampled, columns=x_train.columns)
     y_resampled = pd.Series(y_resampled, name=y_train.name)
-
-    # print(f"Balanced distribution:\n{y_resampled.value_counts()}")
-    # print(f"Balanced fraud rate: {y_resampled.mean():.4f}")
 
     return X_resampled, y_resampled
 
@@ -89,8 +83,6 @@ def balance_classes_smotenc(x_train, y_train, categorical_features, random_state
     Returns:
         Balanced x_train, y_train
     """
-    # print(f"Original distribution:\n{y_train.value_counts()}")
-    # print(f"Original fraud rate: {y_train.mean():.4f}")
 
     try:
         # Apply SMOTENC for mixed data types
@@ -105,9 +97,6 @@ def balance_classes_smotenc(x_train, y_train, categorical_features, random_state
         # Convert back to pandas for consistency
         X_balanced = pd.DataFrame(X_balanced, columns=x_train.columns)
         y_balanced = pd.Series(y_balanced, name=y_train.name)
-
-        # print(f"Balanced distribution:\n{y_balanced.value_counts()}")
-        # print(f"Balanced fraud rate: {y_balanced.mean():.4f}")
 
         return X_balanced, y_balanced
 

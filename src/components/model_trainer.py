@@ -50,7 +50,7 @@ class ModelTrainer:
         train_data_path,
         test_data_path,
         registered_model_name_param,
-        preprocessor_path=None,  # Add preprocessor path parameter
+        preprocessor_path=None,
     ):
         """
         Train and evaluate multiple models, then log the best one to MLflow.
@@ -62,7 +62,7 @@ class ModelTrainer:
             preprocessor_path: Path to preprocessor pickle file
 
         Returns:
-            dict: Training and testing metrics for all models
+            dict: Testing metrics for all models
         """
         try:
             train_df = pd.read_csv(train_data_path)
