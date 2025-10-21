@@ -13,3 +13,5 @@ CMD ["streamlit", "run", "frontend/app.py", "--server.port=8501", "--server.addr
 
 # docker build  --no-cache --platform linux/amd64 -t sychin0606/frontend:latest -f infra/docker/Dockerfile.frontend .
 # docker push sychin0606/frontend:latest
+
+# docker build --no-cache --platform linux/amd64 -t sychin0606/frontend:latest -f infra/docker/Dockerfile.frontend . && docker push sychin0606/frontend:latest
