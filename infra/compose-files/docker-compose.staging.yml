@@ -19,8 +19,11 @@ services:
       container_name: frontend-con-staging
       ports:
         - "8501:8501"
+      env_file:
+         - ../../env/.env.stag_machine
       environment:
         MODEL_SERVER_IP: http://backend-con-staging:8000
+        ENV_FILE: /app/env/.env.stag_machine
       networks:
         - mlops-network-staging
       depends_on:
