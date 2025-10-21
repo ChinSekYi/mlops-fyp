@@ -26,6 +26,7 @@ load_environment(env_file)
 MODEL_NAME = os.getenv("REGISTERED_MODEL_NAME")
 MODEL_ALIAS = os.getenv("MODEL_ALIAS")
 MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI")
+DATASET_NAME = os.getenv("DATASET_NAME")
 mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
 
 model, preprocessor = load_model_and_preprocessor(MODEL_NAME, MODEL_ALIAS)
@@ -72,8 +73,8 @@ def get_model_info():
             "run_id": model_version_details.run_id,
             "status": model_version_details.status,
             "creation_timestamp": model_version_details.creation_timestamp,
-            "source": "mlflow_alias",
             "mlflow_tracking_uri": MLFLOW_TRACKING_URI,
+            "model_trained_on": DATASET_NAME,
             "environment": os.getenv("ENV_USED", "unknown"),
         }
     except Exception as e:

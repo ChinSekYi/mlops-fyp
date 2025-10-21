@@ -18,8 +18,11 @@ services:
       container_name: frontend-con
       ports:
         - "8501:8501"
+      env_file:
+         - ../../env/.env.prod_machine
       environment:
         MODEL_SERVER_IP: http://backend-con-prod:8000
+        ENV_FILE: /app/env/.env.prod_machine
       networks:
         - mlops-network-prod
       depends_on:
