@@ -1,18 +1,19 @@
 """
-Script: download_champion_model_dev.py
+Script: download_champion_model_staging.py
 
-Downloads the champion model from the dev MLflow server and saves it locally as an MLflow model directory.
-Use AWS_PROFILE=dev-bkt and ENV_FILE=env/.env.dev_machine.
+Downloads the champion model from the staging MLflow server and saves it locally as an MLflow model directory.
+Use AWS_PROFILE=stag-bkt and ENV_FILE=.env.stag_machine.
 
 REMINDER:
-- Only use this script with dev-bkt credentials.
+- Only use this script with stag-bkt credentials.
 - Run with:
-    AWS_PROFILE=dev-bkt ENV_FILE=env/.env.dev_machine python3 scripts/download_champion_model_dev.py
+    AWS_PROFILE=stag-bkt ENV_FILE=.env.stag_machine
 """
 
 import os
 
 import mlflow
+import yaml
 from dotenv import load_dotenv
 from mlflow import MlflowClient
 
@@ -21,20 +22,21 @@ def load_environment(env_file: str = None):
     load_dotenv(env_file or ".env")
 
 
-load_environment(os.getenv("ENV_FILE", "env/.env.dev_machine"))
-MLFLOW_TRACKING_PRIVATE_IP_DEV = os.getenv("MLFLOW_TRACKING_PRIVATE_IP_DEV")
+# Load env and configurations
+load_environment(os.getenv("ENV_FILE", "env/.env.stag_machine"))
+MLFLOW_TRACKING_PRIVATE_IP_STAGING = os.getenv("MLFLOW_TRACKING_PRIVATE_IP_STAGING")
 MODEL_NAME = os.getenv("REGISTERED_MODEL_NAME")
 MODEL_ALIAS = "champion"
 
-DEV_TRACKING_URI = f"http://{MLFLOW_TRACKING_PRIVATE_IP_DEV}:5050"
-LOCAL_MODEL_DIR = "artifacts/models/dev_champion_model"
+STAGING_TRACKING_URI = f"http://{MLFLOW_TRACKING_PRIVATE_IP_STAGING}:5050"
+LOCAL_MODEL_DIR = "artifacts/models/staging_champion_model"
 
 
-mlflow.set_tracking_uri(DEV_TRACKING_URI)
-dev_client = MlflowClient()
-model_version = dev_client.get_model_version_by_alias(MODEL_NAME, MODEL_ALIAS)
+mlflow.set_tracking_uri(STAGING_TRACKING_URI)
+staging_client = MlflowClient()
+model_version = staging_client.get_model_version_by_alias(MODEL_NAME, MODEL_ALIAS)
 run_id = model_version.run_id
-print(f"Champion dev model is version {model_version.version}")
+print(f"Champion staging model is version {model_version.version}")
 
 # Download model directory
 model_uri = f"models:/{MODEL_NAME}/{model_version.version}"
@@ -56,7 +58,7 @@ except Exception as e:
 # Save run metadata (metrics, params, tags, signature, input_example)
 import json
 
-run_info = dev_client.get_run(run_id)
+run_info = staging_client.get_run(run_id)
 metadata = {
     "metrics": run_info.data.metrics,
     "params": run_info.data.params,
@@ -67,8 +69,6 @@ mlmodel_path = os.path.join(LOCAL_MODEL_DIR, "MLmodel")
 signature = None
 input_example = None
 try:
-    import yaml
-
     with open(mlmodel_path, "r") as f:
         mlmodel_yaml = yaml.safe_load(f)
     signature = mlmodel_yaml.get("signature")

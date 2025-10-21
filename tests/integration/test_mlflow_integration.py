@@ -17,7 +17,7 @@ from src.core.utils import load_environment
 
 warnings.filterwarnings("ignore")
 
-# Load environment
+# Load env and configurations
 env_file = os.getenv("ENV_FILE", ".env")
 load_environment(env_file)
 

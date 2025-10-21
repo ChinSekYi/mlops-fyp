@@ -84,13 +84,12 @@ def get_run_details(client, run_id):
 
 
 if __name__ == "__main__":
-    # Example test for predict()
-
     # Load environment variables
     load_environment()
     MODEL_NAME = os.getenv("REGISTERED_MODEL_NAME")
     MODEL_ALIAS = os.getenv("MODEL_ALIAS")
 
+    # Example test for predict()
     model, preprocessor = load_model_and_preprocessor(MODEL_NAME, MODEL_ALIAS)
 
     sample = {
