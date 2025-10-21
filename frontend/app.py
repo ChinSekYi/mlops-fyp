@@ -4,11 +4,12 @@ import requests
 import streamlit as st
 from utils import load_environment
 
+# Set env
 env_file = os.getenv("ENV_FILE", ".env")
+load_environment(env_file)
 API_URL = os.getenv("MODEL_SERVER_IP")
 
-load_environment(env_file)
-
+# Set constants
 EXPECTED_FEATURES = [
     "step",
     "amount",
@@ -17,12 +18,13 @@ EXPECTED_FEATURES = [
     "oldbalanceDest",
     "newbalanceDest",
     "type",
-    "nameOrig",  # Raw string input like "C1900756070"
-    "nameDest",  # Raw string input like "C1995455020"
+    "nameOrig",
+    "nameDest",
 ]
 
 TYPE_DROPDOWN_VALUES = ["CASH_IN", "CASH_OUT", "DEBIT", "PAYMENT", "TRANSFER"]
 
+# Set main page
 st.set_page_config(page_title="Fraud Detection Demo", layout="wide")
 st.title("💳 Fraud Detection Demo")
 st.write("Interact with the fraud detection model served by FastAPI + MLflow.")
@@ -96,7 +98,7 @@ if page == "Predict":
                         if default_values[feature] in TYPE_DROPDOWN_VALUES
                         else 0
                     ),
-                    key=f"type_{sample_choice}_{i}",  # Include sample_choice in key
+                    key=f"type_{sample_choice}_{i}",
                 )
             else:
                 label = (
@@ -115,7 +117,7 @@ if page == "Predict":
                     input_data[feature] = st.text_input(
                         f"{label} (format: C1234567890)",
                         value=str(default_values[feature]),
-                        key=f"text_{feature}_{sample_choice}_{i}",  # Include sample_choice in key
+                        key=f"text_{feature}_{sample_choice}_{i}",
                     )
                 elif feature == "step":
                     input_data[feature] = st.number_input(
@@ -124,7 +126,7 @@ if page == "Predict":
                         step=1,
                         format="%d",
                         value=int(default_values[feature]),
-                        key=f"num_{feature}_{sample_choice}_{i}",  # Include sample_choice in key
+                        key=f"num_{feature}_{sample_choice}_{i}",
                     )
                 else:
                     input_data[feature] = st.number_input(
@@ -133,7 +135,7 @@ if page == "Predict":
                         step=0.01,
                         format="%.2f",
                         value=float(default_values[feature]),
-                        key=f"num_{feature}_{sample_choice}_{i}",  # Include sample_choice in key
+                        key=f"num_{feature}_{sample_choice}_{i}",
                     )
     if st.button("Predict", key="single"):
         payload = input_data

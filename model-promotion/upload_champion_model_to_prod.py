@@ -2,12 +2,12 @@
 Script: upload_champion_model_to_prod.py
 
 Uploads a locally saved champion model to the prod MLflow server and registers it.
-Use AWS_PROFILE=prod-bkt and ENV_FILE=env/.env.prod_machine.
+Use AWS_PROFILE=prod-bkt and ENV_FILE=.env.prod_machine.
 
 REMINDER:
 - Only use this script with prod-bkt credentials.
 - Run with:
-    AWS_PROFILE=prod-bkt ENV_FILE=env/.env.prod_machine python3 scripts/upload_champion_model_to_prod.py
+    AWS_PROFILE=prod-bkt ENV_FILE=.env.prod_machine
 """
 
 import json
@@ -26,6 +26,7 @@ def load_environment(env_file: str = None):
     load_dotenv(env_file or ".env")
 
 
+# Load env and configurations
 load_environment(os.getenv("ENV_FILE", "env/.env.prod_machine"))
 mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI"))
 prod_client = MlflowClient()

@@ -15,3 +15,6 @@ services:
 
 
 # docker compose -f infra/docker/docker-compose.mlflow-server-prod.yml up
+
+## In mlflow-server-prod
+# docker compose -f docker-compose.mlflow-server-prod.yml up
