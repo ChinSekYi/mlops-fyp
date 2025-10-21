@@ -7,14 +7,13 @@ services:
       ports:
         - "8000:8000"
       env_file:
-        - ../../env/.env.dev_machine
+            - ../../env/.env.dev_machine
+      environment:
+          ENV_FILE: /app/env/.env.dev_machine
       networks:
         - mlops-network
 
     frontend:
-      #build:
-      #    context: ../../
-      #    dockerfile: infra/docker/Dockerfile.frontend
       image: sychin0606/frontend:latest
       platform: linux/amd64
       container_name: frontend-con
