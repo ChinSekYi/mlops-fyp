@@ -13,7 +13,7 @@ import pytest
 from backend.utils import load_model_and_preprocessor
 from src.core.utils import load_environment
 
-# Use ENV_FILE if set, otherwise default to .env
+# Load env and configurations
 env_file = os.getenv("ENV_FILE", ".env")
 load_environment(env_file)
 MODEL_SERVER_IP = os.getenv("MODEL_SERVER_IP")

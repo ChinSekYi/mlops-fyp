@@ -29,10 +29,6 @@ def error_message_detail(error, error_detail: sys):
 
 
 class CustomException(Exception):
-    """
-    Custom exception class that captures detailed error information.
-    """
-
     def __init__(self, error_message, error_detail: sys):
         """
         Initializes the CustomException instance.

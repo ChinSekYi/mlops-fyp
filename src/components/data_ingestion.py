@@ -3,7 +3,6 @@ Data ingestion module for the credit card fraud detection pipeline.
 Handles reading, sampling, splitting, and logging datasets.
 """
 
-# flake8: noqa
 import os
 import warnings
 
@@ -16,7 +15,6 @@ from src.core.logger import logging
 from src.core.utils import load_config, load_environment
 
 warnings.filterwarnings("ignore")
-from src.core.utils import load_environment
 
 load_environment(os.getenv("ENV_FILE", ".env"))
 DATASET_NAME = os.getenv("DATASET_NAME")
