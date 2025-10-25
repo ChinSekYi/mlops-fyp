@@ -109,9 +109,9 @@ test-staging: #requires the right aws bucket credentials #ensure mlflow server &
 test-prod:
 	pytest tests/smoke -v
 
-# =========================
+# ==========================
 # Others
-# =========================
+# ==========================
 aws-list-profiles:
 	aws configure list-profiles
 rmi:
