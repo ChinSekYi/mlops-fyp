@@ -57,20 +57,22 @@ class PredictPipeline:
                     data_scaled = preprocessor.transform(features)
                     pred_result = model.predict(data_scaled)
                 except Exception as preproc_error:
-                    # print(   f"Preprocessor transform failed: {preproc_error}. Using raw features.")
+                    print(
+                        f"Preprocessor transform failed: {preproc_error}. Using raw features."
+                    )
                     pred_result = model.predict(features)
             else:
-                # print("Preprocessor not found. Using raw features.")
+                print("Preprocessor not found. Using raw features.")
                 pred_result = model.predict(features)
             return pred_result
         except Exception as e:
-            # print(f"Prediction failed: {e}. Falling back to DummyModel.")
+            print(f"Prediction failed: {e}. Falling back to DummyModel.")
             dummy_model = DummyModel()
             try:
                 pred_result = dummy_model.predict(features)
                 return pred_result
             except Exception as dummy_error:
-                # print(f"DummyModel prediction failed: {dummy_error}")
+                print(f"DummyModel prediction failed: {dummy_error}")
                 raise CustomException(dummy_error, sys)
 
 

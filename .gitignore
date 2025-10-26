@@ -19,7 +19,10 @@ __pycache__/
 !/env/.env.mlflow.example
 
 # Folders
-/docs
+/docs/*
+!/docs/images/
+!/docs/User_Guide/
+!/docs/Developer_Guide/
 /archive
 
 # MLflow tracking and artifacts
