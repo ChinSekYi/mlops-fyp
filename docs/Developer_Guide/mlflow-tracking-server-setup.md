@@ -2,6 +2,8 @@
 
 *This guide describes how to set up an MLflow tracking server, S3 artifact storage, and PostgreSQL backend.*
 
+For model promotion workflow and scripts, see [model-promotion/README.md](../../model-promotion/README.md).
+
 
 ## Overview & Architecture Diagram
 
@@ -9,7 +11,7 @@ This setup enables robust experiment tracking and artifact management for machin
 
 
 <div align="center">
-    <img src="../images/doc_MLflow_tracking_server_architecture.jpg" alt="Architecture diagram" width="600"/>
+    <img src="../images/doc_MLflow_tracking_server_architecture.jpg" alt="Architecture diagram" width="700"/>
     <br>
     <span>System architecture showing MLflow server, artifact storage (S3), backend database (PostgreSQL)</span>
 </div>
