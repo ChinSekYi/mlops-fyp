@@ -40,4 +40,4 @@ __pycache__/
 /mlartifacts
 /logs
 /artifacts
-repo-backup.git
+/repo-backup.git
