@@ -2,6 +2,8 @@
 **A Full-Stack Fraud Detection Pipeline (NUS DSA4288 Honours Year Project)**
 
 [![Docker Image CI](https://github.com/ChinSekYi/mlops-fyp/actions/workflows/ci.yml/badge.svg)](https://github.com/ChinSekYi/mlops-fyp/actions/workflows/ci.yml)
+[![CD - Staging](https://github.com/ChinSekYi/mlops-fyp/actions/workflows/cd-staging.yml/badge.svg)](https://github.com/ChinSekYi/mlops-fyp/actions/workflows/cd-staging.yml)
+[![CD - Production](https://github.com/ChinSekYi/mlops-fyp/actions/workflows/ci-prod.yml/badge.svg)](https://github.com/ChinSekYi/mlops-fyp/actions/workflows/ci-prod.yml)
 
 This repository demonstrates a production-grade MLOps workflow for traditional machine learning, using fraud detection as a real-world use case. The project covers experiment tracking, model registry, automated deployment, and scalable serving.
 
