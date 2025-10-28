@@ -18,7 +18,17 @@ __pycache__/
 !/env/.env.machine.example
 !/env/.env.mlflow.example
 
+# Environment files (all .env variants except CI)
+/env/*
+!/env/.env.ci
+!/env/.env.machine.example
+!/env/.env.mlflow.example
+
 # Folders
+/docs/*
+!/docs/images/
+!/docs/User_Guide/
+!/docs/Developer_Guide/
 /docs/*
 !/docs/images/
 !/docs/User_Guide/
